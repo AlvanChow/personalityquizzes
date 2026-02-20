@@ -1,110 +1,144 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
-import { Sparkles, Brain, Layers, ArrowRight } from 'lucide-react';
-
-const features = [
-  {
-    icon: Brain,
-    title: 'Science-Backed',
-    desc: 'Built on the Big Five model used by psychologists worldwide.',
-  },
-  {
-    icon: Layers,
-    title: 'Endless Skins',
-    desc: 'One core profile. Hundreds of fun, themed quiz results.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Always Evolving',
-    desc: 'Every quiz you take refines your unique personality profile.',
-  },
-];
+import { Activity, Brain, CircleDashed, Cake, ArrowRight, Sparkles } from 'lucide-react';
 
 export default function Landing() {
   const navigate = useNavigate();
   const { hasCompleted } = useBigFive();
 
-  function handleStart() {
-    navigate(hasCompleted ? '/dashboard' : '/assessment');
-  }
+  const quizzes = [
+    {
+      id: 'big5',
+      name: 'Big 5 Personality',
+      description: 'The scientifically-backed OCEAN model. Discover your core traits and how you navigate the world.',
+      icon: Activity,
+      bgColor: 'bg-[#FF90E8]',
+      buttonText: hasCompleted ? 'View Results' : 'Take the Big 5',
+      action: () => navigate(hasCompleted ? '/dashboard' : '/assessment'),
+      featured: true
+    },
+    {
+      id: 'mbti',
+      name: 'MBTI (16 Types)',
+      description: 'Are you an INTJ or an ESFP? Find your Myers-Briggs type and understand your cognitive functions.',
+      icon: Brain,
+      bgColor: 'bg-[#FFC900]',
+      buttonText: 'Take the MBTI',
+      action: () => navigate('/assessment'),
+      featured: false
+    },
+    {
+      id: 'enneagram',
+      name: 'Enneagram',
+      description: 'Discover which of the 9 interconnected personality types drives your deepest motivations and fears.',
+      icon: CircleDashed,
+      bgColor: 'bg-[#00E5FF]',
+      buttonText: 'Take the Enneagram',
+      action: () => navigate('/assessment'),
+      featured: false
+    },
+    {
+      id: 'cakeme',
+      name: 'Cake.me',
+      description: 'The viral sensation. What kind of cake matches your vibe? Sweet, layered, or a little nutty?',
+      icon: Cake,
+      bgColor: 'bg-[#B4FA72]',
+      buttonText: 'Find Your Cake',
+      action: () => navigate('/cake-quiz'),
+      featured: true
+    }
+  ];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <span className="text-xl font-extrabold tracking-tight text-gray-800">
-            Persona<span className="text-sky-500">Lens</span>
+    <div className="min-h-screen flex flex-col bg-[#F4F4F4] overflow-hidden font-sans selection:bg-[#FF90E8] selection:text-black">
+      {/* Navbar */}
+      <header className="px-6 py-4 border-b-4 border-black bg-white relative z-20">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <span className="text-2xl sm:text-3xl font-black text-black tracking-tighter uppercase flex items-center gap-2">
+            <Sparkles className="w-8 h-8 text-[#FF90E8] fill-current" />
+            My Personality Quizzes
           </span>
           {hasCompleted && (
             <button
               onClick={() => navigate('/dashboard')}
-              className="text-sm font-semibold text-sky-500 hover:text-sky-600 transition-colors"
+              className="hidden sm:block text-sm font-black text-black uppercase bg-[#B4FA72] border-4 border-black px-6 py-2 rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[4px] active:translate-x-[4px] active:shadow-none transition-all"
             >
-              My Dashboard
+              Dashboard
             </button>
           )}
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-24">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="text-center max-w-2xl"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-50 border border-sky-100 text-sky-600 text-sm font-semibold mb-8">
-            <Sparkles className="w-4 h-4" />
-            Powered by the Big Five Model
-          </div>
+      <main className="flex-1 flex flex-col items-center px-6 pb-32 relative z-10">
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
-            Discover Who You
-            <br />
-            <span className="bg-gradient-to-r from-sky-400 to-coral-400 bg-clip-text text-transparent">
-              Really Are.
-            </span>
-          </h1>
+        {/* Hero Section */}
+        <div className="text-center max-w-4xl mx-auto mt-16 md:mt-24 mb-20 relative">
 
-          <p className="text-lg md:text-xl text-gray-500 max-w-md mx-auto mb-10 leading-relaxed">
-            One scientific engine. Endless fun quizzes. Uncover the personality traits that make you, you.
-          </p>
-
-          <motion.button
-            onClick={handleStart}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-sky-400 to-sky-500 text-white font-bold text-lg shadow-[0_8px_32px_rgba(26,127,212,0.3)] hover:shadow-[0_12px_40px_rgba(26,127,212,0.4)] transition-shadow duration-300"
+          <motion.h1
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", bounce: 0.5 }}
+            className="text-6xl sm:text-7xl md:text-8xl font-black text-black leading-none tracking-tighter mb-8 uppercase"
           >
-            {hasCompleted ? 'Go to Dashboard' : 'Take the Baseline Assessment'}
-            <ArrowRight className="w-5 h-5" />
-          </motion.button>
-        </motion.div>
+            Discover who <br className="hidden md:block" />
+            <span className="inline-block bg-[#FFC900] px-6 py-2 border-4 border-black transform -rotate-2 mt-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+              you really are.
+            </span>
+          </motion.h1>
 
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-lg md:text-2xl text-black max-w-2xl mx-auto leading-relaxed font-bold bg-white p-6 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-2xl"
+          >
+            From deep scientific assessments to viral trends. Choose your flavor below and start exploring.
+          </motion.p>
+        </div>
+
+        {/* Quizzes Grid */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
-          className="mt-20 w-full max-w-3xl"
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {features.map((f, i) => (
+          {quizzes.map((quiz, index) => {
+            const Icon = quiz.icon;
+            return (
               <motion.div
-                key={f.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 + i * 0.1 }}
-                className="text-center p-6 rounded-3xl bg-white/60 border border-gray-100 shadow-[0_2px_16px_rgba(0,0,0,0.04)]"
+                key={quiz.id}
+                whileHover={{ scale: 1.02, rotate: index % 2 === 0 ? 1 : -1 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={quiz.action}
+                className={`${quiz.bgColor} border-4 border-black rounded-[2rem] p-6 sm:p-8 cursor-pointer shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col group`}
               >
-                <div className="w-12 h-12 rounded-2xl bg-cream-100 flex items-center justify-center mx-auto mb-4">
-                  <f.icon className="w-6 h-6 text-sky-500" />
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-16 h-16 bg-white border-4 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <Icon className="w-8 h-8 text-black" />
+                  </div>
+                  {quiz.featured && (
+                    <span className="bg-black text-white text-sm font-black px-4 py-2 rounded-full uppercase tracking-widest transform rotate-3 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.8)]">
+                      Viral!
+                    </span>
+                  )}
                 </div>
-                <h3 className="font-bold text-gray-800 mb-1">{f.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
+
+                <h3 className="text-3xl sm:text-4xl font-black text-black mb-4 uppercase tracking-tight">{quiz.name}</h3>
+                <p className="text-black font-bold text-lg mb-8 flex-1 leading-snug bg-white/60 p-5 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  {quiz.description}
+                </p>
+
+                <div className="mt-auto">
+                  <button className="w-full bg-white text-black font-black uppercase tracking-wide text-xl py-4 border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:bg-black group-hover:text-white transition-colors flex items-center justify-center gap-3">
+                    {quiz.buttonText}
+                    <ArrowRight className="w-6 h-6" />
+                  </button>
+                </div>
               </motion.div>
-            ))}
-          </div>
+            );
+          })}
         </motion.div>
       </main>
     </div>
