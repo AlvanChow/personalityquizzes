@@ -1,65 +1,10 @@
-@import "tailwindcss";
-
-@theme {
-  --font-nunito: 'Nunito', sans-serif;
-
-  --color-cream-50: #FFFDF7;
-  --color-cream-100: #FFF9E8;
-  --color-cream-200: #FFF3D1;
-
-  --color-sky-50: #F0F7FF;
-  --color-sky-100: #DCEEFB;
-  --color-sky-200: #B6D9F7;
-  --color-sky-300: #7BBCF0;
-  --color-sky-400: #3B9AE5;
-  --color-sky-500: #1A7FD4;
-
-  --color-coral-50: #FFF5F0;
-  --color-coral-100: #FFE8DD;
-  --color-coral-200: #FFD0BA;
-  --color-coral-300: #FFB08E;
-  --color-coral-400: #FF8A5C;
-  --color-coral-500: #F06830;
-
-  --color-mint-50: #EEFCF5;
-  --color-mint-100: #D5F5E3;
-  --color-mint-200: #A8E6C3;
-  --color-mint-300: #6DD5A0;
-  --color-mint-400: #3BC07B;
-  --color-mint-500: #20A05E;
-
-  --color-peach-50: #FFF7F2;
-  --color-peach-100: #FFE9DB;
-  --color-peach-200: #FFD4B8;
-  --color-peach-300: #FFB88E;
-  --color-peach-400: #FF9B63;
-
-  --color-rose-50: #FFF0F3;
-  --color-rose-100: #FFD9E0;
-  --color-rose-200: #FFB3C2;
-  --color-rose-300: #FF8DA3;
-  --color-rose-400: #FF6685;
-
-  --color-teal-50: #EEFAFB;
-  --color-teal-100: #D2F1F3;
-  --color-teal-200: #A5E3E8;
-  --color-teal-300: #6DCFD6;
-  --color-teal-400: #3BBAC4;
-
-  --color-warn-500: #E5A820;
-  --color-error-500: #E04040;
-  --color-success-500: #20A05E;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
   font-family: 'Nunito', sans-serif;
-  background-color: var(--color-cream-50);
+  background-color: #FFFDF7;
   color: #2D3748;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
