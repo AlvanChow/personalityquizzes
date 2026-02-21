@@ -7,11 +7,7 @@ import { getCityResult, cityResults } from '../data/cityResults';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-
-function optionToAdjustment(value) {
-  const map = { 1: -4, 2: -2, 3: 2, 4: 4 };
-  return map[value] ?? 0;
-}
+import { optionToAdjustment } from '../utils/scoring';
 
 export default function CityQuiz() {
   const navigate = useNavigate();

@@ -4,28 +4,14 @@ import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
 import { baselineQuestions, likertOptions } from '../data/baselineQuestions';
 import { useBigFive } from '../contexts/BigFiveContext';
+import { computeBaselineScores } from '../utils/scoring';
 
 export default function Assessment() {
   const navigate = useNavigate();
   const { completeBaseline } = useBigFive();
 
   const handleComplete = useCallback((answers) => {
-    const traitSums = {};
-    const traitCounts = {};
-
-    Object.entries(answers).forEach(([qId, { trait, value }]) => {
-      const q = baselineQuestions.find((bq) => bq.id === Number(qId));
-      const adjusted = q?.reversed ? 6 - value : value;
-      traitSums[trait] = (traitSums[trait] || 0) + adjusted;
-      traitCounts[trait] = (traitCounts[trait] || 0) + 1;
-    });
-
-    const scores = {};
-    for (const trait of Object.keys(traitSums)) {
-      const avg = traitSums[trait] / traitCounts[trait];
-      scores[trait] = Math.round(((avg - 1) / 4) * 100);
-    }
-
+    const scores = computeBaselineScores(answers, baselineQuestions);
     completeBaseline(scores);
     navigate('/dashboard');
   }, [completeBaseline, navigate]);
