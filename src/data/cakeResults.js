@@ -49,6 +49,11 @@ export const cakeResults = {
   },
 };
 
+// Reverse-lookup: result display name → result key (e.g. 'Funfetti Cake' → 'funfetti')
+export const cakeResultNameToKey = Object.fromEntries(
+  Object.entries(cakeResults).map(([key, { name }]) => [name, key])
+);
+
 export function getCakeResult(scores) {
   const traitMap = {
     E: 'funfetti',

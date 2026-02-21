@@ -20,26 +20,30 @@ export default function MBTIQuiz() {
 
     if (user) {
       (async () => {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('quiz_results')
-          .eq('id', user.id)
-          .maybeSingle();
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('quiz_results')
+            .eq('id', user.id)
+            .maybeSingle();
 
-        const existing = profile?.quiz_results || {};
-        await supabase
-          .from('profiles')
-          .update({
-            quiz_results: {
-              ...existing,
-              mbti: {
-                type: result.name,
-                nickname: result.nickname,
-                quizName: 'MBTI (16 Types)',
+          const existing = profile?.quiz_results || {};
+          await supabase
+            .from('profiles')
+            .update({
+              quiz_results: {
+                ...existing,
+                mbti: {
+                  type: result.name,
+                  nickname: result.nickname,
+                  quizName: 'MBTI (16 Types)',
+                },
               },
-            },
-          })
-          .eq('id', user.id);
+            })
+            .eq('id', user.id);
+        } catch (err) {
+          console.error('Failed to save MBTI quiz result:', err);
+        }
       })();
     }
 
