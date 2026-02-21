@@ -63,12 +63,12 @@ export function getCakeResult(scores) {
   let maxScore = scores[traits[0]];
   let secondMax = 0;
 
-  for (const t of traits) {
+  for (const t of traits.slice(1)) {
     if (scores[t] > maxScore) {
       secondMax = maxScore;
       maxScore = scores[t];
       maxTrait = t;
-    } else if (scores[t] > secondMax && scores[t] !== maxScore) {
+    } else if (scores[t] > secondMax) {
       secondMax = scores[t];
     }
   }
