@@ -6,10 +6,6 @@ import Assessment from './pages/Assessment';
 import Dashboard from './pages/Dashboard';
 import CakeQuiz from './pages/CakeQuiz';
 import CakeResult from './pages/CakeResult';
-import DogQuiz from './pages/DogQuiz';
-import DogResult from './pages/DogResult';
-import CityQuiz from './pages/CityQuiz';
-import CityResult from './pages/CityResult';
 import MBTIQuiz from './pages/MBTIQuiz';
 import MBTIResult from './pages/MBTIResult';
 import EnneagramQuiz from './pages/EnneagramQuiz';
@@ -27,10 +23,6 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/quiz/cake" element={<CakeQuiz />} />
             <Route path="/quiz/cake/result" element={<CakeResult />} />
-            <Route path="/quiz/dog" element={<DogQuiz />} />
-            <Route path="/quiz/dog/result" element={<DogResult />} />
-            <Route path="/quiz/city" element={<CityQuiz />} />
-            <Route path="/quiz/city/result" element={<CityResult />} />
             <Route path="/quiz/mbti" element={<MBTIQuiz />} />
             <Route path="/quiz/mbti/result" element={<MBTIResult />} />
             <Route path="/quiz/enneagram" element={<EnneagramQuiz />} />
