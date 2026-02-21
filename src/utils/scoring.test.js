@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { optionToAdjustment, computeBaselineScores } from './scoring.js';
+import {
+  optionToAdjustment,
+  computeBaselineScores,
+  computeMBTIScores,
+  computeEnneagramScores,
+} from './scoring.js';
 
 // Minimal stub questions: one normal and one reversed per trait, mirroring the
 // real baselineQuestions shape so computeBaselineScores can find reversed flags.
@@ -205,5 +210,116 @@ describe('computeBaselineScores – with real baselineQuestions', () => {
     };
     const scores = computeBaselineScores(answers, baselineQuestions);
     expect(scores.O).toBe(50);
+  });
+});
+
+// ─────────────────────────────────────────────
+// computeMBTIScores
+// ─────────────────────────────────────────────
+describe('computeMBTIScores – scale boundaries', () => {
+  it('produces score 0 when all answers for a dimension are value 1', () => {
+    // avg = 1  →  ((1-1)/3)*100 = 0
+    const answers = {
+      1: { trait: 'IE', value: 1 },
+      2: { trait: 'IE', value: 1 },
+    };
+    const scores = computeMBTIScores(answers);
+    expect(scores.IE).toBe(0);
+  });
+
+  it('produces score 100 when all answers for a dimension are value 4', () => {
+    // avg = 4  →  ((4-1)/3)*100 = 100
+    const answers = {
+      1: { trait: 'IE', value: 4 },
+      2: { trait: 'IE', value: 4 },
+    };
+    const scores = computeMBTIScores(answers);
+    expect(scores.IE).toBe(100);
+  });
+
+  it('produces score 50 when all answers are value 2.5 average (mix of 2 and 3)', () => {
+    // avg = (2+3)/2 = 2.5  →  ((2.5-1)/3)*100 = 50
+    const answers = {
+      1: { trait: 'SN', value: 2 },
+      2: { trait: 'SN', value: 3 },
+    };
+    const scores = computeMBTIScores(answers);
+    expect(scores.SN).toBe(50);
+  });
+
+  it('produces score 33 for a single value-2 answer', () => {
+    // avg = 2  →  ((2-1)/3)*100 = 33.33  →  rounds to 33
+    const answers = { 1: { trait: 'TF', value: 2 } };
+    const scores = computeMBTIScores(answers);
+    expect(scores.TF).toBe(33);
+  });
+
+  it('produces score 67 for a single value-3 answer', () => {
+    // avg = 3  →  ((3-1)/3)*100 = 66.67  →  rounds to 67
+    const answers = { 1: { trait: 'JP', value: 3 } };
+    const scores = computeMBTIScores(answers);
+    expect(scores.JP).toBe(67);
+  });
+});
+
+describe('computeMBTIScores – all four dimensions isolated', () => {
+  it('scores IE independently from SN, TF, JP', () => {
+    const answers = {
+      1: { trait: 'IE', value: 4 },
+      2: { trait: 'SN', value: 1 },
+      3: { trait: 'TF', value: 1 },
+      4: { trait: 'JP', value: 1 },
+    };
+    const scores = computeMBTIScores(answers);
+    expect(scores.IE).toBe(100);
+    expect(scores.SN).toBe(0);
+    expect(scores.TF).toBe(0);
+    expect(scores.JP).toBe(0);
+  });
+});
+
+// ─────────────────────────────────────────────
+// computeEnneagramScores
+// ─────────────────────────────────────────────
+describe('computeEnneagramScores – accumulation', () => {
+  it('sums values for each type independently', () => {
+    const answers = {
+      1: { trait: '1', value: 4 },
+      2: { trait: '1', value: 3 },
+      3: { trait: '2', value: 2 },
+    };
+    const scores = computeEnneagramScores(answers);
+    expect(scores['1']).toBe(7);
+    expect(scores['2']).toBe(2);
+    expect(scores['3']).toBeUndefined();
+  });
+
+  it('returns 0 accumulation start (no pre-seeding)', () => {
+    const answers = { 1: { trait: '9', value: 1 } };
+    const scores = computeEnneagramScores(answers);
+    expect(scores['9']).toBe(1);
+    expect(scores['1']).toBeUndefined();
+  });
+
+  it('handles the maximum possible score per type (3 questions × 4 = 12)', () => {
+    const answers = {
+      1: { trait: '5', value: 4 },
+      2: { trait: '5', value: 4 },
+      3: { trait: '5', value: 4 },
+    };
+    const scores = computeEnneagramScores(answers);
+    expect(scores['5']).toBe(12);
+  });
+
+  it('handles all 9 types with distinct scores', () => {
+    const answers = {};
+    for (let t = 1; t <= 9; t++) {
+      answers[t] = { trait: String(t), value: t === 9 ? 4 : 1 };
+    }
+    const scores = computeEnneagramScores(answers);
+    expect(scores['9']).toBe(4);
+    for (let t = 1; t <= 8; t++) {
+      expect(scores[String(t)]).toBe(1);
+    }
   });
 });

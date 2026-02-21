@@ -28,8 +28,8 @@ export default function Landing() {
       iconBg: 'bg-coral-100 text-coral-500',
       buttonBg: 'bg-coral-400 hover:bg-coral-500',
       buttonText: 'Take the MBTI',
-      action: () => navigate('/assessment'),
-      featured: false
+      action: () => navigate('/quiz/mbti'),
+      featured: true
     },
     {
       id: 'enneagram',
@@ -39,8 +39,8 @@ export default function Landing() {
       iconBg: 'bg-mint-100 text-mint-500',
       buttonBg: 'bg-mint-400 hover:bg-mint-500',
       buttonText: 'Take the Enneagram',
-      action: () => navigate('/assessment'),
-      featured: false
+      action: () => navigate('/quiz/enneagram'),
+      featured: true
     },
     {
       id: 'cakeme',
