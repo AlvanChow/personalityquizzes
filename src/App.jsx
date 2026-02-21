@@ -6,6 +6,7 @@ import Assessment from './pages/Assessment';
 import Dashboard from './pages/Dashboard';
 import CakeQuiz from './pages/CakeQuiz';
 import CakeResult from './pages/CakeResult';
+import Profile from './pages/Profile';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/quiz/cake" element={<CakeQuiz />} />
             <Route path="/quiz/cake/result" element={<CakeResult />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </BigFiveProvider>
       </AuthProvider>

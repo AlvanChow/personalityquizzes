@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
 import { cakeQuestions } from '../data/cakeQuestions';
+import { getCakeResult } from '../data/cakeResults';
 import { useBigFive } from '../contexts/BigFiveContext';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 
 function optionToAdjustment(value) {
@@ -14,6 +17,7 @@ function optionToAdjustment(value) {
 export default function CakeQuiz() {
   const navigate = useNavigate();
   const { scores, hasCompleted, updateScores } = useBigFive();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!hasCompleted) navigate('/');
@@ -32,8 +36,42 @@ export default function CakeQuiz() {
     });
 
     updateScores(newScores);
+
+    const mergedScores = { ...scores, ...newScores };
+    const result = getCakeResult(mergedScores);
+    const resultKey = Object.entries(
+      { funfetti: 'Funfetti Cake', wedding: 'Elaborate Wedding Cake', matcha: 'Matcha Crepe Cake', redvelvet: 'Red Velvet Cake', lava: 'Chocolate Lava Cake', chocolate: 'Classic Chocolate Cake' }
+    ).find(([, name]) => name === result.name)?.[0] || 'chocolate';
+
+    if (user) {
+      (async () => {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('quiz_results')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        const existing = profile?.quiz_results || {};
+        await supabase
+          .from('profiles')
+          .update({
+            quiz_results: {
+              ...existing,
+              cake: {
+                resultKey,
+                name: result.name,
+                emoji: result.emoji,
+                trait: result.trait,
+                quizName: 'What Cake Are You?',
+              },
+            },
+          })
+          .eq('id', user.id);
+      })();
+    }
+
     navigate('/quiz/cake/result');
-  }, [scores, updateScores, navigate]);
+  }, [scores, updateScores, navigate, user]);
 
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {
     return question.options.map((opt) => (
