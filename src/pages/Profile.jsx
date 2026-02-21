@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, ArrowLeft, RotateCcw, LogOut, Calendar, Cake, Trophy } from 'lucide-react';
+import { User, ArrowLeft, RotateCcw, LogOut, Calendar, ChevronRight, Trophy } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { supabase } from '../lib/supabase';
 import { cakeResults } from '../data/cakeResults';
+import { dogResults } from '../data/dogResults';
+import { cityResults } from '../data/cityResults';
 import ScoreBar from '../components/ScoreBar';
+
+const quizResultMaps = {
+  cake: { results: cakeResults, route: '/quiz/cake/result' },
+  dog: { results: dogResults, route: '/quiz/dog/result' },
+  city: { results: cityResults, route: '/quiz/city/result' },
+};
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 
@@ -161,21 +169,22 @@ export default function Profile() {
           {completedQuizzes.length > 0 ? (
             <div className="grid gap-3">
               {completedQuizzes.map(([quizKey, result]) => {
-                const cakeData = quizKey === 'cake' ? cakeResults[result.resultKey] : null;
+                const quizMap = quizResultMaps[quizKey];
+                const fullData = quizMap?.results?.[result.resultKey];
                 return (
                   <button
                     key={quizKey}
                     onClick={() => {
-                      if (quizKey === 'cake' && hasCompleted) navigate('/quiz/cake/result');
+                      if (quizMap?.route && hasCompleted) navigate(quizMap.route);
                     }}
                     className="bg-white rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 w-full text-left hover:shadow-md hover:border-gray-200 transition-all"
                   >
-                    <span className="text-3xl">{cakeData?.emoji || result.emoji}</span>
+                    <span className="text-3xl">{fullData?.emoji || result.emoji}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-gray-800 truncate">{result.name}</p>
                       <p className="text-xs text-gray-400">{result.quizName} &middot; {result.trait}</p>
                     </div>
-                    <Cake className="w-4 h-4 text-gray-300 flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
                   </button>
                 );
               })}

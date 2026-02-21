@@ -22,14 +22,14 @@ const quizzes = [
     description: 'Find out which loyal companion reflects your true self.',
     icon: Dog,
     to: '/quiz/dog',
-    locked: true,
+    locked: false,
   },
   {
     title: 'What City Should You Live In?',
     description: 'Uncover the perfect city that matches your lifestyle traits.',
     icon: MapPin,
     to: '/quiz/city',
-    locked: true,
+    locked: false,
   },
 ];
 

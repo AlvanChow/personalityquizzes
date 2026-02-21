@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
 import UserMenu from '../components/UserMenu';
-import { Activity, Brain, CircleDashed, Cake, ArrowRight, Sparkles } from 'lucide-react';
+import { Activity, Dog, MapPin, Cake, ArrowRight, Sparkles } from 'lucide-react';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -22,27 +22,27 @@ export default function Landing() {
       featured: true
     },
     {
-      id: 'mbti',
-      name: 'MBTI (16 Types)',
-      description: 'Are you an INTJ or an ESFP? Find your Myers-Briggs type and understand your cognitive functions.',
-      icon: Brain,
-      theme: 'purple',
-      iconBg: 'bg-purple-50 text-purple-500',
-      buttonBg: 'bg-purple-500 hover:bg-purple-600',
-      buttonText: 'Take the MBTI',
-      action: () => navigate('/assessment'),
+      id: 'dog',
+      name: 'What Dog Breed Are You?',
+      description: 'Find out which loyal companion reflects your true self based on your personality traits.',
+      icon: Dog,
+      theme: 'sky',
+      iconBg: 'bg-sky-50 text-sky-500',
+      buttonBg: 'bg-sky-500 hover:bg-sky-600',
+      buttonText: hasCompleted ? 'Find Your Breed' : 'Take the Big 5 First',
+      action: () => navigate(hasCompleted ? '/quiz/dog' : '/assessment'),
       featured: false
     },
     {
-      id: 'enneagram',
-      name: 'Enneagram',
-      description: 'Discover which of the 9 interconnected personality types drives your deepest motivations and fears.',
-      icon: CircleDashed,
+      id: 'city',
+      name: 'What City Should You Live In?',
+      description: 'Uncover the perfect city that matches your lifestyle, energy, and personality traits.',
+      icon: MapPin,
       theme: 'teal',
       iconBg: 'bg-teal-50 text-teal-500',
       buttonBg: 'bg-teal-500 hover:bg-teal-600',
-      buttonText: 'Take the Enneagram',
-      action: () => navigate('/assessment'),
+      buttonText: hasCompleted ? 'Find Your City' : 'Take the Big 5 First',
+      action: () => navigate(hasCompleted ? '/quiz/city' : '/assessment'),
       featured: false
     },
     {
