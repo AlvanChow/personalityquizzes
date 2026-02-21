@@ -10,6 +10,10 @@ import DogQuiz from './pages/DogQuiz';
 import DogResult from './pages/DogResult';
 import CityQuiz from './pages/CityQuiz';
 import CityResult from './pages/CityResult';
+import MBTIQuiz from './pages/MBTIQuiz';
+import MBTIResult from './pages/MBTIResult';
+import EnneagramQuiz from './pages/EnneagramQuiz';
+import EnneagramResult from './pages/EnneagramResult';
 import Profile from './pages/Profile';
 
 export default function App() {
@@ -27,6 +31,10 @@ export default function App() {
             <Route path="/quiz/dog/result" element={<DogResult />} />
             <Route path="/quiz/city" element={<CityQuiz />} />
             <Route path="/quiz/city/result" element={<CityResult />} />
+            <Route path="/quiz/mbti" element={<MBTIQuiz />} />
+            <Route path="/quiz/mbti/result" element={<MBTIResult />} />
+            <Route path="/quiz/enneagram" element={<EnneagramQuiz />} />
+            <Route path="/quiz/enneagram/result" element={<EnneagramResult />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>
         </BigFiveProvider>

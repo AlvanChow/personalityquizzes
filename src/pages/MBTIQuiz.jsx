@@ -1,42 +1,22 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
-import { cakeQuestions } from '../data/cakeQuestions';
-import { getCakeResult } from '../data/cakeResults';
-import { useBigFive } from '../contexts/BigFiveContext';
+import { mbtiQuestions } from '../data/mbtiQuestions';
+import { getMBTIResult } from '../data/mbtiResults';
+import { computeMBTIScores } from '../utils/scoring';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { optionToAdjustment } from '../utils/scoring';
 
-export default function CakeQuiz() {
+export default function MBTIQuiz() {
   const navigate = useNavigate();
-  const { scores, hasCompleted, updateScores } = useBigFive();
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (!hasCompleted) navigate('/');
-  }, [hasCompleted, navigate]);
-
   const handleComplete = useCallback((answers) => {
-    const adjustments = {};
-    Object.values(answers).forEach(({ trait, value }) => {
-      const adj = optionToAdjustment(value);
-      adjustments[trait] = (adjustments[trait] || 0) + adj;
-    });
+    const scores = computeMBTIScores(answers);
+    const result = getMBTIResult(scores);
 
-    const newScores = {};
-    Object.entries(adjustments).forEach(([trait, adj]) => {
-      newScores[trait] = Math.min(100, Math.max(0, scores[trait] + adj));
-    });
-
-    updateScores(newScores);
-
-    const mergedScores = { ...scores, ...newScores };
-    const result = getCakeResult(mergedScores);
-    const resultKey = Object.entries(
-      { funfetti: 'Funfetti Cake', wedding: 'Elaborate Wedding Cake', matcha: 'Matcha Crepe Cake', redvelvet: 'Red Velvet Cake', lava: 'Chocolate Lava Cake', chocolate: 'Classic Chocolate Cake' }
-    ).find(([, name]) => name === result.name)?.[0] || 'chocolate';
+    localStorage.setItem('personalens_mbti', JSON.stringify({ scores, result }));
 
     if (user) {
       (async () => {
@@ -52,12 +32,10 @@ export default function CakeQuiz() {
           .update({
             quiz_results: {
               ...existing,
-              cake: {
-                resultKey,
-                name: result.name,
-                emoji: result.emoji,
-                trait: result.trait,
-                quizName: 'What Cake Are You?',
+              mbti: {
+                type: result.name,
+                nickname: result.nickname,
+                quizName: 'MBTI (16 Types)',
               },
             },
           })
@@ -65,8 +43,8 @@ export default function CakeQuiz() {
       })();
     }
 
-    navigate('/quiz/cake/result');
-  }, [scores, updateScores, navigate, user]);
+    navigate('/quiz/mbti/result');
+  }, [navigate, user]);
 
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {
     return question.options.map((opt) => (
@@ -86,11 +64,9 @@ export default function CakeQuiz() {
     ));
   }, []);
 
-  if (!hasCompleted) return null;
-
   return (
     <QuizShell
-      questions={cakeQuestions}
+      questions={mbtiQuestions}
       onComplete={handleComplete}
       renderOptions={renderOptions}
     />
