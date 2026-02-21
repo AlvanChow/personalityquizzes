@@ -20,26 +20,30 @@ export default function EnneagramQuiz() {
 
     if (user) {
       (async () => {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('quiz_results')
-          .eq('id', user.id)
-          .maybeSingle();
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('quiz_results')
+            .eq('id', user.id)
+            .maybeSingle();
 
-        const existing = profile?.quiz_results || {};
-        await supabase
-          .from('profiles')
-          .update({
-            quiz_results: {
-              ...existing,
-              enneagram: {
-                type: result.typeNumber,
-                nickname: result.nickname,
-                quizName: 'Enneagram',
+          const existing = profile?.quiz_results || {};
+          await supabase
+            .from('profiles')
+            .update({
+              quiz_results: {
+                ...existing,
+                enneagram: {
+                  type: result.typeNumber,
+                  nickname: result.nickname,
+                  quizName: 'Enneagram',
+                },
               },
-            },
-          })
-          .eq('id', user.id);
+            })
+            .eq('id', user.id);
+        } catch (err) {
+          console.error('Failed to save Enneagram quiz result:', err);
+        }
       })();
     }
 
