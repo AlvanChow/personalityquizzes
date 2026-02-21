@@ -23,6 +23,22 @@ export const cakeResults = {
     description: 'Your open, curious mind is always seeking the next interesting experience. You embrace the unconventional and find beauty in the unexpected. Like a Matcha Crepe Cake, you are layered, sophisticated, and refreshingly different from the crowd.',
     trait: 'Openness',
   },
+  redvelvet: {
+    name: 'Red Velvet Cake',
+    emoji: '🧁',
+    color: 'from-rose-100 to-rose-50',
+    accent: 'text-rose-500',
+    description: 'Your warm, generous spirit makes everyone around you feel valued and loved. You are the person who remembers birthdays, checks in on friends, and always puts others first. Like a Red Velvet Cake, you are rich with warmth, elegance, and a sweetness that runs deep.',
+    trait: 'Agreeableness',
+  },
+  lava: {
+    name: 'Chocolate Lava Cake',
+    emoji: '🌋',
+    color: 'from-coral-50 to-rose-50',
+    accent: 'text-coral-400',
+    description: 'You feel things deeply and with great intensity. Your emotional richness gives you incredible empathy and a creative spark that others admire. Like a Chocolate Lava Cake, beneath your composed exterior is a passionate, molten core that makes you truly unforgettable.',
+    trait: 'Neuroticism',
+  },
   chocolate: {
     name: 'Classic Chocolate Cake',
     emoji: '🍫',
@@ -34,8 +50,32 @@ export const cakeResults = {
 };
 
 export function getCakeResult(scores) {
-  if (scores.E > 60) return cakeResults.funfetti;
-  if (scores.C > 60) return cakeResults.wedding;
-  if (scores.O > 60) return cakeResults.matcha;
-  return cakeResults.chocolate;
+  const traitMap = {
+    E: 'funfetti',
+    C: 'wedding',
+    O: 'matcha',
+    A: 'redvelvet',
+    N: 'lava',
+  };
+
+  const traits = ['O', 'C', 'E', 'A', 'N'];
+  let maxTrait = traits[0];
+  let maxScore = scores[traits[0]];
+  let secondMax = 0;
+
+  for (const t of traits) {
+    if (scores[t] > maxScore) {
+      secondMax = maxScore;
+      maxScore = scores[t];
+      maxTrait = t;
+    } else if (scores[t] > secondMax && scores[t] !== maxScore) {
+      secondMax = scores[t];
+    }
+  }
+
+  if (maxScore - secondMax < 10) {
+    return cakeResults.chocolate;
+  }
+
+  return cakeResults[traitMap[maxTrait]];
 }

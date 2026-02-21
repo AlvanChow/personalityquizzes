@@ -7,7 +7,7 @@ import { useBigFive } from '../contexts/BigFiveContext';
 
 
 function optionToAdjustment(value) {
-  const map = { 1: -10, 2: -5, 3: 5, 4: 10 };
+  const map = { 1: -4, 2: -2, 3: 2, 4: 4 };
   return map[value] ?? 0;
 }
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Cake, Dog, MapPin, RotateCcw } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
+import UserMenu from '../components/UserMenu';
 import ScoreBar from '../components/ScoreBar';
 import QuizCard from '../components/QuizCard';
 
@@ -54,13 +55,16 @@ export default function Dashboard() {
           <button onClick={() => navigate('/')} className="text-xl font-extrabold tracking-tight text-gray-800">
             Persona<span className="text-sky-500">Lens</span>
           </button>
-          <button
-            onClick={handleReset}
-            className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Reset
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleReset}
+              className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset
+            </button>
+            <UserMenu />
+          </div>
         </div>
       </header>
 

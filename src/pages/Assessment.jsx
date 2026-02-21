@@ -5,20 +5,27 @@ import QuizShell from '../components/QuizShell';
 import { baselineQuestions, likertOptions } from '../data/baselineQuestions';
 import { useBigFive } from '../contexts/BigFiveContext';
 
-function likertToScore(value) {
-  const map = { 1: 0, 2: 25, 3: 50, 4: 75, 5: 100 };
-  return map[value] ?? 50;
-}
-
 export default function Assessment() {
   const navigate = useNavigate();
   const { completeBaseline } = useBigFive();
 
   const handleComplete = useCallback((answers) => {
-    const scores = {};
-    Object.values(answers).forEach(({ trait, value }) => {
-      scores[trait] = likertToScore(value);
+    const traitSums = {};
+    const traitCounts = {};
+
+    Object.entries(answers).forEach(([qId, { trait, value }]) => {
+      const q = baselineQuestions.find((bq) => bq.id === Number(qId));
+      const adjusted = q?.reversed ? 6 - value : value;
+      traitSums[trait] = (traitSums[trait] || 0) + adjusted;
+      traitCounts[trait] = (traitCounts[trait] || 0) + 1;
     });
+
+    const scores = {};
+    for (const trait of Object.keys(traitSums)) {
+      const avg = traitSums[trait] / traitCounts[trait];
+      scores[trait] = Math.round(((avg - 1) / 4) * 100);
+    }
+
     completeBaseline(scores);
     navigate('/dashboard');
   }, [completeBaseline, navigate]);

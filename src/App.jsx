@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import { BigFiveProvider } from './contexts/BigFiveContext';
 import Landing from './pages/Landing';
 import Assessment from './pages/Assessment';
@@ -8,16 +9,18 @@ import CakeResult from './pages/CakeResult';
 
 export default function App() {
   return (
-    <BigFiveProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/assessment" element={<Assessment />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/quiz/cake" element={<CakeQuiz />} />
-          <Route path="/quiz/cake/result" element={<CakeResult />} />
-        </Routes>
-      </BrowserRouter>
-    </BigFiveProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <BigFiveProvider>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/assessment" element={<Assessment />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/quiz/cake" element={<CakeQuiz />} />
+            <Route path="/quiz/cake/result" element={<CakeResult />} />
+          </Routes>
+        </BigFiveProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

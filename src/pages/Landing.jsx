@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
+import UserMenu from '../components/UserMenu';
 import { Activity, Brain, CircleDashed, Cake, ArrowRight, Sparkles } from 'lucide-react';
 
 export default function Landing() {
@@ -53,7 +54,7 @@ export default function Landing() {
       iconBg: 'bg-rose-50 text-rose-500',
       buttonBg: 'bg-rose-500 hover:bg-rose-600',
       buttonText: 'Find Your Cake',
-      action: () => navigate('/cake-quiz'),
+      action: () => navigate('/quiz/cake'),
       featured: true
     }
   ];
@@ -74,14 +75,17 @@ export default function Landing() {
             <Sparkles className="w-5 h-5 text-rose-400" />
             My Personality Quizzes
           </span>
-          {hasCompleted && (
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="text-sm font-semibold text-gray-600 hover:text-gray-900 bg-white px-5 py-2.5 rounded-full shadow-sm border border-gray-100 transition-all hover:shadow-md"
-            >
-              Back to Dashboard
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {hasCompleted && (
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="text-sm font-semibold text-gray-600 hover:text-gray-900 bg-white px-5 py-2.5 rounded-full shadow-sm border border-gray-100 transition-all hover:shadow-md"
+              >
+                Back to Dashboard
+              </button>
+            )}
+            <UserMenu />
+          </div>
         </div>
       </header>
 
