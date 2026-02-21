@@ -86,7 +86,7 @@ export default function Profile() {
             <span className="hidden sm:inline">Back</span>
           </button>
           <span className="text-xl font-extrabold tracking-tight text-gray-800">
-            Persona<span className="text-sky-500">Lens</span>
+            My Personality <span className="text-sky-500">Quizzes</span>
           </span>
           <div className="w-16" />
         </div>

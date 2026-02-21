@@ -53,7 +53,7 @@ export default function Dashboard() {
       <header className="px-6 py-4 border-b border-gray-100 bg-white/60 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <button onClick={() => navigate('/')} className="text-xl font-extrabold tracking-tight text-gray-800">
-            Persona<span className="text-sky-500">Lens</span>
+            My Personality <span className="text-sky-500">Quizzes</span>
           </button>
           <div className="flex items-center gap-4">
             <button
