@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Cake, Dog, MapPin, RotateCcw } from 'lucide-react';
+import { Cake, RotateCcw } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import UserMenu from '../components/UserMenu';
 import ScoreBar from '../components/ScoreBar';
@@ -15,20 +15,6 @@ const quizzes = [
     description: 'Discover which delicious cake matches your personality profile.',
     icon: Cake,
     to: '/quiz/cake',
-    locked: false,
-  },
-  {
-    title: 'What Dog Breed Are You?',
-    description: 'Find out which loyal companion reflects your true self.',
-    icon: Dog,
-    to: '/quiz/dog',
-    locked: false,
-  },
-  {
-    title: 'What City Should You Live In?',
-    description: 'Uncover the perfect city that matches your lifestyle traits.',
-    icon: MapPin,
-    to: '/quiz/city',
     locked: false,
   },
 ];
