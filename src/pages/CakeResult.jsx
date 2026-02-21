@@ -21,10 +21,10 @@ export default function CakeResult() {
   const result = getCakeResult(scores);
 
   async function handleShare() {
-    const text = `I got "${result.name}" on PersonaLens! My dominant trait: ${result.trait}. Find out what cake you are!`;
+    const text = `I got "${result.name}" on My Personality Quizzes! My dominant trait: ${result.trait}. Find out what cake you are!`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'PersonaLens Result', text });
+        await navigator.share({ title: 'My Personality Quizzes Result', text });
       } else {
         await navigator.clipboard.writeText(text);
       }
