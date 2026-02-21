@@ -6,14 +6,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { supabase } from '../lib/supabase';
 import { cakeResults } from '../data/cakeResults';
-import { dogResults } from '../data/dogResults';
-import { cityResults } from '../data/cityResults';
 import ScoreBar from '../components/ScoreBar';
 
 const quizResultMaps = {
   cake: { results: cakeResults, route: '/quiz/cake/result' },
-  dog: { results: dogResults, route: '/quiz/dog/result' },
-  city: { results: cityResults, route: '/quiz/city/result' },
 };
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
