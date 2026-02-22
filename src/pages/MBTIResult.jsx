@@ -40,17 +40,15 @@ function DimensionBar({ dim, score, delay }) {
 
 export default function MBTIResult() {
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
+  const [data] = useState(() => {
+    const raw = localStorage.getItem('personalens_mbti');
+    return raw ? JSON.parse(raw) : null;
+  });
   const [shareError, setShareError] = useState(null);
 
   useEffect(() => {
-    const raw = localStorage.getItem('personalens_mbti');
-    if (!raw) {
-      navigate('/');
-      return;
-    }
-    setData(JSON.parse(raw));
-  }, [navigate]);
+    if (!data) navigate('/');
+  }, [data, navigate]);
 
   if (!data) return null;
 

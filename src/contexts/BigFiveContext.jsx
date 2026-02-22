@@ -53,6 +53,7 @@ export function BigFiveProvider({ children }) {
 
   useEffect(() => {
     if (!user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setContextLoading(false);
       return;
     }
@@ -116,6 +117,7 @@ export function BigFiveProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useBigFive() {
   const ctx = useContext(BigFiveContext);
   if (!ctx) throw new Error('useBigFive must be used within BigFiveProvider');
