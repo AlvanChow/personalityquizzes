@@ -26,8 +26,17 @@ export default function UserMenu() {
         setOpen(false);
       }
     }
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   if (loading) {
@@ -58,7 +67,7 @@ export default function UserMenu() {
         {avatarUrl ? (
           <img
             src={avatarUrl}
-            alt=""
+            alt={`${displayName}'s avatar`}
             className="w-7 h-7 rounded-full object-cover"
             referrerPolicy="no-referrer"
           />

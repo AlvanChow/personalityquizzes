@@ -41,6 +41,7 @@ function DimensionBar({ dim, score, delay }) {
 export default function MBTIResult() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
+  const [shareError, setShareError] = useState(null);
 
   useEffect(() => {
     const raw = localStorage.getItem('personalens_mbti');
@@ -63,8 +64,10 @@ export default function MBTIResult() {
       } else {
         await navigator.clipboard.writeText(text);
       }
-    } catch {
-      // user cancelled
+    } catch (err) {
+      if (err?.name === 'AbortError') return;
+      console.error('Share failed:', err);
+      setShareError('Could not share. Please try copying manually.');
     }
   }
 
@@ -73,6 +76,7 @@ export default function MBTIResult() {
       <div className="max-w-lg mx-auto">
         <button
           onClick={() => navigate('/')}
+          aria-label="Back to all quizzes"
           className="flex items-center gap-2 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -127,6 +131,7 @@ export default function MBTIResult() {
         <div className="flex gap-3">
           <motion.button
             onClick={() => navigate('/')}
+            aria-label="Go to all quizzes"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors"
@@ -135,6 +140,7 @@ export default function MBTIResult() {
           </motion.button>
           <motion.button
             onClick={handleShare}
+            aria-label="Share your MBTI result"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-coral-400 to-coral-500 text-white font-bold shadow-[0_4px_16px_rgba(0,0,0,0.15)] flex items-center justify-center gap-2"
@@ -143,6 +149,11 @@ export default function MBTIResult() {
             Share Result
           </motion.button>
         </div>
+        {shareError && (
+          <p role="alert" className="mt-3 text-sm text-red-600 text-center font-medium">
+            {shareError}
+          </p>
+        )}
       </div>
     </div>
   );

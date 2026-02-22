@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
@@ -11,40 +11,41 @@ import { supabase } from '../lib/supabase';
 export default function MBTIQuiz() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [saveError, setSaveError] = useState(null);
 
-  const handleComplete = useCallback((answers) => {
+  const handleComplete = useCallback(async (answers) => {
     const scores = computeMBTIScores(answers);
     const result = getMBTIResult(scores);
 
     localStorage.setItem('personalens_mbti', JSON.stringify({ scores, result }));
 
     if (user) {
-      (async () => {
-        try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('quiz_results')
-            .eq('id', user.id)
-            .maybeSingle();
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('quiz_results')
+          .eq('id', user.id)
+          .maybeSingle();
 
-          const existing = profile?.quiz_results || {};
-          await supabase
-            .from('profiles')
-            .update({
-              quiz_results: {
-                ...existing,
-                mbti: {
-                  type: result.name,
-                  nickname: result.nickname,
-                  quizName: 'MBTI (16 Types)',
-                },
+        const existing = profile?.quiz_results || {};
+        await supabase
+          .from('profiles')
+          .update({
+            quiz_results: {
+              ...existing,
+              mbti: {
+                type: result.name,
+                nickname: result.nickname,
+                quizName: 'MBTI (16 Types)',
               },
-            })
-            .eq('id', user.id);
-        } catch (err) {
-          console.error('Failed to save MBTI quiz result:', err);
-        }
-      })();
+            },
+          })
+          .eq('id', user.id);
+      } catch (err) {
+        console.error('Failed to save MBTI quiz result:', err);
+        setSaveError('Could not save your result. Please check your connection and try again.');
+        return;
+      }
     }
 
     navigate('/quiz/mbti/result');
@@ -69,10 +70,17 @@ export default function MBTIQuiz() {
   }, []);
 
   return (
-    <QuizShell
-      questions={mbtiQuestions}
-      onComplete={handleComplete}
-      renderOptions={renderOptions}
-    />
+    <>
+      {saveError && (
+        <p role="alert" className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-50 border border-red-200 text-red-700 text-sm font-semibold px-5 py-3 rounded-2xl shadow-md z-50">
+          {saveError}
+        </p>
+      )}
+      <QuizShell
+        questions={mbtiQuestions}
+        onComplete={handleComplete}
+        renderOptions={renderOptions}
+      />
+    </>
   );
 }

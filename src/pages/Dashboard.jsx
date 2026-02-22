@@ -21,12 +21,13 @@ const quizzes = [
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { scores, hasCompleted, resetScores } = useBigFive();
+  const { scores, hasCompleted, loading, resetScores } = useBigFive();
 
   useEffect(() => {
-    if (!hasCompleted) navigate('/');
-  }, [hasCompleted, navigate]);
+    if (!loading && !hasCompleted) navigate('/');
+  }, [loading, hasCompleted, navigate]);
 
+  if (loading) return null;
   if (!hasCompleted) return null;
 
   function handleReset() {
