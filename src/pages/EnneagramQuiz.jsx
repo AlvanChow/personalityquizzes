@@ -37,6 +37,7 @@ export default function EnneagramQuiz() {
                 type: result.typeNumber,
                 nickname: result.nickname,
                 quizName: 'Enneagram',
+                scores,
               },
             },
           })

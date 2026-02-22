@@ -37,6 +37,7 @@ export default function MBTIQuiz() {
                 type: result.name,
                 nickname: result.nickname,
                 quizName: 'MBTI (16 Types)',
+                scores,
               },
             },
           })

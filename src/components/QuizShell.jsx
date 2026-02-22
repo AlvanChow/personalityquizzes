@@ -23,7 +23,6 @@ export default function QuizShell({ questions, onComplete, renderOptions }) {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const question = questions[currentIndex];
-  const progress = ((currentIndex) / questions.length) * 100;
 
   const handleAnswer = useCallback((value) => {
     if (isAnimating) return;

@@ -41,13 +41,14 @@ export function BigFiveProvider({ children }) {
 
   const syncToSupabase = useCallback(async (newScores, completed) => {
     if (!user) return;
-    await supabase
+    const { error } = await supabase
       .from('profiles')
       .update({
         big5_scores: newScores,
         baseline_completed: completed,
       })
       .eq('id', user.id);
+    if (error) console.error('Failed to sync Big Five scores to Supabase:', error);
   }, [user]);
 
   useEffect(() => {
