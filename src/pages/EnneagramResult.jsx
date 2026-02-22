@@ -41,17 +41,15 @@ const TYPE_NAMES = {
 
 export default function EnneagramResult() {
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
+  const [data] = useState(() => {
+    const raw = localStorage.getItem('personalens_enneagram');
+    return raw ? JSON.parse(raw) : null;
+  });
   const [shareError, setShareError] = useState(null);
 
   useEffect(() => {
-    const raw = localStorage.getItem('personalens_enneagram');
-    if (!raw) {
-      navigate('/');
-      return;
-    }
-    setData(JSON.parse(raw));
-  }, [navigate]);
+    if (!data) navigate('/');
+  }, [data, navigate]);
 
   if (!data) return null;
 
