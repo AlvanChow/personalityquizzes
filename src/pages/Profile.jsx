@@ -98,7 +98,7 @@ export default function Profile() {
           {avatarUrl ? (
             <img
               src={avatarUrl}
-              alt=""
+              alt={`${displayName}'s avatar`}
               className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white mb-4"
               referrerPolicy="no-referrer"
             />
@@ -167,13 +167,19 @@ export default function Profile() {
               {completedQuizzes.map(([quizKey, result]) => {
                 const quizMap = quizResultMaps[quizKey];
                 const fullData = quizMap?.results?.[result.resultKey];
+                const isClickable = !!(quizMap?.route && hasCompleted);
                 return (
                   <button
                     key={quizKey}
                     onClick={() => {
-                      if (quizMap?.route && hasCompleted) navigate(quizMap.route);
+                      if (isClickable) navigate(quizMap.route);
                     }}
-                    className="bg-white rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 w-full text-left hover:shadow-md hover:border-gray-200 transition-all"
+                    aria-disabled={!isClickable}
+                    className={`bg-white rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 w-full text-left transition-all
+                      ${isClickable
+                        ? 'hover:shadow-md hover:border-gray-200 cursor-pointer'
+                        : 'opacity-60 cursor-default'
+                      }`}
                   >
                     <span className="text-3xl">{fullData?.emoji || result.emoji}</span>
                     <div className="flex-1 min-w-0">

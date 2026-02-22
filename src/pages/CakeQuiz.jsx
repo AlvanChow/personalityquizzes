@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
@@ -13,12 +13,13 @@ export default function CakeQuiz() {
   const navigate = useNavigate();
   const { scores, hasCompleted, updateScores } = useBigFive();
   const { user } = useAuth();
+  const [saveError, setSaveError] = useState(null);
 
   useEffect(() => {
     if (!hasCompleted) navigate('/');
   }, [hasCompleted, navigate]);
 
-  const handleComplete = useCallback((answers) => {
+  const handleComplete = useCallback(async (answers) => {
     const adjustments = {};
     Object.values(answers).forEach(({ trait, value }) => {
       const adj = optionToAdjustment(value);
@@ -37,34 +38,34 @@ export default function CakeQuiz() {
     const resultKey = cakeResultNameToKey[result.name] ?? 'chocolate';
 
     if (user) {
-      (async () => {
-        try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('quiz_results')
-            .eq('id', user.id)
-            .maybeSingle();
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('quiz_results')
+          .eq('id', user.id)
+          .maybeSingle();
 
-          const existing = profile?.quiz_results || {};
-          await supabase
-            .from('profiles')
-            .update({
-              quiz_results: {
-                ...existing,
-                cake: {
-                  resultKey,
-                  name: result.name,
-                  emoji: result.emoji,
-                  trait: result.trait,
-                  quizName: 'What Cake Are You?',
-                },
+        const existing = profile?.quiz_results || {};
+        await supabase
+          .from('profiles')
+          .update({
+            quiz_results: {
+              ...existing,
+              cake: {
+                resultKey,
+                name: result.name,
+                emoji: result.emoji,
+                trait: result.trait,
+                quizName: 'What Cake Are You?',
               },
-            })
-            .eq('id', user.id);
-        } catch (err) {
-          console.error('Failed to save cake quiz result:', err);
-        }
-      })();
+            },
+          })
+          .eq('id', user.id);
+      } catch (err) {
+        console.error('Failed to save cake quiz result:', err);
+        setSaveError('Could not save your result. Please check your connection and try again.');
+        return;
+      }
     }
 
     navigate('/quiz/cake/result');
@@ -91,10 +92,17 @@ export default function CakeQuiz() {
   if (!hasCompleted) return null;
 
   return (
-    <QuizShell
-      questions={cakeQuestions}
-      onComplete={handleComplete}
-      renderOptions={renderOptions}
-    />
+    <>
+      {saveError && (
+        <p role="alert" className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-50 border border-red-200 text-red-700 text-sm font-semibold px-5 py-3 rounded-2xl shadow-md z-50">
+          {saveError}
+        </p>
+      )}
+      <QuizShell
+        questions={cakeQuestions}
+        onComplete={handleComplete}
+        renderOptions={renderOptions}
+      />
+    </>
   );
 }

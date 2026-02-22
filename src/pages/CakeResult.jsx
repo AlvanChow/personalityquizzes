@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Share2 } from 'lucide-react';
@@ -19,6 +19,7 @@ export default function CakeResult() {
   if (!hasCompleted) return null;
 
   const result = getCakeResult(scores);
+  const [shareError, setShareError] = useState(null);
 
   async function handleShare() {
     const text = `I got "${result.name}" on My Personality Quizzes! My dominant trait: ${result.trait}. Find out what cake you are!`;
@@ -28,8 +29,10 @@ export default function CakeResult() {
       } else {
         await navigator.clipboard.writeText(text);
       }
-    } catch {
-      // user cancelled
+    } catch (err) {
+      if (err?.name === 'AbortError') return;
+      console.error('Share failed:', err);
+      setShareError('Could not share. Please try copying manually.');
     }
   }
 
@@ -38,6 +41,7 @@ export default function CakeResult() {
       <div className="max-w-lg mx-auto">
         <button
           onClick={() => navigate('/dashboard')}
+          aria-label="Back to Dashboard"
           className="flex items-center gap-2 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -89,6 +93,7 @@ export default function CakeResult() {
         <div className="flex gap-3">
           <motion.button
             onClick={() => navigate('/dashboard')}
+            aria-label="Go to Dashboard"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors"
@@ -97,6 +102,7 @@ export default function CakeResult() {
           </motion.button>
           <motion.button
             onClick={handleShare}
+            aria-label="Share your cake quiz result"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-sky-400 to-sky-500 text-white font-bold shadow-[0_4px_16px_rgba(26,127,212,0.3)] flex items-center justify-center gap-2"
@@ -105,6 +111,11 @@ export default function CakeResult() {
             Share Result
           </motion.button>
         </div>
+        {shareError && (
+          <p role="alert" className="mt-3 text-sm text-red-600 text-center font-medium">
+            {shareError}
+          </p>
+        )}
       </div>
     </div>
   );

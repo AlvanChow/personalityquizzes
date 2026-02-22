@@ -42,6 +42,7 @@ const TYPE_NAMES = {
 export default function EnneagramResult() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
+  const [shareError, setShareError] = useState(null);
 
   useEffect(() => {
     const raw = localStorage.getItem('personalens_enneagram');
@@ -62,15 +63,17 @@ export default function EnneagramResult() {
     .slice(0, 5);
 
   async function handleShare() {
-    const text = `I\'m a ${result.name} on the Enneagram! My core desire: ${result.coreDesire}. Find out your type!`;
+    const text = `I'm a ${result.name} on the Enneagram! My core desire: ${result.coreDesire}. Find out your type!`;
     try {
       if (navigator.share) {
         await navigator.share({ title: 'My Enneagram Result', text });
       } else {
         await navigator.clipboard.writeText(text);
       }
-    } catch {
-      // user cancelled
+    } catch (err) {
+      if (err?.name === 'AbortError') return;
+      console.error('Share failed:', err);
+      setShareError('Could not share. Please try copying manually.');
     }
   }
 
@@ -79,6 +82,7 @@ export default function EnneagramResult() {
       <div className="max-w-lg mx-auto">
         <button
           onClick={() => navigate('/')}
+          aria-label="Back to all quizzes"
           className="flex items-center gap-2 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -148,6 +152,7 @@ export default function EnneagramResult() {
         <div className="flex gap-3">
           <motion.button
             onClick={() => navigate('/')}
+            aria-label="Go to all quizzes"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors"
@@ -156,6 +161,7 @@ export default function EnneagramResult() {
           </motion.button>
           <motion.button
             onClick={handleShare}
+            aria-label="Share your Enneagram result"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-mint-400 to-mint-500 text-white font-bold shadow-[0_4px_16px_rgba(0,0,0,0.15)] flex items-center justify-center gap-2"
@@ -164,6 +170,11 @@ export default function EnneagramResult() {
             Share Result
           </motion.button>
         </div>
+        {shareError && (
+          <p role="alert" className="mt-3 text-sm text-red-600 text-center font-medium">
+            {shareError}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -27,6 +27,8 @@ export function BigFiveProvider({ children }) {
   const { user } = useAuth();
   const [scores, setScores] = useState(readLocal);
   const [hasCompleted, setHasCompleted] = useState(readLocalCompleted);
+  const [contextLoading, setContextLoading] = useState(true);
+  const hasCompletedRef = useRef(hasCompleted);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
@@ -34,6 +36,7 @@ export function BigFiveProvider({ children }) {
 
   useEffect(() => {
     localStorage.setItem(`${STORAGE_KEY}_completed`, String(hasCompleted));
+    hasCompletedRef.current = hasCompleted;
   }, [hasCompleted]);
 
   const syncToSupabase = useCallback(async (newScores, completed) => {
@@ -48,7 +51,10 @@ export function BigFiveProvider({ children }) {
   }, [user]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setContextLoading(false);
+      return;
+    }
     let cancelled = false;
 
     (async () => {
@@ -76,6 +82,7 @@ export function BigFiveProvider({ children }) {
             .eq('id', user.id);
         }
       }
+      if (!cancelled) setContextLoading(false);
     })();
 
     return () => { cancelled = true; };
@@ -84,7 +91,7 @@ export function BigFiveProvider({ children }) {
   function updateScores(newScores) {
     setScores((prev) => {
       const merged = { ...prev, ...newScores };
-      syncToSupabase(merged, hasCompleted);
+      syncToSupabase(merged, hasCompletedRef.current);
       return merged;
     });
   }
@@ -102,7 +109,7 @@ export function BigFiveProvider({ children }) {
   }
 
   return (
-    <BigFiveContext.Provider value={{ scores, hasCompleted, updateScores, completeBaseline, resetScores }}>
+    <BigFiveContext.Provider value={{ scores, hasCompleted, loading: contextLoading, updateScores, completeBaseline, resetScores }}>
       {children}
     </BigFiveContext.Provider>
   );

@@ -323,3 +323,93 @@ describe('computeEnneagramScores – accumulation', () => {
     }
   });
 });
+
+// ─────────────────────────────────────────────
+// computeBaselineScores – incomplete / missing traits
+// ─────────────────────────────────────────────
+describe('computeBaselineScores – incomplete/missing traits', () => {
+  it('returns an empty object when answers is empty', () => {
+    const scores = computeBaselineScores({}, stubQuestions);
+    expect(scores).toEqual({});
+  });
+
+  it('omits traits that have no answers', () => {
+    // Only O answered; C, E, A, N should be absent
+    const answers = { 1: { trait: 'O', value: 3 } };
+    const scores = computeBaselineScores(answers, stubQuestions);
+    expect(scores).toHaveProperty('O');
+    expect(scores).not.toHaveProperty('C');
+    expect(scores).not.toHaveProperty('E');
+    expect(scores).not.toHaveProperty('A');
+    expect(scores).not.toHaveProperty('N');
+  });
+
+  it('treats an unmatched question id (not in questions array) as non-reversed', () => {
+    // qId 999 is not in stubQuestions; q?.reversed is undefined → falsy → no flip
+    const answers = { 999: { trait: 'O', value: 2 } };
+    const scores = computeBaselineScores(answers, stubQuestions);
+    // adjusted = 2 (no flip) → score = 25
+    expect(scores.O).toBe(25);
+  });
+});
+
+// ─────────────────────────────────────────────
+// computeMBTIScores – missing dimensions
+// ─────────────────────────────────────────────
+describe('computeMBTIScores – missing dimensions', () => {
+  it('returns an empty object when answers is empty', () => {
+    const scores = computeMBTIScores({});
+    expect(scores).toEqual({});
+  });
+
+  it('omits dimensions that have no answers', () => {
+    // Only IE answered
+    const answers = { 1: { trait: 'IE', value: 2 } };
+    const scores = computeMBTIScores(answers);
+    expect(scores).toHaveProperty('IE');
+    expect(scores).not.toHaveProperty('SN');
+    expect(scores).not.toHaveProperty('TF');
+    expect(scores).not.toHaveProperty('JP');
+  });
+
+  it('scores a single-question dimension correctly', () => {
+    // avg = 1 → score = 0
+    const answers = { 1: { trait: 'SN', value: 1 } };
+    const scores = computeMBTIScores(answers);
+    expect(scores.SN).toBe(0);
+  });
+});
+
+// ─────────────────────────────────────────────
+// computeEnneagramScores – missing types
+// ─────────────────────────────────────────────
+describe('computeEnneagramScores – missing types', () => {
+  it('returns an empty object when answers is empty', () => {
+    const scores = computeEnneagramScores({});
+    expect(scores).toEqual({});
+  });
+
+  it('only includes types that have at least one answer', () => {
+    // Only types '1' and '3' answered
+    const answers = {
+      1: { trait: '1', value: 3 },
+      2: { trait: '3', value: 2 },
+    };
+    const scores = computeEnneagramScores(answers);
+    expect(scores).toHaveProperty('1');
+    expect(scores).toHaveProperty('3');
+    // Types 2, 4-9 are not present
+    ['2', '4', '5', '6', '7', '8', '9'].forEach((t) => {
+      expect(scores).not.toHaveProperty(t);
+    });
+  });
+
+  it('does not pre-seed any type to 0 (no zero-initialization)', () => {
+    // A freshly returned scores object from a single-type input should
+    // have exactly one key, not 9 keys with the rest being 0
+    const answers = { 1: { trait: '5', value: 4 } };
+    const scores = computeEnneagramScores(answers);
+    expect(Object.keys(scores)).toHaveLength(1);
+    expect(scores['5']).toBe(4);
+  });
+});
