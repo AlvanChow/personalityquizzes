@@ -16,10 +16,11 @@ export default function CakeResult() {
     if (!hasCompleted) navigate('/');
   }, [hasCompleted, navigate]);
 
+  const [shareError, setShareError] = useState(null);
+
   if (!hasCompleted) return null;
 
   const result = getCakeResult(scores);
-  const [shareError, setShareError] = useState(null);
 
   async function handleShare() {
     const text = `I got "${result.name}" on My Personality Quizzes! My dominant trait: ${result.trait}. Find out what cake you are!`;
