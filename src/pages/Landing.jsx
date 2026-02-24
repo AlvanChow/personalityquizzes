@@ -99,16 +99,6 @@ export default function Landing() {
       <main className="flex-1 flex flex-col items-center px-6 pb-24 relative z-10">
 
         <div className="text-center max-w-3xl mx-auto mt-12 md:mt-16 mb-20">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", bounce: 0.5 }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border-2 border-rose-100 shadow-sm text-gray-600 text-sm font-bold mb-8"
-          >
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-400 animate-pulse" />
-            Your journey starts here!
-          </motion.div>
-
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
