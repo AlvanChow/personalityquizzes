@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
   async function signOut() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    setUser(null);
+    // onAuthStateChange already sets user to null; no need to do it here too.
   }
 
   return (

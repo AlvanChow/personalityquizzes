@@ -98,9 +98,13 @@ export default function UserMenu() {
             My Profile
           </button>
           <button
-            onClick={() => {
+            onClick={async () => {
               setOpen(false);
-              signOut();
+              try {
+                await signOut();
+              } catch (err) {
+                console.error('Sign out failed:', err);
+              }
             }}
             className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors border-t border-gray-100"
           >

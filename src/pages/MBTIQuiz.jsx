@@ -21,27 +21,18 @@ export default function MBTIQuiz() {
 
     if (user) {
       try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('quiz_results')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        const existing = profile?.quiz_results || {};
-        await supabase
-          .from('profiles')
-          .update({
-            quiz_results: {
-              ...existing,
-              mbti: {
-                type: result.name,
-                nickname: result.nickname,
-                quizName: 'MBTI (16 Types)',
-                scores,
-              },
-            },
-          })
-          .eq('id', user.id);
+        const { error } = await supabase.rpc('upsert_quiz_result', {
+          p_user_id: user.id,
+          p_quiz_key: 'mbti',
+          p_result: {
+            resultKey: result.name,
+            name: `${result.name} — ${result.nickname}`,
+            emoji: result.emoji,
+            trait: result.nickname,
+            quizName: 'MBTI (16 Types)',
+          },
+        });
+        if (error) throw error;
       } catch (err) {
         console.error('Failed to save MBTI quiz result:', err);
         setSaveError('Could not save your result. Please check your connection and try again.');
