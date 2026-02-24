@@ -1,8 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "personalityquizzes",
-  "compatibility_date": "2025-09-27",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_date": "2026-02-24",
   "observability": {
     "enabled": true
   },
