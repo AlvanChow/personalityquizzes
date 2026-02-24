@@ -2,24 +2,14 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const slideVariants = {
-  enter: (direction) => ({
-    x: direction > 0 ? 300 : -300,
-    opacity: 0,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-  },
-  exit: (direction) => ({
-    x: direction < 0 ? 300 : -300,
-    opacity: 0,
-  }),
+  enter: { opacity: 0 },
+  center: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 export default function QuizShell({ questions, onComplete, renderOptions }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [direction, setDirection] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const question = questions[currentIndex];
@@ -29,7 +19,6 @@ export default function QuizShell({ questions, onComplete, renderOptions }) {
 
     const newAnswers = { ...answers, [question.id]: { trait: question.trait, value } };
     setAnswers(newAnswers);
-    setDirection(1);
     setIsAnimating(true);
 
     if (currentIndex < questions.length - 1) {
@@ -43,15 +32,14 @@ export default function QuizShell({ questions, onComplete, renderOptions }) {
     <div className="min-h-screen flex flex-col bg-cream-50">
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-lg">
-          <AnimatePresence mode="wait" custom={direction}>
+          <AnimatePresence mode="wait">
             <motion.div
               key={question.id}
-              custom={direction}
               variants={slideVariants}
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              transition={{ duration: 0.12, ease: 'easeInOut' }}
               onAnimationComplete={(definition) => {
                 if (definition === 'center') setIsAnimating(false);
               }}
