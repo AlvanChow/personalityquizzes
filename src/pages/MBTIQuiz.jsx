@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
@@ -7,11 +7,17 @@ import { getMBTIResult } from '../data/mbtiResults';
 import { computeMBTIScores } from '../utils/scoring';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { track } from '../utils/analytics';
 
 export default function MBTIQuiz() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [saveError, setSaveError] = useState(null);
+  const startTimeRef = useRef(null);
+
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+  }, []);
 
   const handleComplete = useCallback(async (answers) => {
     const scores = computeMBTIScores(answers);
@@ -41,7 +47,11 @@ export default function MBTIQuiz() {
       }
     }
 
-    navigate('/quiz/mbti/result');
+    const duration_ms = startTimeRef.current ? Date.now() - startTimeRef.current : null;
+    track('quiz_completed', { quiz: 'mbti', result_key: result.name, duration_ms }, user?.id ?? null);
+
+    // Replace the quiz in browser history so the back button skips it.
+    navigate('/quiz/mbti/result', { replace: true });
   }, [navigate, user]);
 
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {
@@ -73,6 +83,8 @@ export default function MBTIQuiz() {
         questions={mbtiQuestions}
         onComplete={handleComplete}
         renderOptions={renderOptions}
+        quizKey="mbti"
+        userId={user?.id ?? null}
       />
     </>
   );
