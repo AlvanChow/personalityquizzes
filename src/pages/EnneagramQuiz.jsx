@@ -40,7 +40,8 @@ export default function EnneagramQuiz() {
       }
     }
 
-    navigate('/quiz/enneagram/result');
+    // Replace the quiz in browser history so the back button skips it.
+    navigate('/quiz/enneagram/result', { replace: true });
   }, [navigate, user]);
 
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {

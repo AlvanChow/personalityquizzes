@@ -37,8 +37,10 @@ export default function CakeQuiz() {
     const result = getCakeResult(mergedScores);
     const resultKey = cakeResultNameToKey[result.name] ?? 'chocolate';
 
-    // Persist result so CakeResult can display it without recomputing from live scores.
-    localStorage.setItem('personalens_cake', JSON.stringify({ result }));
+    // Persist result (with resultKey) so CakeResult can display it without recomputing
+    // from live scores, and so the guest-sync logic in BigFiveContext can upload it
+    // after login without needing to re-derive the key.
+    localStorage.setItem('personalens_cake', JSON.stringify({ result, resultKey }));
 
     if (user) {
       try {
@@ -61,7 +63,8 @@ export default function CakeQuiz() {
       }
     }
 
-    navigate('/quiz/cake/result');
+    // Replace the quiz in browser history so the back button skips it.
+    navigate('/quiz/cake/result', { replace: true });
   }, [scores, updateScores, navigate, user]);
 
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {

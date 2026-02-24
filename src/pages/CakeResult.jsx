@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Share2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { getCakeResult } from '../data/cakeResults';
 import ScoreBar from '../components/ScoreBar';
@@ -105,6 +105,16 @@ export default function CakeResult() {
 
         <div className="flex gap-3">
           <motion.button
+            onClick={() => navigate('/quiz/cake')}
+            aria-label="Retake the Cake quiz"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors flex items-center justify-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Retake
+          </motion.button>
+          <motion.button
             onClick={() => navigate('/dashboard')}
             aria-label="Go to Dashboard"
             whileHover={{ scale: 1.02 }}
@@ -121,7 +131,7 @@ export default function CakeResult() {
             className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-sky-400 to-sky-500 text-white font-bold shadow-[0_4px_16px_rgba(26,127,212,0.3)] flex items-center justify-center gap-2"
           >
             <Share2 className="w-4 h-4" />
-            Share Result
+            Share
           </motion.button>
         </div>
         {shareError && (

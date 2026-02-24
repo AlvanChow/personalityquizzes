@@ -40,7 +40,8 @@ export default function MBTIQuiz() {
       }
     }
 
-    navigate('/quiz/mbti/result');
+    // Replace the quiz in browser history so the back button skips it.
+    navigate('/quiz/mbti/result', { replace: true });
   }, [navigate, user]);
 
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {
