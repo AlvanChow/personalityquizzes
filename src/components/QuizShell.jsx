@@ -41,7 +41,35 @@ export default function QuizShell({ questions, onComplete, renderOptions }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-cream-50">
-      <div className="w-full px-6 pt-6">
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-lg">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={question.id}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              onAnimationComplete={(definition) => {
+                if (definition === 'center') setIsAnimating(false);
+              }}
+              className="w-full"
+            >
+              <h2 className="text-lg font-semibold text-gray-700 text-center mb-8 leading-snug">
+                {question.text}
+              </h2>
+
+              <div className="flex flex-col gap-3">
+                {renderOptions(question, handleAnswer, answers[question.id]?.value)}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <div className="w-full px-6 pb-6">
         <div className="max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-sky-500">
@@ -59,34 +87,6 @@ export default function QuizShell({ questions, onComplete, renderOptions }) {
               transition={{ duration: 0.4, ease: 'easeOut' }}
             />
           </div>
-        </div>
-      </div>
-
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-lg">
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={question.id}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              onAnimationComplete={(definition) => {
-                if (definition === 'center') setIsAnimating(false);
-              }}
-              className="w-full"
-            >
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-10 leading-snug">
-                {question.text}
-              </h2>
-
-              <div className="flex flex-col gap-3">
-                {renderOptions(question, handleAnswer, answers[question.id]?.value)}
-              </div>
-            </motion.div>
-          </AnimatePresence>
         </div>
       </div>
     </div>

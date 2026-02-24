@@ -30,6 +30,7 @@ export default function MBTIQuiz() {
             emoji: result.emoji,
             trait: result.nickname,
             quizName: 'MBTI (16 Types)',
+            scores,
           },
         });
         if (error) throw error;
