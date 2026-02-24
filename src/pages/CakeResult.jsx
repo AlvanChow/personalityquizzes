@@ -24,7 +24,7 @@ export default function CakeResult() {
   });
 
   useEffect(() => {
-    if (!hasCompleted) navigate('/');
+    if (!hasCompleted) navigate('/assessment');
   }, [hasCompleted, navigate]);
 
   const [shareError, setShareError] = useState(null);

@@ -16,7 +16,7 @@ export default function CakeQuiz() {
   const [saveError, setSaveError] = useState(null);
 
   useEffect(() => {
-    if (!hasCompleted) navigate('/');
+    if (!hasCompleted) navigate('/assessment');
   }, [hasCompleted, navigate]);
 
   const handleComplete = useCallback(async (answers) => {

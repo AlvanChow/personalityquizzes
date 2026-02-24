@@ -51,13 +51,14 @@ export function BigFiveProvider({ children }) {
   }, [user]);
 
   useEffect(() => {
-    if (!user) {
-      setContextLoading(false);
-      return;
-    }
     let cancelled = false;
 
     (async () => {
+      if (!user) {
+        if (!cancelled) setContextLoading(false);
+        return;
+      }
+
       const { data } = await supabase
         .from('profiles')
         .select('big5_scores, baseline_completed')
