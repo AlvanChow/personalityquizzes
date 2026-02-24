@@ -2,12 +2,12 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 
-export default function QuizCard({ title, description, icon: Icon, to, locked = false }) {
+export default function QuizCard({ title, description, icon: Icon, to, locked = false, onBeforeNavigate }) {
   const navigate = useNavigate();
 
   return (
     <motion.button
-      onClick={() => !locked && navigate(to)}
+      onClick={() => { if (locked) return; onBeforeNavigate?.(to); navigate(to); }}
       disabled={locked}
       whileHover={locked ? {} : { y: -4, scale: 1.02 }}
       whileTap={locked ? {} : { scale: 0.98 }}

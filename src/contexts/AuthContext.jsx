@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { track } from '../utils/analytics';
 
 const AuthContext = createContext(null);
 
@@ -13,14 +14,20 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      // Guard on SIGNED_IN specifically — INITIAL_SESSION fires on every page
+      // load for returning users and must not be counted as a new login.
+      if (event === 'SIGNED_IN' && session?.user) {
+        track('auth_sign_in_completed', {}, session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   async function signInWithGoogle() {
+    track('auth_sign_in_started', {}, null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -31,6 +38,7 @@ export function AuthProvider({ children }) {
   }
 
   async function signOut() {
+    track('auth_sign_out', {}, user?.id ?? null);
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     // onAuthStateChange already sets user to null; no need to do it here too.

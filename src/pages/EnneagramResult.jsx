@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Share2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { track } from '../utils/analytics';
 
 const MAX_SCORE_PER_TYPE = 12; // 3 questions × 4 max points
 
@@ -41,6 +43,7 @@ const TYPE_NAMES = {
 
 export default function EnneagramResult() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [data] = useState(() => {
     const raw = localStorage.getItem('personalens_enneagram');
     return raw ? JSON.parse(raw) : null;
@@ -50,6 +53,13 @@ export default function EnneagramResult() {
   useEffect(() => {
     if (!data) navigate('/');
   }, [data, navigate]);
+
+  const viewedRef = useRef(false);
+  useEffect(() => {
+    if (viewedRef.current || !data) return;
+    viewedRef.current = true;
+    track('quiz_result_viewed', { quiz: 'enneagram' }, user?.id ?? null);
+  }, [data, user?.id]);
 
   if (!data) return null;
 
@@ -149,6 +159,16 @@ export default function EnneagramResult() {
 
         <div className="flex gap-3">
           <motion.button
+            onClick={() => { track('quiz_retaken', { quiz: 'enneagram' }, user?.id ?? null); navigate('/quiz/enneagram'); }}
+            aria-label="Retake the Enneagram quiz"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors flex items-center justify-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Retake
+          </motion.button>
+          <motion.button
             onClick={() => navigate('/')}
             aria-label="Go to all quizzes"
             whileHover={{ scale: 1.02 }}
@@ -165,7 +185,7 @@ export default function EnneagramResult() {
             className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-mint-400 to-mint-500 text-white font-bold shadow-[0_4px_16px_rgba(0,0,0,0.15)] flex items-center justify-center gap-2"
           >
             <Share2 className="w-4 h-4" />
-            Share Result
+            Share
           </motion.button>
         </div>
         {shareError && (

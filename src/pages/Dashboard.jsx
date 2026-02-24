@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Cake, Brain, CircleDashed, RotateCcw } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
+import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
 import QuizCard from '../components/QuizCard';
+import { track } from '../utils/analytics';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 
@@ -158,6 +160,7 @@ const traitData = {
 
 const quizzes = [
   {
+    quizKey: 'cake',
     title: 'What Cake Are You?',
     description: 'Discover which delicious cake matches your personality profile.',
     icon: Cake,
@@ -165,6 +168,7 @@ const quizzes = [
     locked: false,
   },
   {
+    quizKey: 'mbti',
     title: 'MBTI (16 Types)',
     description: 'Find your Myers-Briggs type and understand your cognitive style.',
     icon: Brain,
@@ -172,6 +176,7 @@ const quizzes = [
     locked: false,
   },
   {
+    quizKey: 'enneagram',
     title: 'Enneagram',
     description: 'Discover which of the 9 types drives your deepest motivations.',
     icon: CircleDashed,
@@ -187,6 +192,7 @@ function getRange(data, score) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { scores, hasCompleted, loading, resetScores } = useBigFive();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!loading && !hasCompleted) navigate('/');
@@ -296,7 +302,13 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {quizzes.map((quiz) => (
-              <QuizCard key={quiz.title} {...quiz} />
+              <QuizCard
+                key={quiz.title}
+                {...quiz}
+                onBeforeNavigate={() =>
+                  track('quiz_card_clicked', { quiz: quiz.quizKey, from: 'dashboard' }, user?.id ?? null)
+                }
+              />
             ))}
           </div>
         </motion.div>

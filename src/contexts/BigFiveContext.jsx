@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
+import { track } from '../utils/analytics';
 
 const STORAGE_KEY = 'personalens_bigfive';
 const defaultScores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
@@ -20,6 +21,61 @@ function readLocalCompleted() {
     return localStorage.getItem(`${STORAGE_KEY}_completed`) === 'true';
   } catch {
     return false;
+  }
+}
+
+function readLocalJson(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * After login, upload any quiz results that were completed as a guest and are
+ * not yet in the user's Supabase profile. Each localStorage entry already uses
+ * the same normalized shape written by the quiz completion handlers.
+ */
+async function syncGuestQuizResults(userId, remoteResults) {
+  const tasks = [];
+
+  const cakeData = readLocalJson('personalens_cake');
+  if (cakeData?.resultKey && !remoteResults.cake) {
+    const r = cakeData.result;
+    tasks.push(supabase.rpc('upsert_quiz_result', {
+      p_user_id: userId,
+      p_quiz_key: 'cake',
+      p_result: { resultKey: cakeData.resultKey, name: r.name, emoji: r.emoji, trait: r.trait, quizName: 'What Cake Are You?' },
+    }));
+  }
+
+  const mbtiData = readLocalJson('personalens_mbti');
+  if (mbtiData?.result && !remoteResults.mbti) {
+    const r = mbtiData.result;
+    tasks.push(supabase.rpc('upsert_quiz_result', {
+      p_user_id: userId,
+      p_quiz_key: 'mbti',
+      p_result: { resultKey: r.name, name: `${r.name} — ${r.nickname}`, emoji: r.emoji, trait: r.nickname, quizName: 'MBTI (16 Types)' },
+    }));
+  }
+
+  const enneagramData = readLocalJson('personalens_enneagram');
+  if (enneagramData?.result && !remoteResults.enneagram) {
+    const r = enneagramData.result;
+    tasks.push(supabase.rpc('upsert_quiz_result', {
+      p_user_id: userId,
+      p_quiz_key: 'enneagram',
+      p_result: { resultKey: r.typeNumber, name: r.name, emoji: r.emoji, trait: r.nickname, quizName: 'Enneagram' },
+    }));
+  }
+
+  if (tasks.length > 0) {
+    const results = await Promise.all(tasks);
+    results.forEach(({ error }) => {
+      if (error) console.error('Failed to sync guest quiz result to Supabase:', error);
+    });
   }
 }
 
@@ -61,7 +117,7 @@ export function BigFiveProvider({ children }) {
 
       const { data } = await supabase
         .from('profiles')
-        .select('big5_scores, baseline_completed')
+        .select('big5_scores, baseline_completed, quiz_results')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -83,6 +139,10 @@ export function BigFiveProvider({ children }) {
             .eq('id', user.id);
         }
       }
+
+      // Upload any quiz results completed as a guest that aren't yet in Supabase.
+      await syncGuestQuizResults(user.id, data?.quiz_results || {});
+
       if (!cancelled) setContextLoading(false);
     })();
 
@@ -112,6 +172,7 @@ export function BigFiveProvider({ children }) {
     localStorage.removeItem('personalens_enneagram');
     // Reset quiz_results in Supabase along with the Big Five fields.
     syncToSupabase(defaultScores, false, {});
+    track('dashboard_reset', {}, user?.id ?? null);
   }
 
   return (
