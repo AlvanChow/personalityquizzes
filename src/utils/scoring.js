@@ -1,6 +1,6 @@
 /**
  * Maps a multiple-choice answer value (1–4) to a Big Five trait score adjustment.
- * Used by all themed quizzes (cake, dog, city).
+ * Used by all themed quizzes.
  */
 export function optionToAdjustment(value) {
   const map = { 1: -4, 2: -2, 3: 2, 4: 4 };

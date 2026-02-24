@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Cake, RotateCcw } from 'lucide-react';
+import { Cake, Brain, CircleDashed, RotateCcw } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import UserMenu from '../components/UserMenu';
 import ScoreBar from '../components/ScoreBar';
@@ -15,6 +15,20 @@ const quizzes = [
     description: 'Discover which delicious cake matches your personality profile.',
     icon: Cake,
     to: '/quiz/cake',
+    locked: false,
+  },
+  {
+    title: 'MBTI (16 Types)',
+    description: 'Find your Myers-Briggs type and understand your cognitive style.',
+    icon: Brain,
+    to: '/quiz/mbti',
+    locked: false,
+  },
+  {
+    title: 'Enneagram',
+    description: 'Discover which of the 9 types drives your deepest motivations.',
+    icon: CircleDashed,
+    to: '/quiz/enneagram',
     locked: false,
   },
 ];

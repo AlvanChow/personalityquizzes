@@ -39,21 +39,19 @@ export function BigFiveProvider({ children }) {
     hasCompletedRef.current = hasCompleted;
   }, [hasCompleted]);
 
-  const syncToSupabase = useCallback(async (newScores, completed) => {
+  const syncToSupabase = useCallback(async (newScores, completed, quizResults) => {
     if (!user) return;
+    const update = { big5_scores: newScores, baseline_completed: completed };
+    if (quizResults !== undefined) update.quiz_results = quizResults;
     const { error } = await supabase
       .from('profiles')
-      .update({
-        big5_scores: newScores,
-        baseline_completed: completed,
-      })
+      .update(update)
       .eq('id', user.id);
     if (error) console.error('Failed to sync Big Five scores to Supabase:', error);
   }, [user]);
 
   useEffect(() => {
     if (!user) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setContextLoading(false);
       return;
     }
@@ -107,7 +105,12 @@ export function BigFiveProvider({ children }) {
   function resetScores() {
     setScores(defaultScores);
     setHasCompleted(false);
-    syncToSupabase(defaultScores, false);
+    // Clear all quiz result localStorage entries so stale results are not shown.
+    localStorage.removeItem('personalens_cake');
+    localStorage.removeItem('personalens_mbti');
+    localStorage.removeItem('personalens_enneagram');
+    // Reset quiz_results in Supabase along with the Big Five fields.
+    syncToSupabase(defaultScores, false, {});
   }
 
   return (

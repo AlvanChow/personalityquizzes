@@ -12,6 +12,17 @@ export default function CakeResult() {
   const navigate = useNavigate();
   const { scores, hasCompleted } = useBigFive();
 
+  // Read the result that was captured at quiz-completion time so re-taking other
+  // quizzes (which may shift Big Five scores) cannot alter the displayed cake.
+  const [storedData] = useState(() => {
+    try {
+      const raw = localStorage.getItem('personalens_cake');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
   useEffect(() => {
     if (!hasCompleted) navigate('/');
   }, [hasCompleted, navigate]);
@@ -20,7 +31,8 @@ export default function CakeResult() {
 
   if (!hasCompleted) return null;
 
-  const result = getCakeResult(scores);
+  // Fall back to re-computing from current scores only when no stored result exists.
+  const result = storedData?.result ?? getCakeResult(scores);
 
   async function handleShare() {
     const text = `I got "${result.name}" on My Personality Quizzes! My dominant trait: ${result.trait}. Find out what cake you are!`;

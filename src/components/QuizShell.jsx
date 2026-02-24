@@ -32,14 +32,11 @@ export default function QuizShell({ questions, onComplete, renderOptions }) {
     setDirection(1);
     setIsAnimating(true);
 
-    setTimeout(() => {
-      if (currentIndex < questions.length - 1) {
-        setCurrentIndex(prev => prev + 1);
-      } else {
-        onComplete(newAnswers);
-      }
-      setIsAnimating(false);
-    }, 300);
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    } else {
+      onComplete(newAnswers);
+    }
   }, [isAnimating, answers, question, currentIndex, questions.length, onComplete]);
 
   return (
@@ -76,6 +73,9 @@ export default function QuizShell({ questions, onComplete, renderOptions }) {
               animate="center"
               exit="exit"
               transition={{ duration: 0.3, ease: 'easeInOut' }}
+              onAnimationComplete={(definition) => {
+                if (definition === 'center') setIsAnimating(false);
+              }}
               className="w-full"
             >
               <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-10 leading-snug">

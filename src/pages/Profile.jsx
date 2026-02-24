@@ -6,10 +6,17 @@ import { useAuth } from '../contexts/AuthContext';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { supabase } from '../lib/supabase';
 import { cakeResults } from '../data/cakeResults';
+import { mbtiResults } from '../data/mbtiResults';
+import { enneagramResults } from '../data/enneagramResults';
 import ScoreBar from '../components/ScoreBar';
 
+// For each quiz type: the result lookup table, the result-page route, a function
+// to extract the lookup key from the stored result object, and whether the result
+// page requires the Big Five baseline to have been completed first.
 const quizResultMaps = {
-  cake: { results: cakeResults, route: '/quiz/cake/result' },
+  cake: { results: cakeResults, route: '/quiz/cake/result', getResultKey: (r) => r.resultKey, requiresBaseline: true },
+  mbti: { results: mbtiResults, route: '/quiz/mbti/result', getResultKey: (r) => r.resultKey, requiresBaseline: false },
+  enneagram: { results: enneagramResults, route: '/quiz/enneagram/result', getResultKey: (r) => r.resultKey, requiresBaseline: false },
 };
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
@@ -166,15 +173,13 @@ export default function Profile() {
             <div className="grid gap-3">
               {completedQuizzes.map(([quizKey, result]) => {
                 const quizMap = quizResultMaps[quizKey];
-                const fullData = quizMap?.results?.[result.resultKey];
-                const isClickable = !!(quizMap?.route && hasCompleted);
+                const fullData = quizMap ? quizMap.results[quizMap.getResultKey(result)] : null;
+                const isClickable = !!(quizMap?.route && (!quizMap.requiresBaseline || hasCompleted));
                 return (
                   <button
                     key={quizKey}
-                    onClick={() => {
-                      if (isClickable) navigate(quizMap.route);
-                    }}
-                    aria-disabled={!isClickable}
+                    onClick={() => { if (isClickable) navigate(quizMap.route); }}
+                    disabled={!isClickable}
                     className={`bg-white rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 w-full text-left transition-all
                       ${isClickable
                         ? 'hover:shadow-md hover:border-gray-200 cursor-pointer'
