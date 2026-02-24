@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
@@ -8,16 +8,22 @@ import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { optionToAdjustment } from '../utils/scoring';
+import { track } from '../utils/analytics';
 
 export default function CakeQuiz() {
   const navigate = useNavigate();
   const { scores, hasCompleted, updateScores } = useBigFive();
   const { user } = useAuth();
   const [saveError, setSaveError] = useState(null);
+  const startTimeRef = useRef(null);
 
   useEffect(() => {
     if (!hasCompleted) navigate('/');
   }, [hasCompleted, navigate]);
+
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+  }, []);
 
   const handleComplete = useCallback(async (answers) => {
     const adjustments = {};
@@ -63,6 +69,9 @@ export default function CakeQuiz() {
       }
     }
 
+    const duration_ms = startTimeRef.current ? Date.now() - startTimeRef.current : null;
+    track('quiz_completed', { quiz: 'cake', result_key: resultKey, duration_ms }, user?.id ?? null);
+
     // Replace the quiz in browser history so the back button skips it.
     navigate('/quiz/cake/result', { replace: true });
   }, [scores, updateScores, navigate, user]);
@@ -98,6 +107,8 @@ export default function CakeQuiz() {
         questions={cakeQuestions}
         onComplete={handleComplete}
         renderOptions={renderOptions}
+        quizKey="cake"
+        userId={user?.id ?? null}
       />
     </>
   );

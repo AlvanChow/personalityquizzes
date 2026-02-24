@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
@@ -7,11 +7,17 @@ import { getEnneagramResult } from '../data/enneagramResults';
 import { computeEnneagramScores } from '../utils/scoring';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { track } from '../utils/analytics';
 
 export default function EnneagramQuiz() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [saveError, setSaveError] = useState(null);
+  const startTimeRef = useRef(null);
+
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+  }, []);
 
   const handleComplete = useCallback(async (answers) => {
     const scores = computeEnneagramScores(answers);
@@ -39,6 +45,9 @@ export default function EnneagramQuiz() {
         return;
       }
     }
+
+    const duration_ms = startTimeRef.current ? Date.now() - startTimeRef.current : null;
+    track('quiz_completed', { quiz: 'enneagram', result_key: result.typeNumber, duration_ms }, user?.id ?? null);
 
     // Replace the quiz in browser history so the back button skips it.
     navigate('/quiz/enneagram/result', { replace: true });
@@ -73,6 +82,8 @@ export default function EnneagramQuiz() {
         questions={enneagramQuestions}
         onComplete={handleComplete}
         renderOptions={renderOptions}
+        quizKey="enneagram"
+        userId={user?.id ?? null}
       />
     </>
   );

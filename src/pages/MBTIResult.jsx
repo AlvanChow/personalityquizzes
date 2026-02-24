@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { track } from '../utils/analytics';
 
 const DIMENSION_LABELS = {
   IE: { low: 'Introversion (I)', high: 'Extraversion (E)' },
@@ -40,6 +42,7 @@ function DimensionBar({ dim, score, delay }) {
 
 export default function MBTIResult() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [data] = useState(() => {
     const raw = localStorage.getItem('personalens_mbti');
     return raw ? JSON.parse(raw) : null;
@@ -49,6 +52,13 @@ export default function MBTIResult() {
   useEffect(() => {
     if (!data) navigate('/');
   }, [data, navigate]);
+
+  const viewedRef = useRef(false);
+  useEffect(() => {
+    if (viewedRef.current || !data) return;
+    viewedRef.current = true;
+    track('quiz_result_viewed', { quiz: 'mbti' }, user?.id ?? null);
+  }, [data, user?.id]);
 
   if (!data) return null;
 
@@ -128,7 +138,7 @@ export default function MBTIResult() {
 
         <div className="flex gap-3">
           <motion.button
-            onClick={() => navigate('/quiz/mbti')}
+            onClick={() => { track('quiz_retaken', { quiz: 'mbti' }, user?.id ?? null); navigate('/quiz/mbti'); }}
             aria-label="Retake the MBTI quiz"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}

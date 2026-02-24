@@ -1,12 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
+import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
 import { Activity, Brain, CircleDashed, Cake, ArrowRight, Sparkles } from 'lucide-react';
+import { track } from '../utils/analytics';
 
 export default function Landing() {
   const navigate = useNavigate();
   const { hasCompleted } = useBigFive();
+  const { user } = useAuth();
+
+  function trackAndNavigate(quizId, destination) {
+    track('quiz_card_clicked', { quiz: quizId, from: 'landing' }, user?.id ?? null);
+    navigate(destination);
+  }
 
   const quizzes = [
     {
@@ -17,7 +25,7 @@ export default function Landing() {
       iconBg: 'bg-teal-100 text-teal-500',
       buttonBg: 'bg-teal-400 hover:bg-teal-500',
       buttonText: hasCompleted ? 'View Results' : 'Take the Big 5',
-      action: () => navigate(hasCompleted ? '/dashboard' : '/assessment'),
+      action: () => trackAndNavigate('big5', hasCompleted ? '/dashboard' : '/assessment'),
       featured: true
     },
     {
@@ -28,7 +36,7 @@ export default function Landing() {
       iconBg: 'bg-coral-100 text-coral-500',
       buttonBg: 'bg-coral-400 hover:bg-coral-500',
       buttonText: 'Take the MBTI',
-      action: () => navigate('/quiz/mbti'),
+      action: () => trackAndNavigate('mbti', '/quiz/mbti'),
       featured: true
     },
     {
@@ -39,7 +47,7 @@ export default function Landing() {
       iconBg: 'bg-mint-100 text-mint-500',
       buttonBg: 'bg-mint-400 hover:bg-mint-500',
       buttonText: 'Take the Enneagram',
-      action: () => navigate('/quiz/enneagram'),
+      action: () => trackAndNavigate('enneagram', '/quiz/enneagram'),
       featured: true
     },
     {
@@ -50,7 +58,7 @@ export default function Landing() {
       iconBg: 'bg-rose-100 text-rose-500',
       buttonBg: 'bg-rose-400 hover:bg-rose-500',
       buttonText: 'Find Your Cake',
-      action: () => navigate('/quiz/cake'),
+      action: () => trackAndNavigate('cakeme', '/quiz/cake'),
       featured: true
     }
   ];

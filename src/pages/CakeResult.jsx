@@ -1,16 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
+import { useAuth } from '../contexts/AuthContext';
 import { getCakeResult } from '../data/cakeResults';
 import ScoreBar from '../components/ScoreBar';
+import { track } from '../utils/analytics';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 
 export default function CakeResult() {
   const navigate = useNavigate();
   const { scores, hasCompleted } = useBigFive();
+  const { user } = useAuth();
 
   // Read the result that was captured at quiz-completion time so re-taking other
   // quizzes (which may shift Big Five scores) cannot alter the displayed cake.
@@ -26,6 +29,13 @@ export default function CakeResult() {
   useEffect(() => {
     if (!hasCompleted) navigate('/');
   }, [hasCompleted, navigate]);
+
+  const viewedRef = useRef(false);
+  useEffect(() => {
+    if (viewedRef.current || !hasCompleted) return;
+    viewedRef.current = true;
+    track('quiz_result_viewed', { quiz: 'cake' }, user?.id ?? null);
+  }, [hasCompleted, user?.id]);
 
   const [shareError, setShareError] = useState(null);
 
@@ -105,7 +115,7 @@ export default function CakeResult() {
 
         <div className="flex gap-3">
           <motion.button
-            onClick={() => navigate('/quiz/cake')}
+            onClick={() => { track('quiz_retaken', { quiz: 'cake' }, user?.id ?? null); navigate('/quiz/cake'); }}
             aria-label="Retake the Cake quiz"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}

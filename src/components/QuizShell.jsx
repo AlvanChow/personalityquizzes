@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { track } from '../utils/analytics';
 
 const slideVariants = {
   enter: (direction) => ({
@@ -16,11 +17,20 @@ const slideVariants = {
   }),
 };
 
-export default function QuizShell({ questions, onComplete, renderOptions }) {
+export default function QuizShell({ questions, onComplete, renderOptions, quizKey, userId = null }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [direction, setDirection] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Fire quiz_started once on mount. startedRef guards against React
+  // StrictMode's double-invocation of effects in development.
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (!quizKey || startedRef.current) return;
+    startedRef.current = true;
+    track('quiz_started', { quiz: quizKey }, userId);
+  }, [quizKey, userId]);
 
   const question = questions[currentIndex];
 

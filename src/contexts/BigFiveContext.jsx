@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
+import { track } from '../utils/analytics';
 
 const STORAGE_KEY = 'personalens_bigfive';
 const defaultScores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
@@ -170,6 +171,7 @@ export function BigFiveProvider({ children }) {
     localStorage.removeItem('personalens_enneagram');
     // Reset quiz_results in Supabase along with the Big Five fields.
     syncToSupabase(defaultScores, false, {});
+    track('dashboard_reset', {}, user?.id ?? null);
   }
 
   return (

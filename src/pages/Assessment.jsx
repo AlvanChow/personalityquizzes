@@ -1,20 +1,30 @@
 import { useNavigate } from 'react-router-dom';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
 import { baselineQuestions, likertOptions } from '../data/baselineQuestions';
 import { useBigFive } from '../contexts/BigFiveContext';
+import { useAuth } from '../contexts/AuthContext';
 import { computeBaselineScores } from '../utils/scoring';
+import { track } from '../utils/analytics';
 
 export default function Assessment() {
   const navigate = useNavigate();
   const { completeBaseline } = useBigFive();
+  const { user } = useAuth();
+  const startTimeRef = useRef(null);
+
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+  }, []);
 
   const handleComplete = useCallback((answers) => {
     const scores = computeBaselineScores(answers, baselineQuestions);
     completeBaseline(scores);
+    const duration_ms = startTimeRef.current ? Date.now() - startTimeRef.current : null;
+    track('baseline_completed', { duration_ms }, user?.id ?? null);
     navigate('/dashboard');
-  }, [completeBaseline, navigate]);
+  }, [completeBaseline, navigate, user]);
 
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {
     return likertOptions.map((opt) => (
@@ -48,6 +58,8 @@ export default function Assessment() {
       questions={baselineQuestions}
       onComplete={handleComplete}
       renderOptions={renderOptions}
+      quizKey="baseline"
+      userId={user?.id ?? null}
     />
   );
 }

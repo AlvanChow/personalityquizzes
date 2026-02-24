@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { track } from '../utils/analytics';
 
 const MAX_SCORE_PER_TYPE = 12; // 3 questions × 4 max points
 
@@ -41,6 +43,7 @@ const TYPE_NAMES = {
 
 export default function EnneagramResult() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [data] = useState(() => {
     const raw = localStorage.getItem('personalens_enneagram');
     return raw ? JSON.parse(raw) : null;
@@ -50,6 +53,13 @@ export default function EnneagramResult() {
   useEffect(() => {
     if (!data) navigate('/');
   }, [data, navigate]);
+
+  const viewedRef = useRef(false);
+  useEffect(() => {
+    if (viewedRef.current || !data) return;
+    viewedRef.current = true;
+    track('quiz_result_viewed', { quiz: 'enneagram' }, user?.id ?? null);
+  }, [data, user?.id]);
 
   if (!data) return null;
 
@@ -149,7 +159,7 @@ export default function EnneagramResult() {
 
         <div className="flex gap-3">
           <motion.button
-            onClick={() => navigate('/quiz/enneagram')}
+            onClick={() => { track('quiz_retaken', { quiz: 'enneagram' }, user?.id ?? null); navigate('/quiz/enneagram'); }}
             aria-label="Retake the Enneagram quiz"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
