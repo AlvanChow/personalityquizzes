@@ -215,10 +215,10 @@ export default function Dashboard() {
           </button>
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/frameworks')}
+              onClick={() => navigate('/how-it-works')}
               className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors hidden sm:block"
             >
-              Frameworks
+              How It Works
             </button>
             <UserMenu />
           </div>

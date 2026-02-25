@@ -25,7 +25,7 @@ const frameworks = [
     icon: Brain,
     iconBg: 'bg-coral-100 text-coral-600',
     name: 'MBTI (Myers-Briggs Type Indicator)',
-    subtitle: 'The World\'s Most Used Personality Framework',
+    subtitle: 'The World\'s Most Popular Personality Test',
     color: 'from-coral-50 to-peach-50',
     border: 'border-coral-100',
     accent: 'text-coral-700',
@@ -142,7 +142,7 @@ export default function Frameworks() {
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
           <span className="text-lg font-extrabold text-gray-800">
-            The <span className="text-sky-500">Frameworks</span>
+            How It <span className="text-sky-500">Works</span>
           </span>
           <div className="w-16" />
         </div>
@@ -155,7 +155,7 @@ export default function Frameworks() {
             The science behind the quizzes
           </h1>
           <p className="text-gray-500 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-            Every quiz here is grounded in real personality psychology. Here's what each framework is, where it comes from, and how seriously to take it.
+            Every quiz here is grounded in real personality psychology. Here's how each one works, where it comes from, and how seriously to take it.
           </p>
         </motion.div>
 
