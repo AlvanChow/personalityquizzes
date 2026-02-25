@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Brain } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Brain, Feather, Heart, AlertTriangle, TrendingUp, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import { enneagramInsights } from '../data/enneagramInsights';
+import { getWing, WING_ADJACENTS } from '../data/enneagramWings';
 
 const MAX_SCORE_PER_TYPE = 12;
 
@@ -13,12 +14,12 @@ function TypeBar({ typeNum, score, label, delay, isTop }) {
   return (
     <div className="mb-3">
       <div className="flex justify-between text-xs font-semibold mb-1">
-        <span className={isTop ? 'text-mint-600' : 'text-gray-400'}>Type {typeNum} — {label}</span>
-        <span className={isTop ? 'text-mint-600' : 'text-gray-400'}>{pct}%</span>
+        <span className={isTop ? 'text-mint-600' : 'text-gray-600'}>Type {typeNum} — {label}</span>
+        <span className={isTop ? 'text-mint-600' : 'text-gray-600'}>{pct}%</span>
       </div>
       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
         <motion.div
-          className={`h-full rounded-full ${isTop ? 'bg-gradient-to-r from-mint-300 to-mint-400' : 'bg-gray-200'}`}
+          className={`h-full rounded-full ${isTop ? 'bg-gradient-to-r from-mint-300 to-mint-400' : 'bg-gradient-to-r from-gray-300 to-gray-400'}`}
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.6, delay, ease: 'easeOut' }}
@@ -74,7 +75,14 @@ export default function EnneagramResult() {
 
   const { result, scores } = data;
   const insights = enneagramInsights[result.typeNumber];
-  const sortedTypes = Object.entries(scores).sort(([, a], [, b]) => b - a).slice(0, 5);
+  const topScore = Math.max(...Object.values(scores));
+  const sortedTypes = Object.entries(scores).sort(([, a], [, b]) => b - a);
+  const { wingType, wingKey, wing } = getWing(result.typeNumber, scores);
+  const [adj1, adj2] = WING_ADJACENTS[result.typeNumber];
+  const wingBalance = {
+    left: { type: adj1, name: TYPE_NAMES[adj1], score: scores[adj1] ?? 0 },
+    right: { type: adj2, name: TYPE_NAMES[adj2], score: scores[adj2] ?? 0 },
+  };
 
   async function handleShare() {
     const text = `I'm a ${result.name} on the Enneagram! My core desire: ${result.coreDesire}. Find out your type!`;
@@ -122,12 +130,117 @@ export default function EnneagramResult() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
           className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5">
-          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-5">Your Top Types</h3>
+          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-5">Your Type Scores</h3>
           {sortedTypes.map(([typeNum, score], i) => (
             <TypeBar key={typeNum} typeNum={typeNum} score={score} label={TYPE_NAMES[typeNum]}
-              delay={i * 0.08} isTop={typeNum === result.typeNumber} />
+              delay={i * 0.08} isTop={score === topScore} />
           ))}
         </motion.div>
+
+        {wing && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+            className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-3xl p-6 md:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-violet-100 mb-5">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-100 text-violet-600">
+                <Feather className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-bold text-violet-500 uppercase tracking-wider">Your Wing</h3>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-1 mt-3">
+              {wingKey.toUpperCase()}: {wing.name}
+            </h2>
+            <p className="text-xs font-semibold text-violet-400 mb-4">
+              Type {result.typeNumber} with a {TYPE_NAMES[wingType]} wing
+            </p>
+
+            <p className="text-sm text-gray-600 leading-relaxed mb-5">{wing.summary}</p>
+
+            <div className="bg-white/60 rounded-2xl p-4 mb-4">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Wing Balance</p>
+              <div className="flex items-center gap-3">
+                <span className={`text-xs font-bold ${wingType === adj1 ? 'text-violet-600' : 'text-gray-400'} shrink-0`}>
+                  {adj1}w
+                </span>
+                <div className="flex-1 flex h-3 rounded-full overflow-hidden bg-gray-100">
+                  <motion.div
+                    className={`h-full rounded-l-full ${wingType === adj1 ? 'bg-gradient-to-r from-violet-300 to-violet-400' : 'bg-gray-300'}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.round((wingBalance.left.score / (wingBalance.left.score + wingBalance.right.score || 1)) * 100)}%` }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                  />
+                  <motion.div
+                    className={`h-full rounded-r-full ${wingType === adj2 ? 'bg-gradient-to-r from-violet-300 to-violet-400' : 'bg-gray-300'}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.round((wingBalance.right.score / (wingBalance.left.score + wingBalance.right.score || 1)) * 100)}%` }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                  />
+                </div>
+                <span className={`text-xs font-bold ${wingType === adj2 ? 'text-violet-600' : 'text-gray-400'} shrink-0`}>
+                  {adj2}w
+                </span>
+              </div>
+              <div className="flex justify-between mt-1.5">
+                <span className="text-[10px] text-gray-400 font-medium">{wingBalance.left.name} ({wingBalance.left.score})</span>
+                <span className="text-[10px] text-gray-400 font-medium">{wingBalance.right.name} ({wingBalance.right.score})</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="bg-white/60 rounded-2xl p-4">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Key Traits</p>
+                <ul className="space-y-1.5">
+                  {wing.keyTraits.map((trait) => (
+                    <li key={trait} className="text-sm text-gray-600 leading-relaxed flex items-start gap-2">
+                      <span className="text-violet-400 mt-0.5 shrink-0">&#x2022;</span>
+                      {trait}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="bg-white/60 rounded-2xl p-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Zap className="w-3.5 h-3.5 text-amber-500" />
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">At Their Best</p>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">{wing.atTheirBest}</p>
+              </div>
+
+              <div className="bg-white/60 rounded-2xl p-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Blind Spot</p>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">{wing.blindSpot}</p>
+              </div>
+
+              <div className="bg-white/60 rounded-2xl p-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Heart className="w-3.5 h-3.5 text-rose-400" />
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">In Relationships</p>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">{wing.relationship}</p>
+              </div>
+
+              <div className="bg-white/60 rounded-2xl p-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Growth Path</p>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">{wing.growth}</p>
+              </div>
+
+              <div className="bg-white/60 rounded-2xl p-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Under Stress</p>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">{wing.stress}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {insights && (
           <>
