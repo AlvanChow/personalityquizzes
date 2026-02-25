@@ -109,6 +109,7 @@ export default function CakeQuiz() {
         renderOptions={renderOptions}
         quizKey="cake"
         userId={user?.id ?? null}
+        exitPath="/dashboard"
       />
     </>
   );

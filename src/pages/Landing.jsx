@@ -91,6 +91,12 @@ export default function Landing() {
             My Personality Quizzes
           </span>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/frameworks')}
+              className="text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors hidden sm:block"
+            >
+              Frameworks
+            </button>
             {hasCompleted && (
               <button
                 onClick={() => navigate('/dashboard')}
@@ -155,11 +161,6 @@ export default function Landing() {
                     >
                       <Icon className="w-8 h-8" />
                     </motion.div>
-                    {quiz.featured && (
-                      <span className="bg-gradient-to-r from-rose-100 to-peach-100 text-rose-600 text-xs font-black px-4 py-2 rounded-full tracking-wider uppercase shadow-sm">
-                        Popular
-                      </span>
-                    )}
                   </div>
 
                   <h3 className="text-3xl font-extrabold text-gray-900 mb-3">{quiz.name}</h3>

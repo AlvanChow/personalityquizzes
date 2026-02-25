@@ -10,6 +10,29 @@ import { track } from '../utils/analytics';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 
+const traitInsights = {
+  O: {
+    careers: 'High Openness → creative fields, research, design, philosophy, arts, innovation. Low Openness → operations, logistics, accounting, skilled trades, administration.',
+    relationships: 'High scorers seek depth, novelty, and intellectual connection in relationships. Low scorers prefer stability, familiarity, and partners with shared routines.',
+  },
+  C: {
+    careers: 'High Conscientiousness → law, medicine, finance, management, engineering. Low Conscientiousness → creative freelancing, entrepreneurship, emergency work where improvisation is valued.',
+    relationships: 'High scorers are reliable, planned, and committed partners. Low scorers bring spontaneity but may struggle with consistency and follow-through.',
+  },
+  E: {
+    careers: 'High Extraversion → sales, leadership, PR, performance, teaching, politics. Low Extraversion → writing, programming, research, design, independent specialist roles.',
+    relationships: 'Highly extraverted people tend to have wide social networks and need social stimulation from partners. Introverts seek fewer, deeper connections and need space to recharge.',
+  },
+  A: {
+    careers: 'High Agreeableness → social work, nursing, counseling, education, HR. Low Agreeableness → law, competitive business, negotiation, surgery, critical analysis.',
+    relationships: 'High scorers are natural nurturers who prioritise harmony; may struggle with conflict. Low scorers are more direct and self-advocating; may need to consciously work on empathy.',
+  },
+  N: {
+    careers: 'High Neuroticism → artistic/creative fields (emotional sensitivity fuels creativity), therapy, advocacy. Low Neuroticism → leadership, military, emergency medicine, high-pressure roles.',
+    relationships: 'High scorers experience emotional depth and intensity in relationships; benefit from emotionally stable partners. Low scorers are steady anchors who may need to actively tune in to partners\' emotional needs.',
+  },
+};
+
 const traitData = {
   O: {
     label: 'Openness',
@@ -198,7 +221,11 @@ export default function Dashboard() {
     if (!loading && !hasCompleted) navigate('/');
   }, [loading, hasCompleted, navigate]);
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="min-h-screen bg-cream-50 flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-sky-200 border-t-sky-400 rounded-full animate-spin" />
+    </div>
+  );
   if (!hasCompleted) return null;
 
   function handleReset() {
@@ -214,6 +241,12 @@ export default function Dashboard() {
             My Personality <span className="text-sky-500">Quizzes</span>
           </button>
           <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/frameworks')}
+              className="text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors hidden sm:block"
+            >
+              Frameworks
+            </button>
             <button
               onClick={handleReset}
               className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors"
@@ -274,7 +307,7 @@ export default function Dashboard() {
                     {data.description}
                   </p>
 
-                  <div className="border-t border-white/60 pt-3">
+                  <div className="border-t border-white/60 pt-3 mb-3">
                     <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${data.accent}`}>
                       Your result — {range.heading}
                     </p>
@@ -282,6 +315,19 @@ export default function Dashboard() {
                       {range.text}
                     </p>
                   </div>
+
+                  {traitInsights[trait] && (
+                    <div className="grid grid-cols-1 gap-2">
+                      <div className="bg-white/60 rounded-2xl p-3">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Career Fit</p>
+                        <p className="text-xs text-gray-600 leading-relaxed">{traitInsights[trait].careers}</p>
+                      </div>
+                      <div className="bg-white/60 rounded-2xl p-3">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">In Relationships</p>
+                        <p className="text-xs text-gray-600 leading-relaxed">{traitInsights[trait].relationships}</p>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               );
             })}

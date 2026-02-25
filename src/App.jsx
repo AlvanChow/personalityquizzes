@@ -13,6 +13,8 @@ import MBTIResult from './pages/MBTIResult';
 import EnneagramQuiz from './pages/EnneagramQuiz';
 import EnneagramResult from './pages/EnneagramResult';
 import Profile from './pages/Profile';
+import Frameworks from './pages/Frameworks';
+import NotFound from './pages/NotFound';
 import { useAuth } from './contexts/AuthContext';
 import { track } from './utils/analytics';
 
@@ -33,25 +35,46 @@ function RouteTracker() {
   return null;
 }
 
+// Shows a spinner while auth session is being resolved so pages never flash blank.
+function AppRoutes() {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-cream-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-sky-200 border-t-sky-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <RouteTracker />
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/assessment" element={<Assessment />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/quiz/cake" element={<CakeQuiz />} />
+        <Route path="/quiz/cake/result" element={<CakeResult />} />
+        <Route path="/quiz/mbti" element={<MBTIQuiz />} />
+        <Route path="/quiz/mbti/result" element={<MBTIResult />} />
+        <Route path="/quiz/enneagram" element={<EnneagramQuiz />} />
+        <Route path="/quiz/enneagram/result" element={<EnneagramResult />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/frameworks" element={<Frameworks />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <BigFiveProvider>
           <ErrorBoundary>
-            <RouteTracker />
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/assessment" element={<Assessment />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/quiz/cake" element={<CakeQuiz />} />
-              <Route path="/quiz/cake/result" element={<CakeResult />} />
-              <Route path="/quiz/mbti" element={<MBTIQuiz />} />
-              <Route path="/quiz/mbti/result" element={<MBTIResult />} />
-              <Route path="/quiz/enneagram" element={<EnneagramQuiz />} />
-              <Route path="/quiz/enneagram/result" element={<EnneagramResult />} />
-              <Route path="/profile" element={<Profile />} />
-            </Routes>
+            <AppRoutes />
           </ErrorBoundary>
         </BigFiveProvider>
       </AuthProvider>
