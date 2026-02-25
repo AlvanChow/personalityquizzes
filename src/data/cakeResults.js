@@ -1,86 +1,92 @@
 export const cakeResults = {
-  funfetti: {
-    name: 'Funfetti Cake',
-    emoji: '🎉',
-    color: 'from-coral-100 to-peach-100',
-    accent: 'text-coral-500',
-    description: 'Your outgoing, energetic nature means you light up every room you walk into. You bring the party wherever you go, and people are drawn to your infectious enthusiasm. Just like a Funfetti Cake, you are a burst of color, joy, and celebration all rolled into one.',
-    trait: 'Extraversion',
-  },
-  wedding: {
-    name: 'Elaborate Wedding Cake',
+  layercake: {
+    name: 'Layer Cake',
     emoji: '🎂',
-    color: 'from-cream-100 to-sky-50',
-    accent: 'text-sky-500',
-    description: 'You are detail-oriented, ambitious, and take pride in everything you do. Your meticulous nature and drive for excellence means you never settle for less than the best. Like an Elaborate Wedding Cake, you are a masterpiece of careful planning and flawless execution.',
-    trait: 'Conscientiousness',
+    color: 'from-orange-100 to-amber-50',
+    accent: 'text-amber-600',
+    description: 'You are like a well-stacked thousand layer cake! You always put your passion and action into work no matter how difficult things are, and always manage to bring notable results. You are the person who does not wait for perfect conditions — you build momentum and carry projects across the finish line through sheer force of follow-through.',
+    competency: 'Action Oriented',
+    tagline: '#Executor #Perseverance #JustDoIt',
+    trait: 'AO',
   },
-  matcha: {
-    name: 'Matcha Crepe Cake',
-    emoji: '🍵',
-    color: 'from-mint-50 to-mint-100',
-    accent: 'text-mint-500',
-    description: 'Your open, curious mind is always seeking the next interesting experience. You embrace the unconventional and find beauty in the unexpected. Like a Matcha Crepe Cake, you are layered, sophisticated, and refreshingly different from the crowd.',
-    trait: 'Openness',
-  },
-  redvelvet: {
-    name: 'Red Velvet Cake',
+  cupcake: {
+    name: 'Cupcake',
     emoji: '🧁',
-    color: 'from-rose-100 to-rose-50',
+    color: 'from-sky-100 to-blue-50',
+    accent: 'text-sky-600',
+    description: 'You are like a cupcake whose knowledge and skills can only be seen once you open the wrapper. You always solve problems and break through blind spots for the team at critical moments! When others see a wall, you see a puzzle — and you take a quiet, methodical pleasure in dismantling it.',
+    competency: 'Problem Solving',
+    tagline: '#Sherlock #BrainIsFried #Spazalyzing',
+    trait: 'PS',
+  },
+  macaron: {
+    name: 'Macaron',
+    emoji: '🫠',
+    color: 'from-pink-100 to-rose-50',
     accent: 'text-rose-500',
-    description: 'Your warm, generous spirit makes everyone around you feel valued and loved. You are the person who remembers birthdays, checks in on friends, and always puts others first. Like a Red Velvet Cake, you are rich with warmth, elegance, and a sweetness that runs deep.',
-    trait: 'Agreeableness',
+    description: 'You are like a colorful macaron — pleasing and fresh. Despite facing tedious and boring tasks, you still bring fun, new approaches that produce outputs that are one-of-a-kind! You see possibility where others see process, and your instinct to reimagine the obvious is your greatest professional asset.',
+    competency: 'Innovation',
+    tagline: '#Craytive #SensoryOverload #Aesthetics',
+    trait: 'IN',
   },
-  lava: {
-    name: 'Chocolate Lava Cake',
-    emoji: '🌋',
-    color: 'from-coral-50 to-rose-50',
-    accent: 'text-coral-400',
-    description: 'You feel things deeply and with great intensity. Your emotional richness gives you incredible empathy and a creative spark that others admire. Like a Chocolate Lava Cake, beneath your composed exterior is a passionate, molten core that makes you truly unforgettable.',
-    trait: 'Neuroticism',
+  strawberrycake: {
+    name: 'Strawberry Cake',
+    emoji: '🍓',
+    color: 'from-rose-100 to-pink-50',
+    accent: 'text-rose-600',
+    description: "You are like a strawberry cake, giving off a warm, cheery energy. You win everyone's hearts at work with the smooth, human way you handle tasks. People do not just want to work with you — they want to work for you. Your natural warmth makes teams cohere and collaboration feel effortless.",
+    competency: 'Teamwork',
+    tagline: '#SocialButterfly #PersonalityHires #WorkBestie',
+    trait: 'TM',
   },
-  chocolate: {
-    name: 'Classic Chocolate Cake',
-    emoji: '🍫',
-    color: 'from-peach-50 to-cream-200',
-    accent: 'text-coral-400',
-    description: 'You are grounded, dependable, and have a warmth that makes everyone feel at home. You value the timeless things in life and bring comfort to those around you. Like a Classic Chocolate Cake, you are a beloved staple that never goes out of style.',
-    trait: 'Balance',
+  rollcake: {
+    name: 'Roll Cake',
+    emoji: '🍥',
+    color: 'from-teal-50 to-emerald-50',
+    accent: 'text-teal-600',
+    description: 'You are like a roll cake, with a heart as dense as good cream filling. While being a perfectionist and careful, you give everyone around you a sense of security. Nothing falls through the cracks on your watch — your thoroughness is the invisible scaffolding that keeps quality high.',
+    competency: 'Attention to Detail',
+    tagline: '#MeticulousAF #Perfectionist #DoubleChecker',
+    trait: 'AD',
+  },
+  tiramisu: {
+    name: 'Tiramisu',
+    emoji: '☕',
+    color: 'from-stone-100 to-amber-50',
+    accent: 'text-stone-600',
+    description: 'You are like a tiramisu cake — exuding maturity and a strong voice. You give off a leader aura that makes people willing to follow you forward. You are comfortable taking calculated risks, and you know how to sell a vision that gets people genuinely excited to move.',
+    competency: 'Influence',
+    tagline: '#RiskTaker #Workaholic #NoPainNoGain',
+    trait: 'INF',
   },
 };
 
-// Reverse-lookup: result display name → result key (e.g. 'Funfetti Cake' → 'funfetti')
+// Reverse-lookup: result display name → result key (e.g. 'Macaron' → 'macaron')
 export const cakeResultNameToKey = Object.fromEntries(
   Object.entries(cakeResults).map(([key, { name }]) => [name, key])
 );
 
 export function getCakeResult(scores) {
-  const traitMap = {
-    E: 'funfetti',
-    C: 'wedding',
-    O: 'matcha',
-    A: 'redvelvet',
-    N: 'lava',
+  // scores = { AO: n, PS: n, IN: n, TM: n, AD: n, INF: n }
+  const competencyMap = {
+    AO: 'layercake',
+    PS: 'cupcake',
+    IN: 'macaron',
+    TM: 'strawberrycake',
+    AD: 'rollcake',
+    INF: 'tiramisu',
   };
 
-  const traits = ['O', 'C', 'E', 'A', 'N'];
-  let maxTrait = traits[0];
-  let maxScore = scores[traits[0]];
-  let secondMax = 0;
+  const competencies = Object.keys(competencyMap);
+  let topKey = competencies[0];
+  let topScore = scores[competencies[0]] ?? 0;
 
-  for (const t of traits.slice(1)) {
-    if (scores[t] > maxScore) {
-      secondMax = maxScore;
-      maxScore = scores[t];
-      maxTrait = t;
-    } else if (scores[t] > secondMax) {
-      secondMax = scores[t];
+  for (const key of competencies.slice(1)) {
+    if ((scores[key] ?? 0) > topScore) {
+      topScore = scores[key];
+      topKey = key;
     }
   }
 
-  if (maxScore - secondMax < 10) {
-    return cakeResults.chocolate;
-  }
-
-  return cakeResults[traitMap[maxTrait]];
+  return cakeResults[competencyMap[topKey]];
 }

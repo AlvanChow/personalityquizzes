@@ -1,52 +1,35 @@
-import { useEffect, useCallback, useState, useRef } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
 import { cakeQuestions } from '../data/cakeQuestions';
 import { getCakeResult, cakeResultNameToKey } from '../data/cakeResults';
-import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { optionToAdjustment } from '../utils/scoring';
 import { track } from '../utils/analytics';
 
 export default function CakeQuiz() {
   const navigate = useNavigate();
-  const { scores, hasCompleted, updateScores } = useBigFive();
   const { user } = useAuth();
   const [saveError, setSaveError] = useState(null);
   const startTimeRef = useRef(null);
-
-  useEffect(() => {
-    if (!hasCompleted) navigate('/assessment');
-  }, [hasCompleted, navigate]);
 
   useEffect(() => {
     startTimeRef.current = Date.now();
   }, []);
 
   const handleComplete = useCallback(async (answers) => {
-    const adjustments = {};
+    // Direct accumulation: sum option values per competency key
+    const scores = {};
     Object.values(answers).forEach(({ trait, value }) => {
-      const adj = optionToAdjustment(value);
-      adjustments[trait] = (adjustments[trait] || 0) + adj;
+      scores[trait] = (scores[trait] || 0) + value;
     });
 
-    const newScores = {};
-    Object.entries(adjustments).forEach(([trait, adj]) => {
-      newScores[trait] = Math.min(100, Math.max(0, scores[trait] + adj));
-    });
+    const result = getCakeResult(scores);
+    const resultKey = cakeResultNameToKey[result.name] ?? 'layercake';
 
-    updateScores(newScores);
-
-    const mergedScores = { ...scores, ...newScores };
-    const result = getCakeResult(mergedScores);
-    const resultKey = cakeResultNameToKey[result.name] ?? 'chocolate';
-
-    // Persist result (with resultKey) so CakeResult can display it without recomputing
-    // from live scores, and so the guest-sync logic in BigFiveContext can upload it
-    // after login without needing to re-derive the key.
-    localStorage.setItem('personalens_cake', JSON.stringify({ result, resultKey }));
+    // Store scores alongside result so CakeResult can render the competency breakdown
+    localStorage.setItem('personalens_cake', JSON.stringify({ result, resultKey, scores }));
 
     if (user) {
       try {
@@ -72,9 +55,8 @@ export default function CakeQuiz() {
     const duration_ms = startTimeRef.current ? Date.now() - startTimeRef.current : null;
     track('quiz_completed', { quiz: 'cake', result_key: resultKey, duration_ms }, user?.id ?? null);
 
-    // Replace the quiz in browser history so the back button skips it.
     navigate('/quiz/cake/result', { replace: true });
-  }, [scores, updateScores, navigate, user]);
+  }, [navigate, user]);
 
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {
     return question.options.map((opt) => (
@@ -94,8 +76,6 @@ export default function CakeQuiz() {
     ));
   }, []);
 
-  if (!hasCompleted) return null;
-
   return (
     <>
       {saveError && (
@@ -110,7 +90,7 @@ export default function CakeQuiz() {
         quizKey="cake"
         userId={user?.id ?? null}
         exitPath="/dashboard"
-        questionsPerPage={5}
+        questionsPerPage={6}
       />
     </>
   );

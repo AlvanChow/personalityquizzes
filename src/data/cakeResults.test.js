@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { cakeResults, getCakeResult, cakeResultNameToKey } from './cakeResults.js';
 
-const EXPECTED_KEYS = ['funfetti', 'wedding', 'matcha', 'redvelvet', 'lava', 'chocolate'];
+const EXPECTED_KEYS = ['layercake', 'cupcake', 'macaron', 'strawberrycake', 'rollcake', 'tiramisu'];
 
 // ─────────────────────────────────────────────
 // cakeResults – data integrity
@@ -17,7 +17,7 @@ describe('cakeResults – data integrity', () => {
     });
   });
 
-  it('every result has required fields (name, emoji, color, accent, description, trait)', () => {
+  it('every result has required fields (name, emoji, color, accent, description, trait, competency, tagline)', () => {
     EXPECTED_KEYS.forEach((key) => {
       const result = cakeResults[key];
       expect(typeof result.name, `${key}.name`).toBe('string');
@@ -28,6 +28,8 @@ describe('cakeResults – data integrity', () => {
       expect(typeof result.description, `${key}.description`).toBe('string');
       expect(result.description.trim().length, `${key}.description non-empty`).toBeGreaterThan(0);
       expect(typeof result.trait, `${key}.trait`).toBe('string');
+      expect(typeof result.competency, `${key}.competency`).toBe('string');
+      expect(typeof result.tagline, `${key}.tagline`).toBe('string');
     });
   });
 });
@@ -49,56 +51,34 @@ describe('cakeResultNameToKey – reverse lookup', () => {
 });
 
 // ─────────────────────────────────────────────
-// getCakeResult – each trait result is reachable
+// getCakeResult – each competency result is reachable
 // ─────────────────────────────────────────────
-describe('getCakeResult – trait-dominant results', () => {
-  // Each case: one trait scores 40, all others score 0
-  // 40 - 0 = 40 >= 10, so the dominant trait wins
-  const traitToKey = {
-    E: 'funfetti',
-    C: 'wedding',
-    O: 'matcha',
-    A: 'redvelvet',
-    N: 'lava',
+describe('getCakeResult – competency-dominant results', () => {
+  const competencyToKey = {
+    AO:  'layercake',
+    PS:  'cupcake',
+    IN:  'macaron',
+    TM:  'strawberrycake',
+    AD:  'rollcake',
+    INF: 'tiramisu',
   };
 
-  Object.entries(traitToKey).forEach(([trait, expectedKey]) => {
-    it(`returns ${expectedKey} when ${trait} clearly dominates`, () => {
-      const scores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
-      scores[trait] = 40;
+  Object.entries(competencyToKey).forEach(([competency, expectedKey]) => {
+    it(`returns ${expectedKey} when ${competency} clearly dominates`, () => {
+      const scores = { AO: 2, PS: 2, IN: 2, TM: 2, AD: 2, INF: 2 };
+      scores[competency] = 8;
       const result = getCakeResult(scores);
       expect(result).toBe(cakeResults[expectedKey]);
     });
   });
-});
 
-// ─────────────────────────────────────────────
-// getCakeResult – balance result
-// ─────────────────────────────────────────────
-describe('getCakeResult – balance (chocolate)', () => {
-  it('returns chocolate when max and second-max differ by exactly 9 (< 10)', () => {
-    // maxScore=50, secondMax=41 → difference=9 → balance
-    const scores = { O: 50, C: 41, E: 30, A: 20, N: 10 };
-    const result = getCakeResult(scores);
-    expect(result).toBe(cakeResults.chocolate);
+  it('returns the highest-scoring competency result when one is clearly ahead', () => {
+    const scores = { AO: 8, PS: 4, IN: 3, TM: 2, AD: 2, INF: 2 };
+    expect(getCakeResult(scores)).toBe(cakeResults.layercake);
   });
 
-  it('returns chocolate when all traits are equal', () => {
-    const scores = { O: 50, C: 50, E: 50, A: 50, N: 50 };
-    const result = getCakeResult(scores);
-    expect(result).toBe(cakeResults.chocolate);
-  });
-
-  it('returns the dominant trait result when scores differ by exactly 10', () => {
-    // maxScore=50, secondMax=40 → difference=10 → NOT balance, dominant wins
-    const scores = { O: 50, C: 40, E: 30, A: 20, N: 10 };
-    const result = getCakeResult(scores);
-    expect(result).toBe(cakeResults.matcha); // O maps to matcha
-  });
-
-  it('returns chocolate when two traits share the top and differ by 0', () => {
-    const scores = { O: 60, C: 60, E: 20, A: 20, N: 20 };
-    const result = getCakeResult(scores);
-    expect(result).toBe(cakeResults.chocolate);
+  it('all-zero scores returns first competency result (AO / layercake)', () => {
+    const scores = { AO: 0, PS: 0, IN: 0, TM: 0, AD: 0, INF: 0 };
+    expect(getCakeResult(scores)).toBe(cakeResults.layercake);
   });
 });
