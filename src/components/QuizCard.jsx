@@ -22,10 +22,12 @@ export default function QuizCard({ title, description, icon: Icon, to, locked = 
           <Lock className="w-4 h-4 text-gray-300" />
         </div>
       )}
-      <div className="w-12 h-12 rounded-2xl bg-cream-100 flex items-center justify-center mb-4">
-        <Icon className="w-6 h-6 text-coral-400" />
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-10 h-10 rounded-2xl bg-cream-100 flex items-center justify-center shrink-0">
+          <Icon className="w-5 h-5 text-coral-400" />
+        </div>
+        <h3 className="text-base font-bold text-gray-800 leading-snug">{title}</h3>
       </div>
-      <h3 className="text-lg font-bold text-gray-800 mb-1">{title}</h3>
       <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
       {!locked && (
         <div className="mt-4 inline-flex items-center text-sm font-semibold text-sky-500">

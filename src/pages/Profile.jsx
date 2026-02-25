@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, ArrowLeft, RotateCcw, LogOut, Calendar, ChevronRight, Trophy, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { User, ArrowLeft, LogOut, Calendar, ChevronRight, Trophy, Sparkles, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { supabase } from '../lib/supabase';
@@ -33,7 +33,7 @@ function formatDate(dateStr) {
 export default function Profile() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { scores, hasCompleted, resetScores } = useBigFive();
+  const { scores, hasCompleted, resetBaseline } = useBigFive();
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
@@ -68,9 +68,28 @@ export default function Profile() {
   const quizResults = profile?.quiz_results || {};
   const completedQuizzes = Object.entries(quizResults);
 
-  function handleReset() {
-    resetScores();
-    navigate('/');
+  // Tracks which item is pending confirmation: a quiz key ('cake'/'mbti'/'enneagram')
+  // or 'baseline' for the Big Five reset.
+  const [confirmReset, setConfirmReset] = useState(null);
+
+  const quizLocalKeys = {
+    cake: 'personalens_cake',
+    mbti: 'personalens_mbti',
+    enneagram: 'personalens_enneagram',
+  };
+
+  async function handleQuizReset(quizKey) {
+    localStorage.removeItem(quizLocalKeys[quizKey]);
+    const newResults = { ...quizResults };
+    delete newResults[quizKey];
+    await supabase.from('profiles').update({ quiz_results: newResults }).eq('id', user.id);
+    setProfile((prev) => ({ ...prev, quiz_results: newResults }));
+    setConfirmReset(null);
+  }
+
+  function handleBaselineReset() {
+    resetBaseline();
+    setConfirmReset(null);
   }
 
   async function handleSignOut() {
@@ -134,9 +153,34 @@ export default function Profile() {
           >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Personality Profile</h2>
-              {!loadingProfile && profile?.updated_at && (
-                <span className="text-xs text-gray-300">Updated {formatDate(profile.updated_at)}</span>
-              )}
+              <div className="flex items-center gap-3">
+                {confirmReset === 'baseline' ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setConfirmReset(null)}
+                      className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleBaselineReset}
+                      className="text-xs font-semibold text-red-500 hover:text-red-600 transition-colors"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setConfirmReset('baseline')}
+                    className="text-xs text-gray-300 hover:text-red-400 transition-colors"
+                  >
+                    Reset
+                  </button>
+                )}
+                {!loadingProfile && profile?.updated_at && (
+                  <span className="text-xs text-gray-300">Updated {formatDate(profile.updated_at)}</span>
+                )}
+              </div>
             </div>
             {traitOrder.map((trait, i) => (
               <ScoreBar key={trait} trait={trait} value={scores[trait]} delay={i * 0.08} />
@@ -230,24 +274,52 @@ export default function Profile() {
                 const quizMap = quizResultMaps[quizKey];
                 const fullData = quizMap ? quizMap.results[quizMap.getResultKey(result)] : null;
                 const isClickable = !!(quizMap?.route && (!quizMap.requiresBaseline || hasCompleted));
+                const isConfirming = confirmReset === quizKey;
                 return (
-                  <button
+                  <div
                     key={quizKey}
-                    onClick={() => { if (isClickable) navigate(quizMap.route); }}
-                    disabled={!isClickable}
-                    className={`bg-white rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 w-full text-left transition-all
-                      ${isClickable
-                        ? 'hover:shadow-md hover:border-gray-200 cursor-pointer'
-                        : 'opacity-60 cursor-default'
-                      }`}
+                    className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 px-5 py-4 transition-all hover:shadow-md hover:border-gray-200"
                   >
-                    <span className="text-3xl">{fullData?.emoji || result.emoji}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-gray-800 truncate">{result.name}</p>
-                      <p className="text-xs text-gray-400">{result.quizName} &middot; {result.trait}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
-                  </button>
+                    {/* Clickable navigation area */}
+                    <button
+                      onClick={() => { if (isClickable) navigate(quizMap.route); }}
+                      disabled={!isClickable}
+                      className={`flex items-center gap-4 flex-1 min-w-0 text-left ${isClickable ? 'cursor-pointer' : 'opacity-60 cursor-default'}`}
+                    >
+                      <span className="text-3xl flex-shrink-0">{fullData?.emoji || result.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-800 truncate">{result.name}</p>
+                        <p className="text-xs text-gray-400">{result.quizName} &middot; {result.trait}</p>
+                      </div>
+                      {isClickable && !isConfirming && <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />}
+                    </button>
+
+                    {/* Per-quiz reset control */}
+                    {isConfirming ? (
+                      <div className="flex items-center gap-2 flex-shrink-0 pl-2 border-l border-gray-100">
+                        <button
+                          onClick={() => setConfirmReset(null)}
+                          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => handleQuizReset(quizKey)}
+                          className="text-xs font-semibold text-red-500 hover:text-red-600 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmReset(quizKey)}
+                        className="flex-shrink-0 p-1 text-gray-200 hover:text-red-400 transition-colors"
+                        aria-label={`Remove ${result.quizName} result`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -270,15 +342,7 @@ export default function Profile() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="space-y-3"
         >
-          <button
-            onClick={handleReset}
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-gray-100 text-gray-400 font-semibold text-sm hover:border-red-200 hover:text-red-500 transition-all"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Reset Personality Data
-          </button>
           <button
             onClick={handleSignOut}
             className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-gray-100 text-gray-400 font-semibold text-sm hover:border-gray-200 hover:text-gray-600 transition-all"

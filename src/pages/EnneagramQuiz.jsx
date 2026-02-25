@@ -1,6 +1,5 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
 import { enneagramQuestions } from '../data/enneagramQuestions';
 import { getEnneagramResult } from '../data/enneagramResults';
@@ -54,20 +53,33 @@ export default function EnneagramQuiz() {
   }, [navigate, user]);
 
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {
-    return question.options.map((opt) => (
-      <motion.button
-        key={opt.value}
-        onClick={() => onAnswer(opt.value)}
-        whileTap={{ scale: 0.97 }}
-        className={`w-full px-6 py-4 rounded-2xl text-left font-semibold transition-all duration-150 border-2
-          ${selectedValue === opt.value
-            ? 'bg-mint-400 border-mint-400 text-white shadow-[0_2px_10px_rgba(59,192,123,0.35)]'
-            : 'bg-white border-gray-200 text-gray-700 hover:border-mint-300 hover:bg-mint-50 shadow-sm'
-          }`}
-      >
-        {opt.label}
-      </motion.button>
-    ));
+    const scaleLabels = { 1: 'Not me', 2: 'A little', 3: 'Mostly', 4: 'Totally' };
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <div className="flex items-center gap-3 w-full">
+          <span className="text-xs text-gray-400 w-14 text-right shrink-0">Not me</span>
+          <div className="flex gap-2.5 flex-1 justify-center">
+            {[1, 2, 3, 4].map((val) => (
+              <button
+                key={val}
+                onClick={() => onAnswer(val)}
+                className={`w-10 h-10 rounded-full text-sm font-bold transition-all duration-150
+                  ${selectedValue === val
+                    ? 'bg-mint-400 text-white scale-110 shadow-[0_2px_10px_rgba(59,192,123,0.35)]'
+                    : 'bg-gray-100 text-gray-400 hover:bg-mint-100 hover:text-mint-500'
+                  }`}
+              >
+                {val}
+              </button>
+            ))}
+          </div>
+          <span className="text-xs text-gray-400 w-14 shrink-0">Totally me</span>
+        </div>
+        {selectedValue != null && (
+          <p className="text-xs text-mint-500 font-semibold">{scaleLabels[selectedValue]}</p>
+        )}
+      </div>
+    );
   }, []);
 
   return (

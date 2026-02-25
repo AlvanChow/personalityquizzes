@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Cake, Brain, CircleDashed, RotateCcw } from 'lucide-react';
+import { Cake, Brain, CircleDashed } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
@@ -192,7 +192,7 @@ function getRange(data, score) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { scores, hasCompleted, loading, resetScores } = useBigFive();
+  const { scores, hasCompleted, loading } = useBigFive();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -205,11 +205,6 @@ export default function Dashboard() {
     </div>
   );
   if (!hasCompleted) return null;
-
-  function handleReset() {
-    resetScores();
-    navigate('/');
-  }
 
   return (
     <div className="min-h-screen bg-cream-50">
@@ -224,13 +219,6 @@ export default function Dashboard() {
               className="text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors hidden sm:block"
             >
               Frameworks
-            </button>
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Reset
             </button>
             <UserMenu />
           </div>
