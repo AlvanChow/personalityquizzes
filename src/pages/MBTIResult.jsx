@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Brain } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Brain, Star, ShieldAlert, Sparkles, TrendingUp, Zap, AlertTriangle, ChevronDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import { mbtiInsights } from '../data/mbtiInsights';
+import { mbtiRoles } from '../data/mbtiResults';
 
 const DIMENSION_LABELS = {
   IE: { low: 'Introversion (I)', high: 'Extraversion (E)' },
@@ -14,6 +15,20 @@ const DIMENSION_LABELS = {
 };
 
 const DIMENSION_ORDER = ['IE', 'SN', 'TF', 'JP'];
+
+const ROLE_ICON_COLORS = {
+  analysts:  'bg-purple-100 text-purple-600',
+  diplomats: 'bg-green-100 text-green-600',
+  sentinels: 'bg-sky-100 text-sky-600',
+  explorers: 'bg-amber-100 text-amber-600',
+};
+
+const ROLE_BADGE_COLORS = {
+  analysts:  'bg-purple-100 text-purple-700 border-purple-200',
+  diplomats: 'bg-green-100 text-green-700 border-green-200',
+  sentinels: 'bg-sky-100 text-sky-700 border-sky-200',
+  explorers: 'bg-amber-100 text-amber-700 border-amber-200',
+};
 
 function DimensionBar({ dim, score, delay }) {
   const labels = DIMENSION_LABELS[dim];
@@ -60,6 +75,31 @@ function InsightCard({ icon: Icon, title, children, delay, color }) {
   );
 }
 
+function ExpandableItem({ title, text, accent }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <button onClick={() => setOpen(o => !o)} className="w-full text-left">
+      <div className="flex items-center justify-between py-2">
+        <span className={`text-sm font-semibold ${accent}`}>{title}</span>
+        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ml-2 ${open ? 'rotate-180' : ''}`} />
+      </div>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.p
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="text-xs text-gray-500 leading-relaxed pb-2 overflow-hidden"
+          >
+            {text}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </button>
+  );
+}
+
 export default function MBTIResult() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -84,6 +124,9 @@ export default function MBTIResult() {
 
   const { result, scores } = data;
   const insights = mbtiInsights[result.name];
+  const roleData = result.role ? mbtiRoles[result.role] : null;
+  const roleIconColor = result.role ? ROLE_ICON_COLORS[result.role] : '';
+  const roleBadgeColor = result.role ? ROLE_BADGE_COLORS[result.role] : '';
 
   async function handleShare() {
     const text = `I got ${result.name} — ${result.nickname} on My Personality Quizzes! Discover your MBTI type too.`;
@@ -112,6 +155,7 @@ export default function MBTIResult() {
           Back to Quizzes
         </button>
 
+        {/* ── Type header card ── */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -133,9 +177,15 @@ export default function MBTIResult() {
             <h1 className={`text-5xl font-black tracking-widest mb-1 ${result.accent}`}>
               {result.name}
             </h1>
-            <p className={`text-lg font-bold ${result.accent} opacity-70`}>
+            <p className={`text-lg font-bold ${result.accent} opacity-70 mb-3`}>
               {result.nickname}
             </p>
+            {roleData && (
+              <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full border ${roleBadgeColor}`}>
+                <span>{roleData.emoji}</span>
+                {roleData.name}
+              </span>
+            )}
           </div>
 
           <p className="text-gray-700 leading-relaxed text-center text-base md:text-lg">
@@ -143,6 +193,7 @@ export default function MBTIResult() {
           </p>
         </motion.div>
 
+        {/* ── Dimension scores ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -157,8 +208,29 @@ export default function MBTIResult() {
           ))}
         </motion.div>
 
+        {/* ── Role group card ── */}
+        {roleData && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+            className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${roleIconColor}`}>
+                <span className="text-sm">{roleData.emoji}</span>
+              </div>
+              <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">
+                {roleData.name} · {roleData.code}
+              </h3>
+            </div>
+            <p className="text-sm text-gray-600 leading-relaxed">{roleData.description}</p>
+          </motion.div>
+        )}
+
         {insights && (
           <>
+            {/* ── Career & Work ── */}
             <InsightCard icon={Briefcase} title="Career & Work" delay={0.4} color="bg-sky-100 text-sky-600">
               <p className="text-sm text-gray-600 leading-relaxed mb-3">{insights.careerNote}</p>
               <div className="flex flex-wrap gap-2">
@@ -170,13 +242,99 @@ export default function MBTIResult() {
               </div>
             </InsightCard>
 
-            <InsightCard icon={Users} title="Friendships & Relationships" delay={0.5} color="bg-rose-100 text-rose-500">
+            {/* ── Friendships & Relationships ── */}
+            <InsightCard icon={Users} title="Friendships & Relationships" delay={0.45} color="bg-rose-100 text-rose-500">
               <p className="text-sm text-gray-600 leading-relaxed">{insights.friendships}</p>
             </InsightCard>
 
-            <InsightCard icon={Brain} title="Psychological Insights" delay={0.6} color="bg-violet-100 text-violet-600">
-              <p className="text-sm text-gray-600 leading-relaxed">{insights.psyche}</p>
+            {/* ── Strengths ── */}
+            {result.strengths?.length > 0 && (
+              <InsightCard icon={Star} title="Strengths" delay={0.5} color="bg-emerald-100 text-emerald-600">
+                <div className="divide-y divide-gray-100">
+                  {result.strengths.map((s) => (
+                    <ExpandableItem key={s.title} title={s.title} text={s.text} accent="text-emerald-700" />
+                  ))}
+                </div>
+              </InsightCard>
+            )}
+
+            {/* ── Blind Spots ── */}
+            {result.weaknesses?.length > 0 && (
+              <InsightCard icon={ShieldAlert} title="Blind Spots" delay={0.55} color="bg-orange-100 text-orange-600">
+                <div className="divide-y divide-gray-100">
+                  {result.weaknesses.map((w) => (
+                    <ExpandableItem key={w.title} title={w.title} text={w.text} accent="text-orange-700" />
+                  ))}
+                </div>
+              </InsightCard>
+            )}
+
+            {/* ── Peak & Pressure ── */}
+            {(insights.atBest || insights.underStress) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+                className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5"
+              >
+                {insights.atBest && (
+                  <div className="mb-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-100 text-emerald-600">
+                        <Zap className="w-4 h-4" />
+                      </div>
+                      <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">At Their Best</h3>
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed">{insights.atBest}</p>
+                  </div>
+                )}
+                {insights.atBest && insights.underStress && (
+                  <div className="border-t border-gray-100 mb-5" />
+                )}
+                {insights.underStress && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-100 text-amber-600">
+                        <AlertTriangle className="w-4 h-4" />
+                      </div>
+                      <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Under Stress</h3>
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed">{insights.underStress}</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* ── Growth Direction ── */}
+            <InsightCard icon={TrendingUp} title="Growth Direction" delay={0.65} color="bg-violet-100 text-violet-600">
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">{insights.psyche}</p>
+              {insights.growthTips?.length > 0 && (
+                <ul className="space-y-2">
+                  {insights.growthTips.map((tip) => (
+                    <li key={tip} className="flex items-start gap-2 text-sm text-gray-600">
+                      <span className="text-violet-400 mt-0.5 shrink-0">&#x2022;</span>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </InsightCard>
+
+            {/* ── Famous People ── */}
+            {result.famousPeople?.length > 0 && (
+              <InsightCard icon={Sparkles} title="Famous Examples" delay={0.7} color="bg-peach-100 text-peach-600">
+                <p className="text-xs text-gray-400 font-semibold mb-3 uppercase tracking-wider">
+                  ~{result.population} of the population
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {result.famousPeople.map((person) => (
+                    <span key={person} className="text-xs font-semibold bg-peach-50 text-peach-700 px-3 py-1 rounded-full border border-peach-100">
+                      {person}
+                    </span>
+                  ))}
+                </div>
+              </InsightCard>
+            )}
           </>
         )}
 
