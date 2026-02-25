@@ -84,7 +84,7 @@ export default function EnneagramQuiz() {
         renderOptions={renderOptions}
         quizKey="enneagram"
         userId={user?.id ?? null}
-        allowViewAll
+        questionsPerPage={9}
       />
     </>
   );

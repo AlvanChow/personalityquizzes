@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
 import QuizCard from '../components/QuizCard';
 import { track } from '../utils/analytics';
-import lifeInsights from '../data/lifeInsights';
+import lifeAnalysis from '../data/lifeAnalysis';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 
@@ -312,8 +312,9 @@ export default function Dashboard() {
           </p>
 
           <div className="flex flex-col gap-5 mb-12">
-            {lifeInsights.map((category, ci) => {
+            {lifeAnalysis.map((category, ci) => {
               const Icon = category.icon;
+              const analysis = category.getAnalysis(scores);
               return (
                 <motion.div
                   key={category.key}
@@ -322,26 +323,35 @@ export default function Dashboard() {
                   transition={{ duration: 0.45, delay: ci * 0.06 }}
                   className="rounded-3xl border border-gray-100 bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.05)]"
                 >
-                  <div className="flex items-center gap-2.5 mb-4">
+                  <div className="flex items-center gap-2.5 mb-3">
                     <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center">
                       <Icon className="w-4 h-4 text-sky-400" />
                     </div>
                     <h3 className="text-base font-extrabold text-gray-800">{category.label}</h3>
                   </div>
-                  <div className="flex flex-col gap-3">
-                    {traitOrder.map((trait) => {
-                      const score = scores[trait];
-                      const ranges = category.traits[trait];
-                      const match = ranges.find((r) => score <= r.max) ?? ranges[ranges.length - 1];
-                      const td = traitData[trait];
-                      return (
-                        <div key={trait} className="flex gap-3">
-                          <span className={`text-xs font-bold ${td.accent} w-28 shrink-0 pt-0.5`}>{td.label}</span>
-                          <p className="text-sm text-gray-600 leading-relaxed">{match.text}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                    {analysis.summary}
+                  </p>
+                  {analysis.careers && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {analysis.careers.map((c) => (
+                        <span
+                          key={c}
+                          className="text-xs font-semibold bg-sky-50 text-sky-600 px-3 py-1 rounded-full border border-sky-100"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <ul className="flex flex-col gap-2">
+                    {analysis.items.map((item, i) => (
+                      <li key={i} className="text-sm text-gray-600 leading-relaxed flex gap-2">
+                        <span className="text-gray-300 shrink-0 mt-1">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </motion.div>
               );
             })}
