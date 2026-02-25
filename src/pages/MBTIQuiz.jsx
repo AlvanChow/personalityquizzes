@@ -54,19 +54,25 @@ export default function MBTIQuiz() {
     navigate('/quiz/mbti/result', { replace: true });
   }, [navigate, user]);
 
+  const optionLetters = ['A', 'B', 'C', 'D'];
+
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {
-    return question.options.map((opt) => (
+    return question.options.map((opt, idx) => (
       <motion.button
         key={opt.value}
         onClick={() => onAnswer(opt.value)}
-        whileTap={{ scale: 0.97 }}
-        className={`w-full px-6 py-4 rounded-2xl text-left font-semibold transition-all duration-150 border-2
+        whileTap={{ scale: 0.98 }}
+        className={`w-full px-4 py-3.5 rounded-2xl text-left transition-all duration-150 border-2 flex items-start gap-3
           ${selectedValue === opt.value
             ? 'bg-coral-400 border-coral-400 text-white shadow-[0_2px_10px_rgba(255,138,92,0.35)]'
-            : 'bg-white border-gray-200 text-gray-700 hover:border-coral-300 hover:bg-coral-50 shadow-sm'
+            : 'bg-white border-gray-100 text-gray-700 hover:border-coral-200 hover:bg-coral-50 shadow-sm'
           }`}
       >
-        {opt.label}
+        <span className={`text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5
+          ${selectedValue === opt.value ? 'bg-white/25 text-white' : 'bg-gray-100 text-gray-400'}`}>
+          {optionLetters[idx]}
+        </span>
+        <span className="text-sm font-medium leading-snug">{opt.label}</span>
       </motion.button>
     ));
   }, []);
@@ -84,7 +90,6 @@ export default function MBTIQuiz() {
         renderOptions={renderOptions}
         quizKey="mbti"
         userId={user?.id ?? null}
-        questionsPerPage={7}
       />
     </>
   );
