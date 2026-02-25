@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { cakeQuestions } from './cakeQuestions.js';
 
-const VALID_TRAITS = ['E', 'C', 'O', 'N', 'A'];
+const VALID_TRAITS = ['AO', 'PS', 'IN', 'TM', 'AD', 'INF'];
 
 describe('cakeQuestions – structure', () => {
-  it('contains exactly 10 questions', () => {
-    expect(cakeQuestions).toHaveLength(10);
+  it('contains exactly 12 questions', () => {
+    expect(cakeQuestions).toHaveLength(12);
   });
 
   it('every question has a numeric id', () => {
@@ -14,9 +14,9 @@ describe('cakeQuestions – structure', () => {
     });
   });
 
-  it('question ids are unique and span 1–10', () => {
+  it('question ids are unique and span 1–12', () => {
     const ids = cakeQuestions.map((q) => q.id).sort((a, b) => a - b);
-    expect(ids).toEqual(Array.from({ length: 10 }, (_, i) => i + 1));
+    expect(ids).toEqual(Array.from({ length: 12 }, (_, i) => i + 1));
   });
 
   it('every question has a non-empty text string', () => {
@@ -26,7 +26,7 @@ describe('cakeQuestions – structure', () => {
     });
   });
 
-  it('every question has a valid Big Five trait letter', () => {
+  it('every question has a valid competency trait key', () => {
     cakeQuestions.forEach((q) => {
       expect(VALID_TRAITS).toContain(q.trait);
     });
@@ -56,7 +56,7 @@ describe('cakeQuestions – structure', () => {
 });
 
 describe('cakeQuestions – trait distribution', () => {
-  it('has exactly 2 questions per trait', () => {
+  it('has exactly 2 questions per competency trait', () => {
     const counts = Object.fromEntries(VALID_TRAITS.map((t) => [t, 0]));
     cakeQuestions.forEach((q) => { counts[q.trait]++; });
     VALID_TRAITS.forEach((t) => {

@@ -15,12 +15,12 @@ import { enneagramResults, getEnneagramResult } from './enneagramResults.js';
 // ─────────────────────────────────────────────
 describe('Cake save-format contract', () => {
   const allCakeScores = [
-    { O: 80, C: 10, E: 10, A: 10, N: 10 }, // matcha
-    { O: 10, C: 80, E: 10, A: 10, N: 10 }, // wedding
-    { O: 10, C: 10, E: 80, A: 10, N: 10 }, // funfetti
-    { O: 10, C: 10, E: 10, A: 80, N: 10 }, // redvelvet
-    { O: 10, C: 10, E: 10, A: 10, N: 80 }, // lava
-    { O: 50, C: 50, E: 50, A: 50, N: 50 }, // chocolate (balanced)
+    { AO: 8, PS: 2, IN: 2, TM: 2, AD: 2, INF: 2 }, // layercake
+    { AO: 2, PS: 8, IN: 2, TM: 2, AD: 2, INF: 2 }, // cupcake
+    { AO: 2, PS: 2, IN: 8, TM: 2, AD: 2, INF: 2 }, // macaron
+    { AO: 2, PS: 2, IN: 2, TM: 8, AD: 2, INF: 2 }, // strawberrycake
+    { AO: 2, PS: 2, IN: 2, TM: 2, AD: 8, INF: 2 }, // rollcake
+    { AO: 2, PS: 2, IN: 2, TM: 2, AD: 2, INF: 8 }, // tiramisu
   ];
 
   allCakeScores.forEach((scores, i) => {

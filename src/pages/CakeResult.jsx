@@ -1,56 +1,88 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Brain } from 'lucide-react';
-import { useBigFive } from '../contexts/BigFiveContext';
+import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getCakeResult } from '../data/cakeResults';
-import ScoreBar from '../components/ScoreBar';
 import { track } from '../utils/analytics';
 
-const traitOrder = ['O', 'C', 'E', 'A', 'N'];
+// MAX raw score per competency = 2 questions × 4 points = 8
+const MAX_COMPETENCY_SCORE = 8;
 
-// Insights keyed by dominant trait that determines the cake result
+const competencyMeta = {
+  AO:  { label: 'Action Oriented',     color: 'bg-amber-400' },
+  PS:  { label: 'Problem Solving',     color: 'bg-sky-400' },
+  IN:  { label: 'Innovation',          color: 'bg-rose-400' },
+  TM:  { label: 'Teamwork',            color: 'bg-pink-400' },
+  AD:  { label: 'Attention to Detail', color: 'bg-teal-400' },
+  INF: { label: 'Influence',           color: 'bg-stone-400' },
+};
+
+const competencyOrder = ['AO', 'PS', 'IN', 'TM', 'AD', 'INF'];
+
+function CompetencyBar({ competencyKey, score, delay, isTop }) {
+  const meta = competencyMeta[competencyKey];
+  const pct = Math.round(((score ?? 0) / MAX_COMPETENCY_SCORE) * 100);
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-1.5">
+        <span className={`text-sm font-semibold ${isTop ? 'text-gray-800' : 'text-gray-500'}`}>
+          {meta.label}
+          {isTop && (
+            <span className="ml-2 text-xs font-bold text-amber-500 uppercase tracking-wide">Top</span>
+          )}
+        </span>
+        <span className={`text-sm font-bold ${isTop ? 'text-gray-700' : 'text-gray-400'}`}>{pct}%</span>
+      </div>
+      <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+        <motion.div
+          className={`h-full rounded-full ${isTop ? meta.color : 'bg-gray-200'}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.8, delay, ease: 'easeOut' }}
+        />
+      </div>
+    </div>
+  );
+}
+
 const cakeInsights = {
-  Extraversion: {
-    careers: ['Sales & business development', 'Event management', 'Public relations', 'Teaching & training', 'Leadership & management', 'Performing arts'],
-    friendship: 'You are likely the social engine of your friend group — initiating plans, making introductions, and keeping energy high. You thrive in friendships that are active and fun, and you have a gift for making people feel immediately at ease.',
-    psyche: 'Your dominant Extraversion means you process the world through engagement. Solitude can feel like stagnation. Growth opportunity: learning to sit quietly with your own thoughts and developing relationships that go beyond surface-level energy.',
+  AO: {
+    workStyle: 'You operate with a strong bias for action — your instinct is to start moving and course-correct along the way. You measure a good day in deliverables completed, not meetings attended. When energy dips in a team, you are the one who picks up the pace. The risk is occasionally outrunning the plan; your biggest growth comes from pausing long enough to ensure effort is pointed in the right direction before accelerating.',
+    teamwork: 'You are a galvanizing presence in any team. Others find your drive contagious, and you often set the tempo for the whole group. You are at your collaborative best when the goal is clear and the path to it is yours to determine. You can frustrate colleagues who need more deliberation time — your growth edge is learning to hold space for that without losing momentum.',
+    careers: ['Operations & logistics', 'Startup founding', 'Sales & business development', 'Project management', 'Field delivery & execution', 'Manufacturing & production'],
   },
-  Conscientiousness: {
-    careers: ['Project management', 'Finance & accounting', 'Law', 'Medicine & surgery', 'Engineering', 'Operations & logistics'],
-    friendship: 'You are the friend who follows through — shows up, remembers plans, and can be counted on without question. Others find your reliability deeply comforting. Growth edge: learning to let go of expectations and enjoy the spontaneous moments.',
-    psyche: 'Your dominant Conscientiousness means you feel most at ease when things are ordered and moving toward a goal. Watch for perfectionism, which can prevent you from enjoying work or relationships that don\'t meet your internal standards.',
+  PS: {
+    workStyle: 'You are the person who sees past the surface of a problem to its structural cause. Where others want to move forward, you want to understand first. Your thinking is systematic and recursive — you recheck assumptions, test edge cases, and do not accept the first answer that arrives. You are at your best when given real problems to chew on, and you deliver solutions that actually hold up under pressure.',
+    teamwork: "You are the team's quiet insurance policy. You catch the flawed assumption before it becomes a failure. Because you work most intensely inside your own head, teammates may not always know how much you are contributing — your growth opportunity is making your reasoning visible so others can build on it, not just benefit from its outputs.",
+    careers: ['Engineering & software development', 'Strategy & management consulting', 'Data analysis & data science', 'Research & product development', 'Finance & risk management', 'UX research'],
   },
-  Openness: {
-    careers: ['Creative arts & design', 'Research & academia', 'Philosophy & writing', 'Architecture', 'Innovation & strategy', 'Culinary arts'],
-    friendship: 'You are the friend who introduces people to new ideas, places, and experiences. You bond through curiosity and love friendships that feel expansive. Growth edge: making sure you also show up for the unglamorous, ordinary moments.',
-    psyche: 'Your dominant Openness means you are energised by novelty and depth. Routine can feel like a slow death. The psychological challenge is channelling this restlessness productively, rather than perpetually seeking the next interesting thing.',
+  IN: {
+    workStyle: 'You are energized by the blank page. Constraints feel like starting points, not limitations — you find creative ways around or through them. You are constantly asking whether the way something is done is actually the best way. You generate more ideas than you can execute, which means your biggest professional leverage is pairing with people who can help you filter, prioritize, and ship.',
+    teamwork: 'You make teams more interesting. You introduce angles others have not considered and push against stale thinking in ways that produce genuinely better outcomes. Your collaborative growth area is staying long enough in a shared process to see your ideas through — innovation is most powerful when it does not abandon the team at the implementation stage.',
+    careers: ['Product design & UX', 'Creative direction & brand', 'Innovation & R&D', 'Content strategy & copywriting', 'Architecture & industrial design', 'Entrepreneurship'],
   },
-  Agreeableness: {
-    careers: ['Social work & counseling', 'Nursing & healthcare', 'Human resources', 'Education', 'Non-profit & advocacy', 'Diplomacy'],
-    friendship: 'You are the most considerate, warm-hearted friend imaginable — the one people turn to in crisis. Your gift is making others feel genuinely cared for. Growth edge: learning to advocate for your own needs and to receive as naturally as you give.',
-    psyche: 'Your dominant Agreeableness means you are wired for harmony. The risk is self-erasure — saying yes when you mean no, or suppressing your own needs to keep others comfortable. Growth comes from discovering that honesty and warmth can coexist.',
+  TM: {
+    workStyle: 'People are your medium. You are most productive in collaborative environments where you can move between building something and building the relationships that make it possible. You have an intuitive understanding of team dynamics — you know when morale needs a lift, when a conflict needs naming, and when to bring the right people together. You tend to hold teams together during difficult patches.',
+    teamwork: 'You are the person who makes collaboration actually feel good. You remember who needs recognition, you create space for quieter voices, and you make sure no one is left behind when the team moves fast. Your growth edge is ensuring that your attentiveness to others does not come at the cost of your own output — sometimes your strongest contribution is what you personally deliver, not just what you enable.',
+    careers: ['People & HR management', 'Community building & partnerships', 'Teaching & facilitation', 'Account management & client services', 'Non-profit program management', 'Healthcare coordination'],
   },
-  Neuroticism: {
-    careers: ['Creative writing & art', 'Therapy & counseling', 'Advocacy & social justice', 'Music & performance', 'Research into human experience', 'Healthcare'],
-    friendship: 'You are a deeply loyal, empathetic friend with an extraordinary ability to truly understand what others are going through. Your emotional depth creates profound connection. Growth edge: ensuring your own emotional needs are tended to, not just others\'.',
-    psyche: 'Your dominant emotional sensitivity is not a flaw — it is the source of your creativity, empathy, and depth. The work is learning to be with intensity rather than fight it, and developing a stable centre that doesn\'t get swept away in every emotional tide.',
+  AD: {
+    workStyle: 'You are the standard-setter. You have an eye for inconsistency that most people lack, and you take quiet professional pride in the fact that work leaving your hands is work you can stand behind completely. You are the person who catches the error before it reaches the client — and the one who builds the systems that prevent errors from occurring at all. High-stakes, high-visibility work plays directly to your strengths.',
+    teamwork: 'You raise the quality bar for everyone around you — not through pressure, but through example. People trust work that has been through your hands. Your collaborative challenge is recognizing when good enough actually is good enough, and when insisting on more thoroughness creates friction that slows the team down more than the uncorrected detail ever would.',
+    careers: ['Audit & compliance', 'Quality assurance & testing', 'Legal & contract management', 'Finance & accounting', 'Medical & clinical research', 'Technical writing & editing'],
   },
-  Balance: {
-    careers: ['Varies widely — your balanced profile means you can adapt to many environments', 'Management & coordination', 'Consulting', 'Teaching', 'Healthcare administration'],
-    friendship: 'Your balanced profile makes you an exceptionally versatile friend — you can meet people where they are. You don\'t overwhelm anyone with any single dominant trait, which makes you steady, adaptable, and genuinely easy to be around.',
-    psyche: 'Your psychological profile doesn\'t have a single dominant driver — which means you operate from a place of equilibrium. The opportunity here is to develop depth in specific areas by making deliberate choices, rather than letting your natural adaptability become avoidance of commitment.',
+  INF: {
+    workStyle: 'You are comfortable in front of a room, in a negotiation, or wherever stakes are highest. Your confidence is grounded — you have usually done the work to back up your position, and you know how to read an audience and adjust in real time. You take calculated risks because you have thought through the downside. You are most effective when you have a compelling vision to sell and the latitude to sell it your way.',
+    teamwork: 'You make teams more ambitious. When you believe in a direction, you create genuine momentum — people follow because you have made the destination sound worth reaching. Your growth edge is ensuring that influence flows both ways: that you are as skilled at listening to your team as you are at leading them, and that you leave room for others to shape the path.',
+    careers: ['Leadership & general management', 'Business development & partnerships', 'Marketing & brand strategy', 'Venture capital & investing', 'Executive communications', 'Policy & advocacy'],
   },
 };
 
 export default function CakeResult() {
   const navigate = useNavigate();
-  const { scores, hasCompleted } = useBigFive();
   const { user } = useAuth();
 
-  // Read the result that was captured at quiz-completion time so re-taking other
-  // quizzes (which may shift Big Five scores) cannot alter the displayed cake.
   const [storedData] = useState(() => {
     try {
       const raw = localStorage.getItem('personalens_cake');
@@ -61,26 +93,26 @@ export default function CakeResult() {
   });
 
   useEffect(() => {
-    if (!hasCompleted) navigate('/assessment');
-  }, [hasCompleted, navigate]);
+    if (!storedData) navigate('/');
+  }, [storedData, navigate]);
 
   const viewedRef = useRef(false);
   useEffect(() => {
-    if (viewedRef.current || !hasCompleted) return;
+    if (viewedRef.current || !storedData) return;
     viewedRef.current = true;
     track('quiz_result_viewed', { quiz: 'cake' }, user?.id ?? null);
-  }, [hasCompleted, user?.id]);
+  }, [storedData, user?.id]);
 
   const [shareError, setShareError] = useState(null);
 
-  if (!hasCompleted) return null;
+  if (!storedData) return null;
 
-  // Fall back to re-computing from current scores only when no stored result exists.
-  const result = storedData?.result ?? getCakeResult(scores);
+  const result = storedData.result;
+  const competencyScores = storedData.scores ?? {};
   const insights = cakeInsights[result.trait];
 
   async function handleShare() {
-    const text = `I got "${result.name}" on My Personality Quizzes! My dominant trait: ${result.trait}. Find out what cake you are!`;
+    const text = `I got "${result.name}" on My Personality Quizzes! My top workplace competency: ${result.competency}. ${result.tagline} Find out what cake you are!`;
     try {
       if (navigator.share) {
         await navigator.share({ title: 'My Personality Quizzes Result', text });
@@ -127,6 +159,7 @@ export default function CakeResult() {
             <h1 className={`text-3xl md:text-4xl font-extrabold ${result.accent}`}>
               {result.name}
             </h1>
+            <p className="mt-2 text-xs font-semibold text-gray-400 tracking-wide">{result.tagline}</p>
           </div>
 
           <p className="text-gray-700 leading-relaxed text-center text-base md:text-lg">
@@ -141,10 +174,16 @@ export default function CakeResult() {
           className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-8"
         >
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">
-            Your Updated Profile
+            Your Competency Breakdown
           </h3>
-          {traitOrder.map((trait, i) => (
-            <ScoreBar key={trait} trait={trait} value={scores[trait]} delay={i * 0.08} />
+          {competencyOrder.map((key, i) => (
+            <CompetencyBar
+              key={key}
+              competencyKey={key}
+              score={competencyScores[key] ?? 0}
+              delay={i * 0.08}
+              isTop={key === result.trait}
+            />
           ))}
         </motion.div>
 
@@ -157,7 +196,7 @@ export default function CakeResult() {
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-sky-100 text-sky-600">
                   <Briefcase className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Career & Work</h3>
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Career Paths</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {insights.careers.map((c) => (
@@ -173,9 +212,9 @@ export default function CakeResult() {
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-rose-100 text-rose-500">
                   <Users className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Friendships & Relationships</h3>
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Teamwork & Relationships</h3>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">{insights.friendship}</p>
+              <p className="text-sm text-gray-600 leading-relaxed">{insights.teamwork}</p>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -183,11 +222,11 @@ export default function CakeResult() {
               className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-100 text-violet-600">
-                  <Brain className="w-4 h-4" />
+                  <Zap className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Psychological Insights</h3>
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Work Style</h3>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">{insights.psyche}</p>
+              <p className="text-sm text-gray-600 leading-relaxed">{insights.workStyle}</p>
             </motion.div>
           </>
         )}
