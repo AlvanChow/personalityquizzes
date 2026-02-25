@@ -20,10 +20,13 @@ export default function Landing() {
     {
       id: 'big5',
       name: 'Big 5 Personality',
+      tagline: '#1 Most Accurate',
       description: 'The scientifically-backed OCEAN model. Discover your core traits and how you navigate the world.',
       icon: Activity,
-      iconBg: 'bg-teal-100 text-teal-600',
-      buttonBg: 'bg-teal-500 hover:bg-teal-600',
+      cardGradient: 'from-teal-500 to-emerald-600',
+      iconBg: 'bg-white/20',
+      buttonBg: 'bg-white text-teal-700 hover:bg-white/90',
+      glowColor: 'shadow-teal-500/25',
       buttonText: hasCompleted ? 'View Results' : 'Take the Big 5',
       action: () => trackAndNavigate('big5', hasCompleted ? '/dashboard' : '/assessment'),
       featured: true
@@ -31,10 +34,13 @@ export default function Landing() {
     {
       id: 'mbti',
       name: 'MBTI (16 Types)',
+      tagline: 'Most Popular',
       description: 'Are you an INTJ or an ESFP? Find your Myers-Briggs type and understand your cognitive functions.',
       icon: Brain,
-      iconBg: 'bg-coral-100 text-coral-600',
-      buttonBg: 'bg-coral-500 hover:bg-coral-600',
+      cardGradient: 'from-coral-400 to-rose-500',
+      iconBg: 'bg-white/20',
+      buttonBg: 'bg-white text-coral-600 hover:bg-white/90',
+      glowColor: 'shadow-coral-400/25',
       buttonText: 'Take the MBTI',
       action: () => trackAndNavigate('mbti', '/quiz/mbti'),
       featured: true
@@ -42,10 +48,13 @@ export default function Landing() {
     {
       id: 'enneagram',
       name: 'Enneagram',
+      tagline: 'Deep Insight',
       description: 'Discover which of the 9 interconnected personality types drives your deepest motivations and fears.',
       icon: CircleDashed,
-      iconBg: 'bg-mint-100 text-mint-600',
-      buttonBg: 'bg-mint-500 hover:bg-mint-600',
+      cardGradient: 'from-violet-500 to-purple-600',
+      iconBg: 'bg-white/20',
+      buttonBg: 'bg-white text-violet-700 hover:bg-white/90',
+      glowColor: 'shadow-violet-500/25',
       buttonText: 'Take the Enneagram',
       action: () => trackAndNavigate('enneagram', '/quiz/enneagram'),
       featured: true
@@ -53,10 +62,13 @@ export default function Landing() {
     {
       id: 'cakeme',
       name: 'Cake.me',
+      tagline: 'Viral Hit',
       description: 'The viral sensation. What kind of cake matches your vibe? Sweet, layered, or a little nutty?',
       icon: Cake,
-      iconBg: 'bg-rose-100 text-rose-600',
-      buttonBg: 'bg-rose-400 hover:bg-rose-500',
+      cardGradient: 'from-pink-400 to-rose-500',
+      iconBg: 'bg-white/20',
+      buttonBg: 'bg-white text-pink-600 hover:bg-white/90',
+      glowColor: 'shadow-pink-400/25',
       buttonText: 'Find Your Cake',
       action: () => trackAndNavigate('cakeme', '/quiz/cake'),
       featured: true
@@ -64,9 +76,9 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 font-nunito">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#FFF8F5] via-[#FDF5F3] to-[#F9F0F8] font-nunito">
 
-      <header className="px-6 py-5 border-b border-gray-200 bg-white">
+      <header className="px-6 py-5 border-b border-rose-100/60 bg-white/70 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <span className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-coral-400" />
@@ -134,7 +146,7 @@ export default function Landing() {
             </button>
             <button
               onClick={() => navigate('/frameworks')}
-              className="text-gray-500 hover:text-gray-700 font-bold text-base px-5 py-3.5 rounded-lg hover:bg-gray-100 transition-all duration-200 flex items-center gap-2"
+              className="text-gray-500 hover:text-gray-700 font-bold text-base px-5 py-3.5 rounded-lg hover:bg-white/60 transition-all duration-200 flex items-center gap-2"
             >
               Explore all frameworks
               <ChevronDown className="w-4 h-4" />
@@ -156,33 +168,45 @@ export default function Landing() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-5"
+          className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          {quizzes.map((quiz) => {
+          {quizzes.map((quiz, index) => {
             const Icon = quiz.icon;
             return (
-              <div
+              <motion.div
                 key={quiz.id}
                 onClick={quiz.action}
-                className="bg-white rounded-xl p-7 cursor-pointer shadow-sm border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 flex flex-col group"
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.25 + index * 0.08 }}
+                whileHover={{ y: -6, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`relative overflow-hidden rounded-2xl p-8 cursor-pointer shadow-lg ${quiz.glowColor} hover:shadow-xl transition-shadow duration-300 flex flex-col group bg-gradient-to-br ${quiz.cardGradient}`}
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${quiz.iconBg} shrink-0`}>
-                    <Icon className="w-6 h-6" />
+                {/* Decorative background circles */}
+                <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full" />
+                <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-white/5 rounded-full" />
+
+                <div className="relative flex items-center gap-4 mb-2">
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${quiz.iconBg} backdrop-blur-sm shrink-0`}>
+                    <Icon className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-extrabold text-gray-900 leading-snug">{quiz.name}</h3>
+                  <div>
+                    <span className="inline-block text-[11px] font-extrabold uppercase tracking-widest text-white/70 mb-1">{quiz.tagline}</span>
+                    <h3 className="text-2xl font-black text-white leading-snug">{quiz.name}</h3>
+                  </div>
                 </div>
-                <p className="text-gray-500 font-medium mb-7 leading-relaxed">
+                <p className="relative text-white/80 font-semibold mb-8 leading-relaxed text-[15px]">
                   {quiz.description}
                 </p>
 
-                <div className="mt-auto">
-                  <button className={`w-full text-white font-bold text-base py-3.5 px-5 rounded-lg transition-all duration-200 flex items-center justify-center gap-2.5 ${quiz.buttonBg}`}>
+                <div className="relative mt-auto">
+                  <button className={`w-full font-extrabold text-base py-4 px-5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg ${quiz.buttonBg}`}>
                     {quiz.buttonText}
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
                   </button>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </motion.div>
