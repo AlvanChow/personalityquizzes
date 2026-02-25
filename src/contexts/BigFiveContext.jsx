@@ -163,20 +163,19 @@ export function BigFiveProvider({ children }) {
     syncToSupabase(baselineScores, true);
   }
 
-  function resetScores() {
+  function resetBaseline() {
     setScores(defaultScores);
     setHasCompleted(false);
-    // Clear all quiz result localStorage entries so stale results are not shown.
-    localStorage.removeItem('personalens_cake');
-    localStorage.removeItem('personalens_mbti');
-    localStorage.removeItem('personalens_enneagram');
-    // Reset quiz_results in Supabase along with the Big Five fields.
-    syncToSupabase(defaultScores, false, {});
-    track('dashboard_reset', {}, user?.id ?? null);
+    // Only clear the Big Five localStorage keys — quiz results are preserved.
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(`${STORAGE_KEY}_completed`);
+    // Only reset Big Five fields in Supabase; quiz_results is left untouched.
+    syncToSupabase(defaultScores, false);
+    track('baseline_reset', {}, user?.id ?? null);
   }
 
   return (
-    <BigFiveContext.Provider value={{ scores, hasCompleted, loading: contextLoading, updateScores, completeBaseline, resetScores }}>
+    <BigFiveContext.Provider value={{ scores, hasCompleted, loading: contextLoading, updateScores, completeBaseline, resetBaseline }}>
       {children}
     </BigFiveContext.Provider>
   );
