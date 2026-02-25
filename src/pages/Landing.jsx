@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
-import { Activity, Brain, CircleDashed, Cake, ArrowRight, Sparkles } from 'lucide-react';
+import { Activity, Brain, CircleDashed, Cake, ArrowRight, Sparkles, Users, ChevronDown } from 'lucide-react';
 import { track } from '../utils/analytics';
 
 export default function Landing() {
@@ -112,16 +112,26 @@ export default function Landing() {
 
       <main className="flex-1 flex flex-col items-center px-6 pb-24 relative z-10">
 
-        <div className="text-center max-w-3xl mx-auto mt-12 md:mt-16 mb-20">
+        <div className="text-center max-w-3xl mx-auto mt-12 md:mt-20 mb-16">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-coral-100 text-coral-500 text-sm font-bold px-4 py-2 rounded-full mb-8 shadow-sm"
+          >
+            <Sparkles className="w-4 h-4" />
+            Science meets self-discovery
+          </motion.div>
+
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl sm:text-6xl md:text-7xl font-black text-gray-900 leading-[1.1] tracking-tight mb-6"
+            className="text-5xl sm:text-6xl md:text-7xl font-black text-gray-900 leading-[1.08] tracking-tight mb-7"
           >
-            Discover who <br className="hidden md:block" />
+            Your personality is a <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-coral-400 via-rose-400 to-peach-400">
-              you really are.
+              superpower. Learn it.
             </span>
           </motion.h1>
 
@@ -129,10 +139,45 @@ export default function Landing() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed"
+            className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto font-medium leading-relaxed mb-10"
           >
-            From deep scientific assessments to fun viral trends. Choose your favorite personality framework below and let's get started!
+            Most people go their whole lives without understanding why they think, feel, and act the way they do. Our research-backed assessments decode the patterns behind your personality in under 10 minutes.
           </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.35 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
+          >
+            <button
+              onClick={() => {
+                track('hero_cta_clicked', { from: 'landing' }, user?.id ?? null);
+                navigate(hasCompleted ? '/dashboard' : '/assessment');
+              }}
+              className="group/cta bg-gradient-to-r from-coral-400 to-rose-400 hover:from-coral-500 hover:to-rose-500 text-white font-extrabold text-lg px-10 py-4.5 rounded-2xl shadow-lg shadow-coral-200/50 hover:shadow-xl hover:shadow-coral-300/50 transition-all duration-300 flex items-center gap-3 hover:scale-[1.03] active:scale-[0.98]"
+            >
+              {hasCompleted ? 'See My Results' : 'Start Your Deep Dive'}
+              <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1.5 transition-transform duration-300" />
+            </button>
+            <button
+              onClick={() => navigate('/frameworks')}
+              className="text-gray-500 hover:text-gray-700 font-bold text-base px-6 py-4 rounded-2xl hover:bg-white/60 transition-all duration-300 flex items-center gap-2"
+            >
+              Explore all frameworks
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="flex items-center justify-center gap-2 text-sm text-gray-400 font-medium"
+          >
+            <Users className="w-4 h-4" />
+            <span>Taken by <strong className="text-gray-500">50,000+</strong> curious humans</span>
+          </motion.div>
         </div>
 
         <motion.div
