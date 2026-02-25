@@ -46,7 +46,7 @@ export default function UserMenu() {
   if (!user) {
     return (
       <button
-        onClick={signInWithGoogle}
+        onClick={() => signInWithGoogle().catch((err) => console.error('Sign in failed:', err))}
         className="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 text-sm font-semibold text-gray-700"
       >
         <GoogleIcon />

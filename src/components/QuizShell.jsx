@@ -19,6 +19,11 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
   const pageQuestions = questions.slice(page * questionsPerPage, (page + 1) * questionsPerPage);
   const scrollRef = useRef(null);
   const cardRefs = useRef({});
+  const shakeTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => clearTimeout(shakeTimerRef.current);
+  }, []);
 
   const handleAnswer = useCallback((question, value) => {
     setLocalAnswers(prev => ({
@@ -49,7 +54,8 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
     if (firstUnanswered && cardRefs.current[firstUnanswered.id]) {
       cardRefs.current[firstUnanswered.id].scrollIntoView({ behavior: 'smooth', block: 'center' });
       setShakeId(firstUnanswered.id);
-      setTimeout(() => setShakeId(null), 800);
+      clearTimeout(shakeTimerRef.current);
+      shakeTimerRef.current = setTimeout(() => setShakeId(null), 800);
     }
   }, [pageAnswered, isLastPage, onComplete, localAnswers, pageQuestions]);
 

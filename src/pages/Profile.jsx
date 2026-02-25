@@ -36,6 +36,9 @@ export default function Profile() {
   const { scores, hasCompleted, resetBaseline } = useBigFive();
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  // Tracks which item is pending confirmation: a quiz key ('cake'/'mbti'/'enneagram')
+  // or 'baseline' for the Big Five reset.
+  const [confirmReset, setConfirmReset] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -67,10 +70,6 @@ export default function Profile() {
 
   const quizResults = profile?.quiz_results || {};
   const completedQuizzes = Object.entries(quizResults);
-
-  // Tracks which item is pending confirmation: a quiz key ('cake'/'mbti'/'enneagram')
-  // or 'baseline' for the Big Five reset.
-  const [confirmReset, setConfirmReset] = useState(null);
 
   const quizLocalKeys = {
     cake: 'personalens_cake',

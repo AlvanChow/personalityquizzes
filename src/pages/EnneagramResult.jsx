@@ -57,8 +57,12 @@ export default function EnneagramResult() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [data] = useState(() => {
-    const raw = localStorage.getItem('personalens_enneagram');
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = localStorage.getItem('personalens_enneagram');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
   });
   const [shareError, setShareError] = useState(null);
 

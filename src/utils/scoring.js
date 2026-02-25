@@ -21,8 +21,10 @@ export function computeBaselineScores(answers, questions) {
   const traitSums = {};
   const traitCounts = {};
 
+  const questionMap = new Map(questions.map((q) => [q.id, q]));
+
   Object.entries(answers).forEach(([qId, { trait, value }]) => {
-    const q = questions.find((bq) => bq.id === Number(qId));
+    const q = questionMap.get(Number(qId));
     const adjusted = q?.reversed ? 6 - value : value;
     traitSums[trait] = (traitSums[trait] || 0) + adjusted;
     traitCounts[trait] = (traitCounts[trait] || 0) + 1;

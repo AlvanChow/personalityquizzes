@@ -104,8 +104,12 @@ export default function MBTIResult() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [data] = useState(() => {
-    const raw = localStorage.getItem('personalens_mbti');
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = localStorage.getItem('personalens_mbti');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
   });
   const [shareError, setShareError] = useState(null);
 
