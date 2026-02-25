@@ -9,6 +9,15 @@ export default {
       fontFamily: {
         nunito: ['Nunito', 'sans-serif'],
       },
+      keyframes: {
+        shake: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '20%': { transform: 'translateX(-6px)' },
+          '40%': { transform: 'translateX(5px)' },
+          '60%': { transform: 'translateX(-4px)' },
+          '80%': { transform: 'translateX(2px)' },
+        },
+      },
       colors: {
         cream: { 50: '#FFFDF7', 100: '#FFF9E8', 200: '#FFF3D1' },
         sky: { 50: '#F0F7FF', 100: '#DCEEFB', 200: '#B6D9F7', 300: '#7BBCF0', 400: '#3B9AE5', 500: '#1A7FD4' },

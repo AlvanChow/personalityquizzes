@@ -7,31 +7,9 @@ import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
 import QuizCard from '../components/QuizCard';
 import { track } from '../utils/analytics';
+import lifeInsights from '../data/lifeInsights';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
-
-const traitInsights = {
-  O: {
-    careers: 'High Openness → creative fields, research, design, philosophy, arts, innovation. Low Openness → operations, logistics, accounting, skilled trades, administration.',
-    relationships: 'High scorers seek depth, novelty, and intellectual connection in relationships. Low scorers prefer stability, familiarity, and partners with shared routines.',
-  },
-  C: {
-    careers: 'High Conscientiousness → law, medicine, finance, management, engineering. Low Conscientiousness → creative freelancing, entrepreneurship, emergency work where improvisation is valued.',
-    relationships: 'High scorers are reliable, planned, and committed partners. Low scorers bring spontaneity but may struggle with consistency and follow-through.',
-  },
-  E: {
-    careers: 'High Extraversion → sales, leadership, PR, performance, teaching, politics. Low Extraversion → writing, programming, research, design, independent specialist roles.',
-    relationships: 'Highly extraverted people tend to have wide social networks and need social stimulation from partners. Introverts seek fewer, deeper connections and need space to recharge.',
-  },
-  A: {
-    careers: 'High Agreeableness → social work, nursing, counseling, education, HR. Low Agreeableness → law, competitive business, negotiation, surgery, critical analysis.',
-    relationships: 'High scorers are natural nurturers who prioritise harmony; may struggle with conflict. Low scorers are more direct and self-advocating; may need to consciously work on empathy.',
-  },
-  N: {
-    careers: 'High Neuroticism → artistic/creative fields (emotional sensitivity fuels creativity), therapy, advocacy. Low Neuroticism → leadership, military, emergency medicine, high-pressure roles.',
-    relationships: 'High scorers experience emotional depth and intensity in relationships; benefit from emotionally stable partners. Low scorers are steady anchors who may need to actively tune in to partners\' emotional needs.',
-  },
-};
 
 const traitData = {
   O: {
@@ -307,7 +285,7 @@ export default function Dashboard() {
                     {data.description}
                   </p>
 
-                  <div className="border-t border-white/60 pt-3 mb-3">
+                  <div className="border-t border-white/60 pt-3">
                     <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${data.accent}`}>
                       Your result — {range.heading}
                     </p>
@@ -315,19 +293,6 @@ export default function Dashboard() {
                       {range.text}
                     </p>
                   </div>
-
-                  {traitInsights[trait] && (
-                    <div className="grid grid-cols-1 gap-2">
-                      <div className="bg-white/60 rounded-2xl p-3">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Career Fit</p>
-                        <p className="text-xs text-gray-600 leading-relaxed">{traitInsights[trait].careers}</p>
-                      </div>
-                      <div className="bg-white/60 rounded-2xl p-3">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">In Relationships</p>
-                        <p className="text-xs text-gray-600 leading-relaxed">{traitInsights[trait].relationships}</p>
-                      </div>
-                    </div>
-                  )}
                 </motion.div>
               );
             })}
@@ -337,7 +302,56 @@ export default function Dashboard() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">
+            Life Analysis
+          </h2>
+          <p className="text-gray-500 mb-6">
+            How your personality plays out across major areas of life.
+          </p>
+
+          <div className="flex flex-col gap-5 mb-12">
+            {lifeInsights.map((category, ci) => {
+              const Icon = category.icon;
+              return (
+                <motion.div
+                  key={category.key}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, delay: ci * 0.06 }}
+                  className="rounded-3xl border border-gray-100 bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.05)]"
+                >
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-sky-400" />
+                    </div>
+                    <h3 className="text-base font-extrabold text-gray-800">{category.label}</h3>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    {traitOrder.map((trait) => {
+                      const score = scores[trait];
+                      const ranges = category.traits[trait];
+                      const match = ranges.find((r) => score <= r.max) ?? ranges[ranges.length - 1];
+                      const td = traitData[trait];
+                      return (
+                        <div key={trait} className="flex gap-3">
+                          <span className={`text-xs font-bold ${td.accent} w-28 shrink-0 pt-0.5`}>{td.label}</span>
+                          <p className="text-sm text-gray-600 leading-relaxed">{match.text}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
           <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">
             Quiz Library

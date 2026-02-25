@@ -14,15 +14,18 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
   const navigate = useNavigate();
   const [localAnswers, setLocalAnswers] = useState({ ...initialAnswers });
   const [page, setPage] = useState(0);
+  const [shakeId, setShakeId] = useState(null);
   const totalPages = Math.ceil(questions.length / questionsPerPage);
   const pageQuestions = questions.slice(page * questionsPerPage, (page + 1) * questionsPerPage);
   const scrollRef = useRef(null);
+  const cardRefs = useRef({});
 
   const handleAnswer = useCallback((question, value) => {
     setLocalAnswers(prev => ({
       ...prev,
       [question.id]: { trait: question.trait, value },
     }));
+    setShakeId(prev => prev === question.id ? null : prev);
   }, []);
 
   const pageAnswered = pageQuestions.every(q => localAnswers[q.id] != null);
@@ -30,13 +33,24 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
   const totalAnswered = Object.keys(localAnswers).length;
 
   const handleNext = useCallback(() => {
-    if (isLastPage) {
-      onComplete(localAnswers);
-    } else {
-      setPage(prev => prev + 1);
-      if (scrollRef.current) scrollRef.current.scrollTo(0, 0);
+    if (pageAnswered) {
+      if (isLastPage) {
+        onComplete(localAnswers);
+      } else {
+        setPage(prev => prev + 1);
+        if (scrollRef.current) scrollRef.current.scrollTo(0, 0);
+      }
+      return;
     }
-  }, [isLastPage, onComplete, localAnswers]);
+
+    // Find the first unanswered question on this page
+    const firstUnanswered = pageQuestions.find(q => localAnswers[q.id] == null);
+    if (firstUnanswered && cardRefs.current[firstUnanswered.id]) {
+      cardRefs.current[firstUnanswered.id].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setShakeId(firstUnanswered.id);
+      setTimeout(() => setShakeId(null), 800);
+    }
+  }, [pageAnswered, isLastPage, onComplete, localAnswers, pageQuestions]);
 
   const handleBack = useCallback(() => {
     if (page === 0) {
@@ -74,9 +88,16 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
         <div className="max-w-2xl mx-auto px-4 pt-4">
           <div className="space-y-5">
             {pageQuestions.map((q, idx) => (
-              <div key={q.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100">
+              <div
+                key={q.id}
+                ref={el => { cardRefs.current[q.id] = el; }}
+                className={`bg-white rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.05)] border-2 transition-colors duration-300
+                  ${shakeId === q.id ? 'border-red-300 animate-[shake_0.4s_ease-in-out]' : 'border-gray-100'}`}
+              >
                 <p className="text-sm font-semibold text-gray-700 mb-3 leading-snug">
-                  <span className="text-sky-400 font-bold mr-1.5">{page * questionsPerPage + idx + 1}.</span>
+                  <span className={`font-bold mr-1.5 transition-colors duration-300 ${shakeId === q.id ? 'text-red-400' : 'text-sky-400'}`}>
+                    {page * questionsPerPage + idx + 1}.
+                  </span>
                   {q.text}
                 </p>
                 <div className="flex flex-col gap-2">
@@ -109,11 +130,10 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
           </div>
           <button
             onClick={handleNext}
-            disabled={!pageAnswered}
             className={`w-full py-3 rounded-2xl text-base font-bold transition-all flex items-center justify-center gap-2
               ${pageAnswered
                 ? 'bg-sky-400 hover:bg-sky-500 text-white shadow-md'
-                : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                : 'bg-sky-200 text-white hover:bg-sky-300 shadow-sm'
               }`}
           >
             {isLastPage ? 'Submit All Answers' : 'Next'}
