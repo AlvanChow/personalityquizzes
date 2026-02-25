@@ -38,6 +38,7 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
         onComplete(localAnswers);
       } else {
         setPage(prev => prev + 1);
+        window.scrollTo(0, 0);
         if (scrollRef.current) scrollRef.current.scrollTo(0, 0);
       }
       return;
@@ -57,6 +58,7 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
       navigate(exitPath);
     } else {
       setPage(prev => prev - 1);
+      window.scrollTo(0, 0);
       if (scrollRef.current) scrollRef.current.scrollTo(0, 0);
     }
   }, [page, navigate, exitPath]);
