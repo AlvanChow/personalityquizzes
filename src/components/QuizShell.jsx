@@ -10,6 +10,121 @@ const slideVariants = {
   exit: (dir) => ({ opacity: 0, x: dir > 0 ? -24 : 24 }),
 };
 
+function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, renderOptions, questionsPerPage, exitPath }) {
+  const navigate = useNavigate();
+  const [localAnswers, setLocalAnswers] = useState({ ...initialAnswers });
+  const [page, setPage] = useState(0);
+  const totalPages = Math.ceil(questions.length / questionsPerPage);
+  const pageQuestions = questions.slice(page * questionsPerPage, (page + 1) * questionsPerPage);
+  const scrollRef = useRef(null);
+
+  const handleAnswer = useCallback((question, value) => {
+    setLocalAnswers(prev => ({
+      ...prev,
+      [question.id]: { trait: question.trait, value },
+    }));
+  }, []);
+
+  const pageAnswered = pageQuestions.every(q => localAnswers[q.id] != null);
+  const isLastPage = page === totalPages - 1;
+  const totalAnswered = Object.keys(localAnswers).length;
+
+  const handleNext = useCallback(() => {
+    if (isLastPage) {
+      onComplete(localAnswers);
+    } else {
+      setPage(prev => prev + 1);
+      if (scrollRef.current) scrollRef.current.scrollTo(0, 0);
+    }
+  }, [isLastPage, onComplete, localAnswers]);
+
+  const handleBack = useCallback(() => {
+    if (page === 0) {
+      navigate(exitPath);
+    } else {
+      setPage(prev => prev - 1);
+      if (scrollRef.current) scrollRef.current.scrollTo(0, 0);
+    }
+  }, [page, navigate, exitPath]);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-cream-50">
+      <div className="flex items-center justify-between px-6 pt-6 pb-3 bg-cream-50 sticky top-0 z-10 border-b border-gray-100/80">
+        <button
+          onClick={handleBack}
+          aria-label={page === 0 ? 'Exit quiz' : 'Go to previous page'}
+          className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {page === 0 ? 'Exit' : 'Back'}
+        </button>
+        <span className="text-sm font-semibold text-gray-500">
+          Page {page + 1} of {totalPages}
+        </span>
+        <button
+          onClick={() => navigate(exitPath)}
+          aria-label="Exit quiz"
+          className="text-gray-300 hover:text-gray-500 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div ref={scrollRef} className="flex-1 overflow-auto pb-28">
+        <div className="max-w-2xl mx-auto px-4 pt-4">
+          <div className="space-y-5">
+            {pageQuestions.map((q, idx) => (
+              <div key={q.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100">
+                <p className="text-sm font-semibold text-gray-700 mb-3 leading-snug">
+                  <span className="text-sky-400 font-bold mr-1.5">{page * questionsPerPage + idx + 1}.</span>
+                  {q.text}
+                </p>
+                <div className="flex flex-col gap-2">
+                  {renderOptions(q, (value) => handleAnswer(q, value), localAnswers[q.id]?.value)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom bar with progress and next/submit button */}
+      <div className="fixed bottom-0 inset-x-0 bg-cream-50 border-t border-gray-100/80 px-6 py-4 z-20">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold text-sky-500">
+              {totalAnswered} of {questions.length} answered
+            </span>
+            <span className="text-sm font-medium text-gray-400">
+              {Math.round((totalAnswered / questions.length) * 100)}%
+            </span>
+          </div>
+          <div className="w-full h-2 bg-sky-100 rounded-full overflow-hidden mb-3">
+            <motion.div
+              className="h-full bg-gradient-to-r from-sky-300 to-sky-400 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${(totalAnswered / questions.length) * 100}%` }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+            />
+          </div>
+          <button
+            onClick={handleNext}
+            disabled={!pageAnswered}
+            className={`w-full py-3 rounded-2xl text-base font-bold transition-all flex items-center justify-center gap-2
+              ${pageAnswered
+                ? 'bg-sky-400 hover:bg-sky-500 text-white shadow-md'
+                : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+              }`}
+          >
+            {isLastPage ? 'Submit All Answers' : 'Next'}
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions }) {
   const [localAnswers, setLocalAnswers] = useState({ ...answers });
 
@@ -71,7 +186,7 @@ function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions }) {
   );
 }
 
-export default function QuizShell({ questions, onComplete, renderOptions, quizKey, userId = null, exitPath = '/', allowViewAll = false }) {
+export default function QuizShell({ questions, onComplete, renderOptions, quizKey, userId = null, exitPath = '/', allowViewAll = false, questionsPerPage = null }) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -115,6 +230,19 @@ export default function QuizShell({ questions, onComplete, renderOptions, quizKe
     setIsAnimating(true);
     setCurrentIndex(prev => prev - 1);
   }, [isAnimating, currentIndex, navigate, exitPath]);
+
+  if (questionsPerPage) {
+    return (
+      <PagedQuestionsView
+        questions={questions}
+        answers={answers}
+        onComplete={onComplete}
+        renderOptions={renderOptions}
+        questionsPerPage={questionsPerPage}
+        exitPath={exitPath}
+      />
+    );
+  }
 
   if (viewAll && allowViewAll) {
     return (
