@@ -61,7 +61,7 @@ function AppRoutes() {
         <Route path="/quiz/enneagram" element={<EnneagramQuiz />} />
         <Route path="/quiz/enneagram/result" element={<EnneagramResult />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/frameworks" element={<Frameworks />} />
+        <Route path="/how-it-works" element={<Frameworks />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

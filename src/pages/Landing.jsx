@@ -86,10 +86,10 @@ export default function Landing() {
           </span>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/frameworks')}
+              onClick={() => navigate('/how-it-works')}
               className="text-sm font-bold text-gray-500 hover:text-gray-800 transition-colors hidden sm:block"
             >
-              Frameworks
+              How It Works
             </button>
             {hasCompleted && (
               <button
@@ -145,10 +145,10 @@ export default function Landing() {
               <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1 transition-transform duration-200" />
             </button>
             <button
-              onClick={() => navigate('/frameworks')}
+              onClick={() => navigate('/how-it-works')}
               className="text-gray-500 hover:text-gray-700 font-bold text-base px-5 py-3.5 rounded-lg hover:bg-white/60 transition-all duration-200 flex items-center gap-2"
             >
-              Explore all frameworks
+              How it works
               <ChevronDown className="w-4 h-4" />
             </button>
           </motion.div>

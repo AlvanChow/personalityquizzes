@@ -232,7 +232,7 @@ export default function Profile() {
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-violet-700 uppercase tracking-wider leading-none">Personality Mosaic</h2>
-                    <p className="text-[11px] text-violet-400 mt-0.5">Based on {summary.sourceCount} frameworks</p>
+                    <p className="text-[11px] text-violet-400 mt-0.5">Based on {summary.sourceCount} assessments</p>
                   </div>
                 </div>
 
