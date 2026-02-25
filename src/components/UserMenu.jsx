@@ -46,8 +46,8 @@ export default function UserMenu() {
   if (!user) {
     return (
       <button
-        onClick={signInWithGoogle}
-        className="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 text-sm font-semibold text-gray-700"
+        onClick={() => signInWithGoogle().catch((err) => console.error('Sign in failed:', err))}
+        className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200 text-sm font-semibold text-gray-700"
       >
         <GoogleIcon />
         <span className="hidden sm:inline">Sign in</span>
@@ -62,7 +62,7 @@ export default function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2.5 px-1.5 py-1.5 pr-4 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200"
+        className="flex items-center gap-2.5 px-2 py-1.5 pr-4 rounded-lg bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200"
       >
         {avatarUrl ? (
           <img
@@ -82,7 +82,7 @@ export default function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-lg border border-gray-100 py-2 z-50">
+        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-md border border-gray-200 py-2 z-50">
           <div className="px-4 py-3 border-b border-gray-100">
             <p className="text-sm font-semibold text-gray-800 truncate">{displayName}</p>
             <p className="text-xs text-gray-400 truncate">{user.email}</p>
@@ -92,7 +92,7 @@ export default function UserMenu() {
               setOpen(false);
               navigate('/profile');
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <UserCircle className="w-4 h-4" />
             My Profile
@@ -106,7 +106,7 @@ export default function UserMenu() {
                 console.error('Sign out failed:', err);
               }
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors border-t border-gray-100"
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors border-t border-gray-200"
           >
             <LogOut className="w-4 h-4" />
             Sign out

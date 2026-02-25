@@ -36,6 +36,9 @@ export default function Profile() {
   const { scores, hasCompleted, resetBaseline } = useBigFive();
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  // Tracks which item is pending confirmation: a quiz key ('cake'/'mbti'/'enneagram')
+  // or 'baseline' for the Big Five reset.
+  const [confirmReset, setConfirmReset] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -68,10 +71,6 @@ export default function Profile() {
   const quizResults = profile?.quiz_results || {};
   const completedQuizzes = Object.entries(quizResults);
 
-  // Tracks which item is pending confirmation: a quiz key ('cake'/'mbti'/'enneagram')
-  // or 'baseline' for the Big Five reset.
-  const [confirmReset, setConfirmReset] = useState(null);
-
   const quizLocalKeys = {
     cake: 'personalens_cake',
     mbti: 'personalens_mbti',
@@ -98,8 +97,8 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      <header className="px-6 py-4 border-b border-gray-100 bg-white/60 backdrop-blur-sm sticky top-0 z-10">
+    <div className="min-h-screen bg-gray-50">
+      <header className="px-6 py-4 border-b border-gray-200 bg-white sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <button
             onClick={() => navigate(hasCompleted ? '/dashboard' : '/')}
@@ -149,7 +148,7 @@ export default function Profile() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-8"
+            className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-200 mb-8"
           >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Personality Profile</h2>
@@ -191,16 +190,16 @@ export default function Profile() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="bg-white rounded-3xl p-8 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-8 text-center"
+            className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8 text-center"
           >
-            <div className="w-14 h-14 rounded-2xl bg-sky-50 flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center mx-auto mb-4">
               <Trophy className="w-7 h-7 text-sky-400" />
             </div>
             <h2 className="text-lg font-bold text-gray-800 mb-2">No assessment yet</h2>
             <p className="text-sm text-gray-400 mb-6">Take the Big 5 personality assessment to see your trait scores here.</p>
             <button
               onClick={() => navigate('/assessment')}
-              className="px-6 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm transition-colors shadow-sm"
+              className="px-6 py-3 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm transition-colors"
             >
               Take Assessment
             </button>
@@ -221,10 +220,10 @@ export default function Profile() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="mb-8"
             >
-              <div className="bg-gradient-to-br from-violet-50 via-sky-50 to-emerald-50 rounded-3xl p-6 md:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-violet-100/60">
+              <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-violet-200">
                 {/* Header */}
                 <div className="flex items-center gap-2.5 mb-4">
-                  <div className="w-8 h-8 rounded-xl bg-white/80 flex items-center justify-center shadow-sm">
+                  <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-200 flex items-center justify-center">
                     <Sparkles className="w-4 h-4 text-violet-500" />
                   </div>
                   <div>
@@ -250,7 +249,7 @@ export default function Profile() {
 
                 {/* Watch out */}
                 {summary.watchOut && (
-                  <div className="flex items-start gap-2.5 bg-amber-50/80 border border-amber-100 rounded-2xl px-4 py-3">
+                  <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
                     <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-amber-800 leading-snug">{summary.watchOut}</p>
                   </div>
@@ -278,7 +277,7 @@ export default function Profile() {
                 return (
                   <div
                     key={quizKey}
-                    className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center gap-4 px-5 py-4 transition-all hover:shadow-md hover:border-gray-200"
+                    className="bg-white rounded-lg border border-gray-200 flex items-center gap-4 px-5 py-4 transition-all hover:border-gray-300 hover:shadow-sm"
                   >
                     {/* Clickable navigation area */}
                     <button
@@ -324,7 +323,7 @@ export default function Profile() {
               })}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 text-center">
+            <div className="bg-white rounded-lg p-6 border border-gray-200 text-center">
               <p className="text-sm text-gray-400">No quizzes completed yet. Head to the Dashboard to explore.</p>
               {hasCompleted && (
                 <button
@@ -345,7 +344,7 @@ export default function Profile() {
         >
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-gray-100 text-gray-400 font-semibold text-sm hover:border-gray-200 hover:text-gray-600 transition-all"
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-lg border border-gray-300 text-gray-500 font-semibold text-sm hover:border-gray-400 hover:text-gray-700 transition-all"
           >
             <LogOut className="w-4 h-4" />
             Sign Out

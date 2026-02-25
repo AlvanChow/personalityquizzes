@@ -40,7 +40,7 @@ function InsightCard({ icon: Icon, title, children, delay, color }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5"
+      className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-5"
     >
       <div className="flex items-center gap-2 mb-4">
         <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${color}`}>
@@ -57,8 +57,12 @@ export default function EnneagramResult() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [data] = useState(() => {
-    const raw = localStorage.getItem('personalens_enneagram');
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = localStorage.getItem('personalens_enneagram');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
   });
   const [shareError, setShareError] = useState(null);
 
@@ -96,7 +100,7 @@ export default function EnneagramResult() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 px-6 py-8">
+    <div className="min-h-screen bg-gray-50 px-6 py-8">
       <div className="max-w-lg mx-auto">
         <button onClick={() => navigate('/')} aria-label="Back to all quizzes"
           className="flex items-center gap-2 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors mb-8">
@@ -105,7 +109,7 @@ export default function EnneagramResult() {
 
         <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className={`bg-gradient-to-br ${result.color} rounded-3xl p-8 md:p-10 shadow-[0_8px_40px_rgba(0,0,0,0.08)] border border-white/60 mb-8`}>
+          className={`bg-gradient-to-br ${result.color} rounded-xl p-8 md:p-10 shadow-md border border-white/60 mb-8`}>
           <div className="text-center mb-6">
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }} className="text-6xl md:text-7xl mb-4">
@@ -116,11 +120,11 @@ export default function EnneagramResult() {
           </div>
           <p className="text-gray-700 leading-relaxed text-center text-base md:text-lg mb-6">{result.description}</p>
           <div className="grid grid-cols-1 gap-3">
-            <div className="bg-white/60 rounded-2xl p-4">
+            <div className="bg-white/60 rounded-lg p-4">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Core Desire</p>
               <p className="text-sm font-semibold text-gray-700">{result.coreDesire}</p>
             </div>
-            <div className="bg-white/60 rounded-2xl p-4">
+            <div className="bg-white/60 rounded-lg p-4">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Core Fear</p>
               <p className="text-sm font-semibold text-gray-700">{result.coreFear}</p>
             </div>
@@ -129,7 +133,7 @@ export default function EnneagramResult() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5">
+          className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-5">
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-5">Your Type Scores</h3>
           {sortedTypes.map(([typeNum, score], i) => (
             <TypeBar key={typeNum} typeNum={typeNum} score={score} label={TYPE_NAMES[typeNum]}
@@ -140,7 +144,7 @@ export default function EnneagramResult() {
         {wing && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.35 }}
-            className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-3xl p-6 md:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-violet-100 mb-5">
+            className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-xl p-6 md:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-violet-200 mb-5">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-100 text-violet-600">
                 <Feather className="w-4 h-4" />
@@ -156,7 +160,7 @@ export default function EnneagramResult() {
 
             <p className="text-sm text-gray-600 leading-relaxed mb-5">{wing.summary}</p>
 
-            <div className="bg-white/60 rounded-2xl p-4 mb-4">
+            <div className="bg-white/60 rounded-lg p-4 mb-4">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Wing Balance</p>
               <div className="flex items-center gap-3">
                 <span className={`text-xs font-bold ${wingType === adj1 ? 'text-violet-600' : 'text-gray-400'} shrink-0`}>
@@ -187,7 +191,7 @@ export default function EnneagramResult() {
             </div>
 
             <div className="space-y-3">
-              <div className="bg-white/60 rounded-2xl p-4">
+              <div className="bg-white/60 rounded-lg p-4">
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Key Traits</p>
                 <ul className="space-y-1.5">
                   {wing.keyTraits.map((trait) => (
@@ -199,7 +203,7 @@ export default function EnneagramResult() {
                 </ul>
               </div>
 
-              <div className="bg-white/60 rounded-2xl p-4">
+              <div className="bg-white/60 rounded-lg p-4">
                 <div className="flex items-center gap-1.5 mb-2">
                   <Zap className="w-3.5 h-3.5 text-amber-500" />
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">At Their Best</p>
@@ -207,7 +211,7 @@ export default function EnneagramResult() {
                 <p className="text-sm text-gray-600 leading-relaxed">{wing.atTheirBest}</p>
               </div>
 
-              <div className="bg-white/60 rounded-2xl p-4">
+              <div className="bg-white/60 rounded-lg p-4">
                 <div className="flex items-center gap-1.5 mb-2">
                   <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Blind Spot</p>
@@ -215,7 +219,7 @@ export default function EnneagramResult() {
                 <p className="text-sm text-gray-600 leading-relaxed">{wing.blindSpot}</p>
               </div>
 
-              <div className="bg-white/60 rounded-2xl p-4">
+              <div className="bg-white/60 rounded-lg p-4">
                 <div className="flex items-center gap-1.5 mb-2">
                   <Heart className="w-3.5 h-3.5 text-rose-400" />
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">In Relationships</p>
@@ -223,7 +227,7 @@ export default function EnneagramResult() {
                 <p className="text-sm text-gray-600 leading-relaxed">{wing.relationship}</p>
               </div>
 
-              <div className="bg-white/60 rounded-2xl p-4">
+              <div className="bg-white/60 rounded-lg p-4">
                 <div className="flex items-center gap-1.5 mb-2">
                   <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Growth Path</p>
@@ -231,7 +235,7 @@ export default function EnneagramResult() {
                 <p className="text-sm text-gray-600 leading-relaxed">{wing.growth}</p>
               </div>
 
-              <div className="bg-white/60 rounded-2xl p-4">
+              <div className="bg-white/60 rounded-lg p-4">
                 <div className="flex items-center gap-1.5 mb-2">
                   <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Under Stress</p>
@@ -264,15 +268,15 @@ export default function EnneagramResult() {
         <div className="flex gap-3 mt-2">
           <motion.button onClick={() => { track('quiz_retaken', { quiz: 'enneagram' }, user?.id ?? null); navigate('/quiz/enneagram'); }}
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors flex items-center justify-center gap-2">
+            className="flex-1 py-3.5 rounded-lg bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors flex items-center justify-center gap-2">
             <RotateCcw className="w-4 h-4" /> Retake
           </motion.button>
           <motion.button onClick={() => navigate('/')} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors">
+            className="flex-1 py-3.5 rounded-lg bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors">
             All Quizzes
           </motion.button>
           <motion.button onClick={handleShare} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-mint-400 to-mint-500 text-white font-bold shadow-[0_4px_16px_rgba(0,0,0,0.15)] flex items-center justify-center gap-2">
+            className="flex-1 py-3.5 rounded-lg bg-gradient-to-r from-mint-400 to-mint-500 text-white font-bold shadow-md flex items-center justify-center gap-2">
             <Share2 className="w-4 h-4" /> Share
           </motion.button>
         </div>

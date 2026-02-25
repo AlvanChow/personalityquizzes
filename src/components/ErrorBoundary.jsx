@@ -17,16 +17,16 @@ export default class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-cream-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
           <div className="max-w-md w-full text-center">
             <p className="text-5xl mb-4">😅</p>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Something went wrong</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h1>
             <p className="text-gray-500 mb-6">
               An unexpected error occurred. Refreshing the page should fix it.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-6 py-3 bg-coral-400 text-white font-semibold rounded-2xl hover:bg-coral-500 transition-colors"
+              className="px-6 py-3 bg-coral-500 text-white font-semibold rounded-lg hover:bg-coral-600 transition-colors"
             >
               Refresh page
             </button>

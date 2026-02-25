@@ -11,10 +11,10 @@ export default function QuizCard({ title, description, icon: Icon, to, locked = 
       disabled={locked}
       whileHover={locked ? {} : { y: -4, scale: 1.02 }}
       whileTap={locked ? {} : { scale: 0.98 }}
-      className={`relative w-full text-left p-6 rounded-3xl transition-shadow duration-300
+      className={`relative w-full text-left p-6 rounded-xl transition-all duration-200
         ${locked
           ? 'bg-gray-50 border-2 border-dashed border-gray-200 cursor-not-allowed opacity-60'
-          : 'bg-white border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] cursor-pointer'
+          : 'bg-white border border-gray-200 shadow-sm hover:border-gray-300 hover:shadow-md cursor-pointer'
         }`}
     >
       {locked && (
@@ -23,7 +23,7 @@ export default function QuizCard({ title, description, icon: Icon, to, locked = 
         </div>
       )}
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 rounded-2xl bg-cream-100 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
           <Icon className="w-5 h-5 text-coral-400" />
         </div>
         <h3 className="text-base font-bold text-gray-800 leading-snug">{title}</h3>
