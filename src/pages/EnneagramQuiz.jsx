@@ -58,12 +58,11 @@ export default function EnneagramQuiz() {
       <motion.button
         key={opt.value}
         onClick={() => onAnswer(opt.value)}
-        whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.97 }}
-        className={`w-full px-6 py-4 rounded-2xl text-left font-semibold transition-all duration-200 border-2
+        className={`w-full px-6 py-4 rounded-2xl text-left font-semibold transition-all duration-150 border-2
           ${selectedValue === opt.value
-            ? 'bg-mint-50 border-mint-300 text-mint-700'
-            : 'bg-white border-gray-100 text-gray-700 hover:border-mint-200 hover:bg-mint-50/50 shadow-[0_2px_12px_rgba(0,0,0,0.04)]'
+            ? 'bg-mint-400 border-mint-400 text-white shadow-[0_2px_10px_rgba(59,192,123,0.35)]'
+            : 'bg-white border-gray-200 text-gray-700 hover:border-mint-300 hover:bg-mint-50 shadow-sm'
           }`}
       >
         {opt.label}

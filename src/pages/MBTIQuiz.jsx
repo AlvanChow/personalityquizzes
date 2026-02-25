@@ -59,12 +59,11 @@ export default function MBTIQuiz() {
       <motion.button
         key={opt.value}
         onClick={() => onAnswer(opt.value)}
-        whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.97 }}
-        className={`w-full px-6 py-4 rounded-2xl text-left font-semibold transition-all duration-200 border-2
+        className={`w-full px-6 py-4 rounded-2xl text-left font-semibold transition-all duration-150 border-2
           ${selectedValue === opt.value
-            ? 'bg-coral-50 border-coral-300 text-coral-700'
-            : 'bg-white border-gray-100 text-gray-700 hover:border-coral-200 hover:bg-coral-50/50 shadow-[0_2px_12px_rgba(0,0,0,0.04)]'
+            ? 'bg-coral-400 border-coral-400 text-white shadow-[0_2px_10px_rgba(255,138,92,0.35)]'
+            : 'bg-white border-gray-200 text-gray-700 hover:border-coral-300 hover:bg-coral-50 shadow-sm'
           }`}
       >
         {opt.label}
