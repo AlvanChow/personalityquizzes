@@ -85,6 +85,7 @@ export default function MBTIQuiz() {
         renderOptions={renderOptions}
         quizKey="mbti"
         userId={user?.id ?? null}
+        questionsPerPage={7}
       />
     </>
   );

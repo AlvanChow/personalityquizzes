@@ -110,6 +110,7 @@ export default function CakeQuiz() {
         quizKey="cake"
         userId={user?.id ?? null}
         exitPath="/dashboard"
+        questionsPerPage={5}
       />
     </>
   );
