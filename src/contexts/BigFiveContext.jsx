@@ -39,6 +39,7 @@ function readLocalJson(key) {
  * the same normalized shape written by the quiz completion handlers.
  */
 async function syncGuestQuizResults(userId, remoteResults) {
+  if (!supabase) return;
   const tasks = [];
 
   const cakeData = readLocalJson('personalens_cake');
@@ -96,7 +97,7 @@ export function BigFiveProvider({ children }) {
   }, [hasCompleted]);
 
   const syncToSupabase = useCallback(async (newScores, completed, quizResults) => {
-    if (!user) return;
+    if (!user || !supabase) return;
     const update = { big5_scores: newScores, baseline_completed: completed };
     if (quizResults !== undefined) update.quiz_results = quizResults;
     const { error } = await supabase
@@ -110,7 +111,7 @@ export function BigFiveProvider({ children }) {
     let cancelled = false;
 
     (async () => {
-      if (!user) {
+      if (!user || !supabase) {
         if (!cancelled) setContextLoading(false);
         return;
       }

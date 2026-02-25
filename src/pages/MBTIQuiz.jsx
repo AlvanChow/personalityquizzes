@@ -25,7 +25,7 @@ export default function MBTIQuiz() {
 
     localStorage.setItem('personalens_mbti', JSON.stringify({ scores, result }));
 
-    if (user) {
+    if (user && supabase) {
       try {
         const { error } = await supabase.rpc('upsert_quiz_result', {
           p_user_id: user.id,

@@ -31,7 +31,7 @@ export default function CakeQuiz() {
     // Store scores alongside result so CakeResult can render the competency breakdown
     localStorage.setItem('personalens_cake', JSON.stringify({ result, resultKey, scores }));
 
-    if (user) {
+    if (user && supabase) {
       try {
         const { error } = await supabase.rpc('upsert_quiz_result', {
           p_user_id: user.id,
