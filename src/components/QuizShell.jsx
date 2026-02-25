@@ -38,6 +38,7 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
         onComplete(localAnswers);
       } else {
         setPage(prev => prev + 1);
+        window.scrollTo(0, 0);
         if (scrollRef.current) scrollRef.current.scrollTo(0, 0);
       }
       return;
@@ -57,6 +58,7 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
       navigate(exitPath);
     } else {
       setPage(prev => prev - 1);
+      window.scrollTo(0, 0);
       if (scrollRef.current) scrollRef.current.scrollTo(0, 0);
     }
   }, [page, navigate, exitPath]);
@@ -91,8 +93,8 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
               <div
                 key={q.id}
                 ref={el => { cardRefs.current[q.id] = el; }}
-                className={`bg-white rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.05)] border-2 transition-colors duration-300
-                  ${shakeId === q.id ? 'border-red-300 animate-[shake_0.4s_ease-in-out]' : 'border-gray-100'}`}
+                className={`bg-white rounded-2xl p-5 shadow-[0_2px_16px_rgba(0,0,0,0.09)] border-2 transition-colors duration-300
+                  ${shakeId === q.id ? 'border-red-300 animate-[shake_0.4s_ease-in-out]' : 'border-gray-200'}`}
               >
                 <p className="text-sm font-semibold text-gray-700 mb-3 leading-snug">
                   <span className={`font-bold mr-1.5 transition-colors duration-300 ${shakeId === q.id ? 'text-red-400' : 'text-sky-400'}`}>
