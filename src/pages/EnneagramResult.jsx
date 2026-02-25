@@ -1,20 +1,19 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Brain } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
+import { enneagramInsights } from '../data/enneagramInsights';
 
-const MAX_SCORE_PER_TYPE = 12; // 3 questions × 4 max points
+const MAX_SCORE_PER_TYPE = 12;
 
 function TypeBar({ typeNum, score, label, delay, isTop }) {
   const pct = Math.round((score / MAX_SCORE_PER_TYPE) * 100);
   return (
     <div className="mb-3">
       <div className="flex justify-between text-xs font-semibold mb-1">
-        <span className={isTop ? 'text-mint-600' : 'text-gray-400'}>
-          Type {typeNum} — {label}
-        </span>
+        <span className={isTop ? 'text-mint-600' : 'text-gray-400'}>Type {typeNum} — {label}</span>
         <span className={isTop ? 'text-mint-600' : 'text-gray-400'}>{pct}%</span>
       </div>
       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -30,16 +29,28 @@ function TypeBar({ typeNum, score, label, delay, isTop }) {
 }
 
 const TYPE_NAMES = {
-  '1': 'Reformer',
-  '2': 'Helper',
-  '3': 'Achiever',
-  '4': 'Individualist',
-  '5': 'Investigator',
-  '6': 'Loyalist',
-  '7': 'Enthusiast',
-  '8': 'Challenger',
-  '9': 'Peacemaker',
+  '1': 'Reformer', '2': 'Helper', '3': 'Achiever', '4': 'Individualist',
+  '5': 'Investigator', '6': 'Loyalist', '7': 'Enthusiast', '8': 'Challenger', '9': 'Peacemaker',
 };
+
+function InsightCard({ icon: Icon, title, children, delay, color }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5"
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${color}`}>
+          <Icon className="w-4 h-4" />
+        </div>
+        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">{title}</h3>
+      </div>
+      {children}
+    </motion.div>
+  );
+}
 
 export default function EnneagramResult() {
   const navigate = useNavigate();
@@ -50,9 +61,7 @@ export default function EnneagramResult() {
   });
   const [shareError, setShareError] = useState(null);
 
-  useEffect(() => {
-    if (!data) navigate('/');
-  }, [data, navigate]);
+  useEffect(() => { if (!data) navigate('/'); }, [data, navigate]);
 
   const viewedRef = useRef(false);
   useEffect(() => {
@@ -64,23 +73,16 @@ export default function EnneagramResult() {
   if (!data) return null;
 
   const { result, scores } = data;
-
-  // Sort all types by score descending for the bar chart, show top 5
-  const sortedTypes = Object.entries(scores)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 5);
+  const insights = enneagramInsights[result.typeNumber];
+  const sortedTypes = Object.entries(scores).sort(([, a], [, b]) => b - a).slice(0, 5);
 
   async function handleShare() {
     const text = `I'm a ${result.name} on the Enneagram! My core desire: ${result.coreDesire}. Find out your type!`;
     try {
-      if (navigator.share) {
-        await navigator.share({ title: 'My Enneagram Result', text });
-      } else {
-        await navigator.clipboard.writeText(text);
-      }
+      if (navigator.share) { await navigator.share({ title: 'My Enneagram Result', text }); }
+      else { await navigator.clipboard.writeText(text); }
     } catch (err) {
       if (err?.name === 'AbortError') return;
-      console.error('Share failed:', err);
       setShareError('Could not share. Please try copying manually.');
     }
   }
@@ -88,42 +90,23 @@ export default function EnneagramResult() {
   return (
     <div className="min-h-screen bg-cream-50 px-6 py-8">
       <div className="max-w-lg mx-auto">
-        <button
-          onClick={() => navigate('/')}
-          aria-label="Back to all quizzes"
-          className="flex items-center gap-2 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors mb-8"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Quizzes
+        <button onClick={() => navigate('/')} aria-label="Back to all quizzes"
+          className="flex items-center gap-2 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors mb-8">
+          <ArrowLeft className="w-4 h-4" /> Back to Quizzes
         </button>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
+        <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className={`bg-gradient-to-br ${result.color} rounded-3xl p-8 md:p-10 shadow-[0_8px_40px_rgba(0,0,0,0.08)] border border-white/60 mb-8`}
-        >
+          className={`bg-gradient-to-br ${result.color} rounded-3xl p-8 md:p-10 shadow-[0_8px_40px_rgba(0,0,0,0.08)] border border-white/60 mb-8`}>
           <div className="text-center mb-6">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="text-6xl md:text-7xl mb-4"
-            >
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }} className="text-6xl md:text-7xl mb-4">
               {result.emoji}
             </motion.div>
-            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">
-              You are...
-            </p>
-            <h1 className={`text-3xl md:text-4xl font-extrabold mb-1 ${result.accent}`}>
-              {result.name}
-            </h1>
+            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">You are...</p>
+            <h1 className={`text-3xl md:text-4xl font-extrabold mb-1 ${result.accent}`}>{result.name}</h1>
           </div>
-
-          <p className="text-gray-700 leading-relaxed text-center text-base md:text-lg mb-6">
-            {result.description}
-          </p>
-
+          <p className="text-gray-700 leading-relaxed text-center text-base md:text-lg mb-6">{result.description}</p>
           <div className="grid grid-cols-1 gap-3">
             <div className="bg-white/60 rounded-2xl p-4">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Core Desire</p>
@@ -136,63 +119,51 @@ export default function EnneagramResult() {
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-8"
-        >
-          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-5">
-            Your Top Types
-          </h3>
+          className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5">
+          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-5">Your Top Types</h3>
           {sortedTypes.map(([typeNum, score], i) => (
-            <TypeBar
-              key={typeNum}
-              typeNum={typeNum}
-              score={score}
-              label={TYPE_NAMES[typeNum]}
-              delay={i * 0.08}
-              isTop={typeNum === result.typeNumber}
-            />
+            <TypeBar key={typeNum} typeNum={typeNum} score={score} label={TYPE_NAMES[typeNum]}
+              delay={i * 0.08} isTop={typeNum === result.typeNumber} />
           ))}
         </motion.div>
 
-        <div className="flex gap-3">
-          <motion.button
-            onClick={() => { track('quiz_retaken', { quiz: 'enneagram' }, user?.id ?? null); navigate('/quiz/enneagram'); }}
-            aria-label="Retake the Enneagram quiz"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors flex items-center justify-center gap-2"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Retake
+        {insights && (
+          <>
+            <InsightCard icon={Briefcase} title="Career & Work" delay={0.4} color="bg-mint-100 text-mint-600">
+              <p className="text-sm text-gray-600 leading-relaxed mb-3">{insights.careerNote}</p>
+              <div className="flex flex-wrap gap-2">
+                {insights.careers.map((c) => (
+                  <span key={c} className="text-xs font-semibold bg-mint-50 text-mint-600 px-3 py-1 rounded-full border border-mint-100">{c}</span>
+                ))}
+              </div>
+            </InsightCard>
+            <InsightCard icon={Users} title="Friendships & Relationships" delay={0.5} color="bg-rose-100 text-rose-500">
+              <p className="text-sm text-gray-600 leading-relaxed">{insights.friendships}</p>
+            </InsightCard>
+            <InsightCard icon={Brain} title="Psychological Insights" delay={0.6} color="bg-violet-100 text-violet-600">
+              <p className="text-sm text-gray-600 leading-relaxed">{insights.psyche}</p>
+            </InsightCard>
+          </>
+        )}
+
+        <div className="flex gap-3 mt-2">
+          <motion.button onClick={() => { track('quiz_retaken', { quiz: 'enneagram' }, user?.id ?? null); navigate('/quiz/enneagram'); }}
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors flex items-center justify-center gap-2">
+            <RotateCcw className="w-4 h-4" /> Retake
           </motion.button>
-          <motion.button
-            onClick={() => navigate('/')}
-            aria-label="Go to all quizzes"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors"
-          >
+          <motion.button onClick={() => navigate('/')} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors">
             All Quizzes
           </motion.button>
-          <motion.button
-            onClick={handleShare}
-            aria-label="Share your Enneagram result"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-mint-400 to-mint-500 text-white font-bold shadow-[0_4px_16px_rgba(0,0,0,0.15)] flex items-center justify-center gap-2"
-          >
-            <Share2 className="w-4 h-4" />
-            Share
+          <motion.button onClick={handleShare} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+            className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-mint-400 to-mint-500 text-white font-bold shadow-[0_4px_16px_rgba(0,0,0,0.15)] flex items-center justify-center gap-2">
+            <Share2 className="w-4 h-4" /> Share
           </motion.button>
         </div>
-        {shareError && (
-          <p role="alert" className="mt-3 text-sm text-red-600 text-center font-medium">
-            {shareError}
-          </p>
-        )}
+        {shareError && <p role="alert" className="mt-3 text-sm text-red-600 text-center font-medium">{shareError}</p>}
       </div>
     </div>
   );

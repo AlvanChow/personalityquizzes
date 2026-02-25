@@ -60,6 +60,7 @@ export default function Assessment() {
       renderOptions={renderOptions}
       quizKey="baseline"
       userId={user?.id ?? null}
+      allowViewAll
     />
   );
 }

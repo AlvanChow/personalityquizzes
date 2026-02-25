@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Share2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Brain } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
+import { mbtiInsights } from '../data/mbtiInsights';
 
 const DIMENSION_LABELS = {
   IE: { low: 'Introversion (I)', high: 'Extraversion (E)' },
@@ -40,6 +41,25 @@ function DimensionBar({ dim, score, delay }) {
   );
 }
 
+function InsightCard({ icon: Icon, title, children, delay, color }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5"
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${color}`}>
+          <Icon className="w-4 h-4" />
+        </div>
+        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">{title}</h3>
+      </div>
+      {children}
+    </motion.div>
+  );
+}
+
 export default function MBTIResult() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -63,6 +83,7 @@ export default function MBTIResult() {
   if (!data) return null;
 
   const { result, scores } = data;
+  const insights = mbtiInsights[result.name];
 
   async function handleShare() {
     const text = `I got ${result.name} — ${result.nickname} on My Personality Quizzes! Discover your MBTI type too.`;
@@ -126,7 +147,7 @@ export default function MBTIResult() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-8"
+          className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5"
         >
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-5">
             Your Dimension Scores
@@ -136,7 +157,30 @@ export default function MBTIResult() {
           ))}
         </motion.div>
 
-        <div className="flex gap-3">
+        {insights && (
+          <>
+            <InsightCard icon={Briefcase} title="Career & Work" delay={0.4} color="bg-sky-100 text-sky-600">
+              <p className="text-sm text-gray-600 leading-relaxed mb-3">{insights.careerNote}</p>
+              <div className="flex flex-wrap gap-2">
+                {insights.careers.map((c) => (
+                  <span key={c} className="text-xs font-semibold bg-sky-50 text-sky-600 px-3 py-1 rounded-full border border-sky-100">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </InsightCard>
+
+            <InsightCard icon={Users} title="Friendships & Relationships" delay={0.5} color="bg-rose-100 text-rose-500">
+              <p className="text-sm text-gray-600 leading-relaxed">{insights.friendships}</p>
+            </InsightCard>
+
+            <InsightCard icon={Brain} title="Psychological Insights" delay={0.6} color="bg-violet-100 text-violet-600">
+              <p className="text-sm text-gray-600 leading-relaxed">{insights.psyche}</p>
+            </InsightCard>
+          </>
+        )}
+
+        <div className="flex gap-3 mt-2">
           <motion.button
             onClick={() => { track('quiz_retaken', { quiz: 'mbti' }, user?.id ?? null); navigate('/quiz/mbti'); }}
             aria-label="Retake the MBTI quiz"
