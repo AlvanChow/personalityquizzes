@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, ArrowLeft, RotateCcw, LogOut, Calendar, ChevronRight, Trophy } from 'lucide-react';
+import { User, ArrowLeft, RotateCcw, LogOut, Calendar, ChevronRight, Trophy, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { supabase } from '../lib/supabase';
@@ -9,6 +9,7 @@ import { cakeResults } from '../data/cakeResults';
 import { mbtiResults } from '../data/mbtiResults';
 import { enneagramResults } from '../data/enneagramResults';
 import ScoreBar from '../components/ScoreBar';
+import { generateProfileSummary } from '../utils/generateSummary';
 
 // For each quiz type: the result lookup table, the result-page route, a function
 // to extract the lookup key from the stored result object, and whether the result
@@ -162,13 +163,67 @@ export default function Profile() {
           </motion.div>
         )}
 
+        {(() => {
+          const summary = generateProfileSummary({
+            scores,
+            hasCompleted,
+            quizResults,
+          });
+          if (!summary) return null;
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="mb-8"
+            >
+              <div className="bg-gradient-to-br from-violet-50 via-sky-50 to-emerald-50 rounded-3xl p-6 md:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-violet-100/60">
+                {/* Header */}
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-8 h-8 rounded-xl bg-white/80 flex items-center justify-center shadow-sm">
+                    <Sparkles className="w-4 h-4 text-violet-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-violet-700 uppercase tracking-wider leading-none">Personality Mosaic</h2>
+                    <p className="text-[11px] text-violet-400 mt-0.5">Based on {summary.sourceCount} frameworks</p>
+                  </div>
+                </div>
+
+                {/* Body */}
+                <p className="text-sm text-gray-700 leading-relaxed mb-5">{summary.body}</p>
+
+                {/* Strengths */}
+                {summary.strengths.length > 0 && (
+                  <div className="space-y-2.5 mb-5">
+                    {summary.strengths.map((s, i) => (
+                      <div key={i} className="flex items-start gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-gray-700 leading-snug">{s}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Watch out */}
+                {summary.watchOut && (
+                  <div className="flex items-start gap-2.5 bg-amber-50/80 border border-amber-100 rounded-2xl px-4 py-3">
+                    <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-amber-800 leading-snug">{summary.watchOut}</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          );
+        })()}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.45 }}
           className="mb-8"
         >
           <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Quiz History</h2>
+
           {completedQuizzes.length > 0 ? (
             <div className="grid gap-3">
               {completedQuizzes.map(([quizKey, result]) => {
@@ -214,7 +269,7 @@ export default function Profile() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.45 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
           className="space-y-3"
         >
           <button
