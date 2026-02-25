@@ -6,9 +6,11 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!supabase);
 
   useEffect(() => {
+    if (!supabase) return;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
@@ -27,6 +29,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function signInWithGoogle() {
+    if (!supabase) return;
     track('auth_sign_in_started', {}, null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -38,6 +41,7 @@ export function AuthProvider({ children }) {
   }
 
   async function signOut() {
+    if (!supabase) return;
     track('auth_sign_out', {}, user?.id ?? null);
     const { error } = await supabase.auth.signOut();
     if (error) throw error;

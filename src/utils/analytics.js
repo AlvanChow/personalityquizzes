@@ -59,6 +59,8 @@ function detectOS(ua) {
 // Fire-and-forget — callers do NOT await this.
 // userId should be user.id for authenticated users, or null for guests.
 export function track(event, properties = {}, userId = null) {
+  if (!supabase) return;
+
   const sessionId = getSessionId();
 
   // Merge device info into the first event of this session only.

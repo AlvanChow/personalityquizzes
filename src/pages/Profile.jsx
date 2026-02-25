@@ -35,7 +35,7 @@ export default function Profile() {
   const { user, signOut } = useAuth();
   const { scores, hasCompleted, resetBaseline } = useBigFive();
   const [profile, setProfile] = useState(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [loadingProfile, setLoadingProfile] = useState(!!supabase);
   // Tracks which item is pending confirmation: a quiz key ('cake'/'mbti'/'enneagram')
   // or 'baseline' for the Big Five reset.
   const [confirmReset, setConfirmReset] = useState(null);
@@ -45,6 +45,8 @@ export default function Profile() {
       navigate('/');
       return;
     }
+
+    if (!supabase) return;
 
     let cancelled = false;
     (async () => {
@@ -81,7 +83,9 @@ export default function Profile() {
     localStorage.removeItem(quizLocalKeys[quizKey]);
     const newResults = { ...quizResults };
     delete newResults[quizKey];
-    await supabase.from('profiles').update({ quiz_results: newResults }).eq('id', user.id);
+    if (supabase) {
+      await supabase.from('profiles').update({ quiz_results: newResults }).eq('id', user.id);
+    }
     setProfile((prev) => ({ ...prev, quiz_results: newResults }));
     setConfirmReset(null);
   }
