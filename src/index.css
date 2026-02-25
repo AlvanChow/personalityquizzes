@@ -4,7 +4,7 @@
 
 body {
   font-family: 'Nunito', sans-serif;
-  background-color: #F3F4F6;
+  background: linear-gradient(135deg, #FFF8F5 0%, #FDF5F3 40%, #F9F0F8 100%);
   color: #1F2937;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
