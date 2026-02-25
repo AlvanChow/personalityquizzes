@@ -7,51 +7,9 @@ import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
 import QuizCard from '../components/QuizCard';
 import { track } from '../utils/analytics';
+import lifeInsights from '../data/lifeInsights';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
-
-const traitInsights = {
-  O: {
-    careers: 'High Openness → creative fields, research, design, philosophy, arts, innovation. Low Openness → operations, logistics, accounting, skilled trades, administration.',
-    relationships: 'High scorers seek depth, novelty, and intellectual connection in relationships. Low scorers prefer stability, familiarity, and partners with shared routines.',
-    stress: 'High scorers may overthink and spiral into existential worry, but cope well through creative outlets, journaling, and exploring meaning. Low scorers prefer routine-based coping — exercise, structure, and familiar comforts that restore a sense of order.',
-    communication: 'High Openness → abstract, metaphorical, idea-driven communication; loves deep philosophical discussions. Low Openness → concrete, direct, practical; prefers clear, straightforward exchanges without unnecessary abstraction.',
-    growth: 'High scorers grow through exploration — travel, reading, new experiences, and exposure to different cultures. Low scorers grow through mastery — deepening expertise in familiar domains and refining proven skills over time.',
-    wellness: 'High scorers benefit from varied, novel exercise routines and creative mindfulness practices. Low scorers thrive with consistent, structured health habits and predictable wellness routines they can stick to long-term.',
-  },
-  C: {
-    careers: 'High Conscientiousness → law, medicine, finance, management, engineering. Low Conscientiousness → creative freelancing, entrepreneurship, emergency work where improvisation is valued.',
-    relationships: 'High scorers are reliable, planned, and committed partners. Low scorers bring spontaneity but may struggle with consistency and follow-through.',
-    stress: 'High scorers may become rigid or overwork themselves under pressure, but recover through planning and regaining a sense of control. Low scorers may procrastinate or avoid when stressed, but do well when they break tasks into small, manageable steps.',
-    communication: 'High Conscientiousness → precise, organized, thorough; follows up and follows through on every detail. Low Conscientiousness → casual, flexible, big-picture communication that captures the spirit rather than every specification.',
-    growth: 'High scorers grow by loosening their grip — learning to tolerate imperfection, delegate, and accept good enough. Low scorers grow by building small habits and lightweight systems that create structure without feeling suffocating.',
-    wellness: 'High scorers naturally maintain health routines but risk burnout from overcommitment and perfectionism. Low scorers benefit from habit-stacking and accountability partners to maintain consistent wellness practices.',
-  },
-  E: {
-    careers: 'High Extraversion → sales, leadership, PR, performance, teaching, politics. Low Extraversion → writing, programming, research, design, independent specialist roles.',
-    relationships: 'Highly extraverted people tend to have wide social networks and need social stimulation from partners. Introverts seek fewer, deeper connections and need space to recharge.',
-    stress: 'Extraverts cope by talking it out, seeking social support, and staying active. Introverts need solitude and quiet reflection to process stress — forced socialization during difficult times makes things worse.',
-    communication: 'High Extraversion → expressive, enthusiastic, thinks out loud, comfortable commanding a room. Low Extraversion → thoughtful, measured, prefers writing or one-on-one conversation, listens more than speaks.',
-    growth: 'Extraverts grow by learning to sit with silence and developing a richer inner life through reflection. Introverts grow by pushing into social discomfort and discovering that connection doesn\'t always have to be draining.',
-    wellness: 'Extraverts thrive with group fitness, team sports, and social wellness activities. Introverts benefit from solo practices like hiking, yoga, swimming, or home workouts where they can recharge while moving.',
-  },
-  A: {
-    careers: 'High Agreeableness → social work, nursing, counseling, education, HR. Low Agreeableness → law, competitive business, negotiation, surgery, critical analysis.',
-    relationships: 'High scorers are natural nurturers who prioritise harmony; may struggle with conflict. Low scorers are more direct and self-advocating; may need to consciously work on empathy.',
-    stress: 'High scorers tend to absorb others\' stress and struggle with boundaries during hard times. Low scorers handle their own stress effectively but may isolate or become combative under pressure.',
-    communication: 'High Agreeableness → diplomatic, warm, consensus-seeking; may avoid necessary confrontation. Low Agreeableness → blunt, challenging, debate-oriented; may need to soften delivery in sensitive situations.',
-    growth: 'High scorers grow by learning to say no, tolerate conflict, and advocate for themselves without guilt. Low scorers grow by practicing empathy, active listening, and considering others\' perspectives before reacting.',
-    wellness: 'High scorers do well with community-based wellness — group classes, cooking for others, caregiving roles. Low scorers benefit from competitive or individual fitness pursuits that channel their independent drive.',
-  },
-  N: {
-    careers: 'High Neuroticism → artistic/creative fields (emotional sensitivity fuels creativity), therapy, advocacy. Low Neuroticism → leadership, military, emergency medicine, high-pressure roles.',
-    relationships: 'High scorers experience emotional depth and intensity in relationships; benefit from emotionally stable partners. Low scorers are steady anchors who may need to actively tune in to partners\' emotional needs.',
-    stress: 'High scorers experience stress intensely and may catastrophize or ruminate. Structured coping — CBT techniques, meditation, exercise — is especially powerful. Low scorers handle stress naturally but may ignore warning signs until problems escalate.',
-    communication: 'High Neuroticism → emotionally expressive, may over-share when overwhelmed, seeks reassurance and validation. Low Neuroticism → steady and composed; may seem emotionally unavailable to more sensitive people.',
-    growth: 'High scorers grow by building distress tolerance and learning that intense emotions, however real, are always temporary. Low scorers grow by developing emotional vocabulary and learning to sit with others\' pain without rushing to fix it.',
-    wellness: 'High scorers benefit enormously from regular exercise, sleep hygiene, and mindfulness — these have outsized effects on emotional regulation. Low scorers should watch for emotional suppression masked as stability.',
-  },
-};
 
 const traitData = {
   O: {
@@ -327,7 +285,7 @@ export default function Dashboard() {
                     {data.description}
                   </p>
 
-                  <div className="border-t border-white/60 pt-3 mb-3">
+                  <div className="border-t border-white/60 pt-3">
                     <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${data.accent}`}>
                       Your result — {range.heading}
                     </p>
@@ -335,24 +293,6 @@ export default function Dashboard() {
                       {range.text}
                     </p>
                   </div>
-
-                  {traitInsights[trait] && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {[
-                        { key: 'careers', label: 'Career & Work' },
-                        { key: 'relationships', label: 'Relationships' },
-                        { key: 'stress', label: 'Stress & Coping' },
-                        { key: 'communication', label: 'Communication' },
-                        { key: 'growth', label: 'Personal Growth' },
-                        { key: 'wellness', label: 'Health & Wellness' },
-                      ].map(({ key, label }) => (
-                        <div key={key} className="bg-white/60 rounded-2xl p-3">
-                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
-                          <p className="text-xs text-gray-600 leading-relaxed">{traitInsights[trait][key]}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </motion.div>
               );
             })}
@@ -362,7 +302,56 @@ export default function Dashboard() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">
+            Life Analysis
+          </h2>
+          <p className="text-gray-500 mb-6">
+            How your personality plays out across major areas of life.
+          </p>
+
+          <div className="flex flex-col gap-5 mb-12">
+            {lifeInsights.map((category, ci) => {
+              const Icon = category.icon;
+              return (
+                <motion.div
+                  key={category.key}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, delay: ci * 0.06 }}
+                  className="rounded-3xl border border-gray-100 bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.05)]"
+                >
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-sky-400" />
+                    </div>
+                    <h3 className="text-base font-extrabold text-gray-800">{category.label}</h3>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    {traitOrder.map((trait) => {
+                      const score = scores[trait];
+                      const ranges = category.traits[trait];
+                      const match = ranges.find((r) => score <= r.max) ?? ranges[ranges.length - 1];
+                      const td = traitData[trait];
+                      return (
+                        <div key={trait} className="flex gap-3">
+                          <span className={`text-xs font-bold ${td.accent} w-28 shrink-0 pt-0.5`}>{td.label}</span>
+                          <p className="text-sm text-gray-600 leading-relaxed">{match.text}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
           <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">
             Quiz Library
