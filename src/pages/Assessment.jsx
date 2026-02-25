@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
 import { baselineQuestions, likertOptions } from '../data/baselineQuestions';
 import { useBigFive } from '../contexts/BigFiveContext';
@@ -27,30 +26,27 @@ export default function Assessment() {
   }, [completeBaseline, navigate, user]);
 
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {
-    return likertOptions.map((opt) => (
-      <motion.button
-        key={opt.value}
-        onClick={() => onAnswer(opt.value)}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.97 }}
-        className={`w-full px-6 py-4 rounded-2xl text-left font-semibold transition-all duration-200 border-2
-          ${selectedValue === opt.value
-            ? 'bg-sky-50 border-sky-300 text-sky-700'
-            : 'bg-white border-gray-100 text-gray-700 hover:border-sky-200 hover:bg-sky-50/50 shadow-[0_2px_12px_rgba(0,0,0,0.04)]'
-          }`}
-      >
-        <div className="flex items-center gap-4">
-          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0
-            ${selectedValue === opt.value
-              ? 'bg-sky-400 text-white'
-              : 'bg-gray-100 text-gray-400'
-            }`}>
-            {opt.value}
-          </span>
-          <span>{opt.label}</span>
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-400 w-16 text-right shrink-0">Disagree</span>
+        <div className="flex gap-2 flex-1 justify-center">
+          {likertOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => onAnswer(opt.value)}
+              className={`w-9 h-9 rounded-full text-sm font-bold transition-all duration-150
+                ${selectedValue === opt.value
+                  ? 'bg-sky-400 text-white scale-110 shadow-md'
+                  : 'bg-gray-100 text-gray-400 hover:bg-sky-100 hover:text-sky-500'
+                }`}
+            >
+              {opt.value}
+            </button>
+          ))}
         </div>
-      </motion.button>
-    ));
+        <span className="text-xs text-gray-400 w-16 shrink-0">Agree</span>
+      </div>
+    );
   }, []);
 
   return (
