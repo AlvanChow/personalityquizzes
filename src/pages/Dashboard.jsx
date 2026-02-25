@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Cake, Brain, CircleDashed } from 'lucide-react';
+import { Cake, Brain, CircleDashed, Share2, Check } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
@@ -195,9 +195,33 @@ export default function Dashboard() {
   const { scores, hasCompleted, loading } = useBigFive();
   const { user } = useAuth();
 
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     if (!loading && !hasCompleted) navigate('/');
   }, [loading, hasCompleted, navigate]);
+
+  async function handleShare() {
+    const lines = traitOrder
+      .map((t) => `${traitData[t].label} ${scores[t]}`)
+      .join('\n');
+    const text = `My Big Five Personality:\n\n${lines}\n\nTake yours at mypersonalityquizzes.com`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: 'My Big Five Personality', text });
+        }
+      } catch (err) {
+        if (err?.name !== 'AbortError') {
+          console.error('Share failed:', err);
+        }
+      }
+    }
+  }
 
   if (loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -231,9 +255,24 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
         >
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-1">
-            Your Personality Profile
-          </h1>
+          <div className="flex items-start justify-between gap-4 mb-1">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
+              Your Personality Profile
+            </h1>
+            <motion.button
+              onClick={handleShare}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors shrink-0 ${
+                copied
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-900 text-white hover:bg-gray-800'
+              }`}
+            >
+              {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+              {copied ? 'Copied!' : 'Share'}
+            </motion.button>
+          </div>
           <p className="text-gray-500 mb-8">
             Based on your baseline assessment. Take more quizzes to refine your scores.
           </p>

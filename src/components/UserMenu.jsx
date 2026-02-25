@@ -39,19 +39,38 @@ export default function UserMenu() {
     };
   }, []);
 
+  const [signInError, setSignInError] = useState(null);
+
   if (loading) {
     return <div className="w-9 h-9 rounded-full bg-gray-100 animate-pulse" />;
   }
 
   if (!user) {
     return (
-      <button
-        onClick={() => signInWithGoogle().catch((err) => console.error('Sign in failed:', err))}
-        className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200 text-sm font-semibold text-gray-700"
-      >
-        <GoogleIcon />
-        <span className="hidden sm:inline">Sign in</span>
-      </button>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={async () => {
+            setSignInError(null);
+            try {
+              await signInWithGoogle();
+            } catch (err) {
+              console.error('Sign in failed:', err);
+              setSignInError('Sign-in failed. Please try again.');
+              setTimeout(() => setSignInError(null), 5000);
+            }
+          }}
+          className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200 text-sm font-semibold text-gray-700"
+        >
+          <GoogleIcon />
+          Sign in with Google
+        </button>
+        {signInError && (
+          <p className="absolute right-0 top-full mt-1 text-xs text-red-500 font-medium bg-white px-2 py-1 rounded shadow-sm border border-red-100 whitespace-nowrap z-50">
+            {signInError}
+          </p>
+        )}
+      </div>
     );
   }
 
