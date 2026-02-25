@@ -62,7 +62,7 @@ function InsightCard({ icon: Icon, title, children, delay, color }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5"
+      className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-5"
     >
       <div className="flex items-center gap-2 mb-4">
         <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${color}`}>
@@ -148,7 +148,7 @@ export default function MBTIResult() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 px-6 py-8">
+    <div className="min-h-screen bg-gray-50 px-6 py-8">
       <div className="max-w-lg mx-auto">
         <button
           onClick={() => navigate('/')}
@@ -164,7 +164,7 @@ export default function MBTIResult() {
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className={`bg-gradient-to-br ${result.color} rounded-3xl p-8 md:p-10 shadow-[0_8px_40px_rgba(0,0,0,0.08)] border border-white/60 mb-8`}
+          className={`bg-gradient-to-br ${result.color} rounded-xl p-8 md:p-10 shadow-md border border-white/60 mb-8`}
         >
           <div className="text-center mb-6">
             <motion.div
@@ -202,7 +202,7 @@ export default function MBTIResult() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5"
+          className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-5"
         >
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-5">
             Your Dimension Scores
@@ -218,7 +218,7 @@ export default function MBTIResult() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.35 }}
-            className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5"
+            className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-5"
           >
             <div className="flex items-center gap-2 mb-3">
               <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${roleIconColor}`}>
@@ -279,7 +279,7 @@ export default function MBTIResult() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
-                className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5"
+                className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-5"
               >
                 {insights.atBest && (
                   <div className="mb-5">
@@ -348,7 +348,7 @@ export default function MBTIResult() {
             aria-label="Retake the MBTI quiz"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-3.5 rounded-lg bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-sm hover:border-gray-200 transition-colors flex items-center justify-center gap-2"
           >
             <RotateCcw className="w-4 h-4" />
             Retake
@@ -358,7 +358,7 @@ export default function MBTIResult() {
             aria-label="Go to all quizzes"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors"
+            className="flex-1 py-3.5 rounded-lg bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-sm hover:border-gray-200 transition-colors"
           >
             All Quizzes
           </motion.button>
@@ -367,7 +367,7 @@ export default function MBTIResult() {
             aria-label="Share your MBTI result"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-coral-400 to-coral-500 text-white font-bold shadow-[0_4px_16px_rgba(0,0,0,0.15)] flex items-center justify-center gap-2"
+            className="flex-1 py-3.5 rounded-lg bg-gradient-to-r from-coral-400 to-coral-500 text-white font-bold shadow-md flex items-center justify-center gap-2"
           >
             <Share2 className="w-4 h-4" />
             Share

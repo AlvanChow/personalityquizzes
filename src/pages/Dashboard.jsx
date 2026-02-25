@@ -14,11 +14,11 @@ const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 const traitData = {
   O: {
     label: 'Openness',
-    color: 'bg-sky-400',
+    color: 'bg-sky-500',
     trackColor: 'bg-sky-100',
-    accent: 'text-sky-600',
-    border: 'border-sky-100',
-    bg: 'bg-sky-50/40',
+    accent: 'text-sky-700',
+    border: 'border-sky-200',
+    bg: 'bg-sky-50',
     lowLabel: 'Conventional',
     highLabel: 'Imaginative',
     description:
@@ -43,11 +43,11 @@ const traitData = {
   },
   C: {
     label: 'Conscientiousness',
-    color: 'bg-mint-400',
+    color: 'bg-mint-500',
     trackColor: 'bg-mint-100',
-    accent: 'text-mint-600',
-    border: 'border-mint-100',
-    bg: 'bg-mint-50/40',
+    accent: 'text-mint-700',
+    border: 'border-mint-200',
+    bg: 'bg-mint-50',
     lowLabel: 'Spontaneous',
     highLabel: 'Disciplined',
     description:
@@ -72,11 +72,11 @@ const traitData = {
   },
   E: {
     label: 'Extraversion',
-    color: 'bg-coral-400',
+    color: 'bg-coral-500',
     trackColor: 'bg-coral-100',
-    accent: 'text-coral-600',
-    border: 'border-coral-100',
-    bg: 'bg-coral-50/40',
+    accent: 'text-coral-700',
+    border: 'border-coral-200',
+    bg: 'bg-coral-50',
     lowLabel: 'Introverted',
     highLabel: 'Extraverted',
     description:
@@ -101,11 +101,11 @@ const traitData = {
   },
   A: {
     label: 'Agreeableness',
-    color: 'bg-rose-300',
+    color: 'bg-rose-400',
     trackColor: 'bg-rose-100',
-    accent: 'text-rose-600',
-    border: 'border-rose-100',
-    bg: 'bg-rose-50/40',
+    accent: 'text-rose-700',
+    border: 'border-rose-200',
+    bg: 'bg-rose-50',
     lowLabel: 'Independent',
     highLabel: 'Cooperative',
     description:
@@ -130,11 +130,11 @@ const traitData = {
   },
   N: {
     label: 'Neuroticism',
-    color: 'bg-teal-400',
+    color: 'bg-teal-500',
     trackColor: 'bg-teal-100',
-    accent: 'text-teal-600',
-    border: 'border-teal-100',
-    bg: 'bg-teal-50/40',
+    accent: 'text-teal-700',
+    border: 'border-teal-200',
+    bg: 'bg-teal-50',
     lowLabel: 'Stable',
     highLabel: 'Sensitive',
     description:
@@ -200,23 +200,23 @@ export default function Dashboard() {
   }, [loading, hasCompleted, navigate]);
 
   if (loading) return (
-    <div className="min-h-screen bg-cream-50 flex items-center justify-center">
-      <div className="w-8 h-8 border-4 border-sky-200 border-t-sky-400 rounded-full animate-spin" />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="w-7 h-7 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
     </div>
   );
   if (!hasCompleted) return null;
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      <header className="px-6 py-4 border-b border-gray-100 bg-white/60 backdrop-blur-sm sticky top-0 z-10">
+    <div className="min-h-screen bg-gray-50">
+      <header className="px-6 py-4 border-b border-gray-200 bg-white sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <button onClick={() => navigate('/')} className="text-xl font-extrabold tracking-tight text-gray-800">
-            My Personality <span className="text-sky-500">Quizzes</span>
+          <button onClick={() => navigate('/')} className="text-lg font-extrabold tracking-tight text-gray-900">
+            My Personality <span className="text-coral-500">Quizzes</span>
           </button>
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/frameworks')}
-              className="text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors hidden sm:block"
+              className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors hidden sm:block"
             >
               Frameworks
             </button>
@@ -227,9 +227,9 @@ export default function Dashboard() {
 
       <main className="px-6 py-10 max-w-4xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.35 }}
         >
           <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-1">
             Your Personality Profile
@@ -238,7 +238,7 @@ export default function Dashboard() {
             Based on your baseline assessment. Take more quizzes to refine your scores.
           </p>
 
-          <div className="flex flex-col gap-5 mb-12">
+          <div className="flex flex-col gap-4 mb-12">
             {traitOrder.map((trait, i) => {
               const data = traitData[trait];
               const score = scores[trait];
@@ -246,14 +246,14 @@ export default function Dashboard() {
               return (
                 <motion.div
                   key={trait}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, delay: i * 0.08 }}
-                  className={`rounded-3xl border ${data.border} ${data.bg} p-6 shadow-[0_2px_16px_rgba(0,0,0,0.05)]`}
+                  transition={{ duration: 0.3, delay: i * 0.06 }}
+                  className={`rounded-xl border ${data.border} ${data.bg} p-5 shadow-sm`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className={`text-base font-extrabold ${data.accent}`}>{data.label}</span>
-                    <span className="text-sm font-bold text-gray-400">{score}</span>
+                    <span className={`text-xs font-extrabold uppercase tracking-wider ${data.accent}`}>{data.label}</span>
+                    <span className="text-sm font-bold text-gray-500">{score}</span>
                   </div>
 
                   <div className="flex items-center gap-2 mb-3">
@@ -263,7 +263,7 @@ export default function Dashboard() {
                         className={`h-full rounded-full ${data.color}`}
                         initial={{ width: 0 }}
                         animate={{ width: `${score}%` }}
-                        transition={{ duration: 0.8, delay: i * 0.08, ease: 'easeOut' }}
+                        transition={{ duration: 0.6, delay: i * 0.06, ease: 'easeOut' }}
                       />
                     </div>
                     <span className="text-xs text-gray-400 w-20 shrink-0 text-right">{data.highLabel}</span>
@@ -273,7 +273,7 @@ export default function Dashboard() {
                     {data.description}
                   </p>
 
-                  <div className="border-t border-white/60 pt-3">
+                  <div className="border-t border-white/80 pt-3">
                     <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${data.accent}`}>
                       Your result — {range.heading}
                     </p>
@@ -288,44 +288,44 @@ export default function Dashboard() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.35, delay: 0.15 }}
         >
           <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">
             Life Analysis
           </h2>
-          <p className="text-gray-500 mb-6">
+          <p className="text-gray-500 mb-5">
             How your personality plays out across major areas of life.
           </p>
 
-          <div className="flex flex-col gap-5 mb-12">
+          <div className="flex flex-col gap-4 mb-12">
             {lifeAnalysis.map((category, ci) => {
               const Icon = category.icon;
               const analysis = category.getAnalysis(scores);
               return (
                 <motion.div
                   key={category.key}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, delay: ci * 0.06 }}
-                  className="rounded-3xl border border-gray-100 bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.05)]"
+                  transition={{ duration: 0.3, delay: ci * 0.05 }}
+                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
                 >
                   <div className="flex items-center gap-2.5 mb-3">
-                    <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center">
-                      <Icon className="w-4 h-4 text-sky-400" />
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-gray-600" />
                     </div>
-                    <h3 className="text-base font-extrabold text-gray-800">{category.label}</h3>
+                    <h3 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider">{category.label}</h3>
                   </div>
                   <p className="text-sm text-gray-600 leading-relaxed mb-3">
                     {analysis.summary}
                   </p>
                   {analysis.careers && (
-                    <div className="flex flex-wrap gap-2 mb-3">
+                    <div className="flex flex-wrap gap-1.5 mb-3">
                       {analysis.careers.map((c) => (
                         <span
                           key={c}
-                          className="text-xs font-semibold bg-sky-50 text-sky-600 px-3 py-1 rounded-full border border-sky-100"
+                          className="text-xs font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded border border-gray-200"
                         >
                           {c}
                         </span>
@@ -335,7 +335,7 @@ export default function Dashboard() {
                   <ul className="flex flex-col gap-2">
                     {analysis.items.map((item, i) => (
                       <li key={i} className="text-sm text-gray-600 leading-relaxed flex gap-2">
-                        <span className="text-gray-300 shrink-0 mt-1">•</span>
+                        <span className="text-gray-400 shrink-0 mt-1">•</span>
                         <span>{item}</span>
                       </li>
                     ))}
@@ -347,18 +347,18 @@ export default function Dashboard() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.35, delay: 0.25 }}
         >
           <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">
             Quiz Library
           </h2>
-          <p className="text-gray-500 mb-6">
+          <p className="text-gray-500 mb-5">
             Each quiz maps your personality into a fun new world.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {quizzes.map((quiz) => (
               <QuizCard
                 key={quiz.title}

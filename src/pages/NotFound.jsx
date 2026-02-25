@@ -16,7 +16,7 @@ export default function NotFound() {
         <p className="text-gray-500 mb-6">This page doesn't exist. Let's get you back on track.</p>
         <button
           onClick={() => navigate('/')}
-          className="px-6 py-3 bg-coral-400 hover:bg-coral-500 text-white font-bold rounded-2xl transition-colors shadow-md"
+          className="px-6 py-3 bg-coral-500 hover:bg-coral-600 text-white font-bold rounded-lg transition-colors shadow-sm"
         >
           Back to Home
         </button>

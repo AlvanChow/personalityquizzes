@@ -70,8 +70,8 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
   }, [page, navigate, exitPath]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream-50">
-      <div className="flex items-center justify-between px-6 pt-6 pb-3 bg-cream-50 sticky top-0 z-10 border-b border-gray-100/80">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="flex items-center justify-between px-6 pt-6 pb-3 bg-gray-50 sticky top-0 z-10 border-b border-gray-200">
         <button
           onClick={handleBack}
           aria-label={page === 0 ? 'Exit quiz' : 'Go to previous page'}
@@ -99,8 +99,8 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
               <div
                 key={q.id}
                 ref={el => { cardRefs.current[q.id] = el; }}
-                className={`bg-white rounded-2xl p-5 shadow-[0_2px_16px_rgba(0,0,0,0.09)] border-2 transition-colors duration-300
-                  ${shakeId === q.id ? 'border-red-300 animate-[shake_0.4s_ease-in-out]' : 'border-gray-200'}`}
+                className={`bg-white rounded-lg p-5 shadow-sm border-2 transition-colors duration-300
+                  ${shakeId === q.id ? 'border-red-400 animate-[shake_0.4s_ease-in-out]' : 'border-gray-200'}`}
               >
                 <p className="text-sm font-semibold text-gray-700 mb-3 leading-snug">
                   <span className={`font-bold mr-1.5 transition-colors duration-300 ${shakeId === q.id ? 'text-red-400' : 'text-sky-400'}`}>
@@ -118,7 +118,7 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
       </div>
 
       {/* Bottom bar with progress and next/submit button */}
-      <div className="fixed bottom-0 inset-x-0 bg-cream-50 border-t border-gray-100/80 px-6 py-4 z-20">
+      <div className="fixed bottom-0 inset-x-0 bg-gray-50 border-t border-gray-200 px-6 py-4 z-20">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-sky-500">
@@ -138,10 +138,10 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
           </div>
           <button
             onClick={handleNext}
-            className={`w-full py-3 rounded-2xl text-base font-bold transition-all flex items-center justify-center gap-2
+            className={`w-full py-3 rounded-lg text-base font-bold transition-all flex items-center justify-center gap-2
               ${pageAnswered
-                ? 'bg-sky-400 hover:bg-sky-500 text-white shadow-md'
-                : 'bg-sky-200 text-white hover:bg-sky-300 shadow-sm'
+                ? 'bg-sky-500 hover:bg-sky-600 text-white shadow-sm'
+                : 'bg-sky-200 text-white hover:bg-sky-300'
               }`}
           >
             {isLastPage ? 'Submit All Answers' : 'Next'}
@@ -177,7 +177,7 @@ function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions }) {
           {allAnswered && (
             <button
               onClick={() => onAnswerAll(localAnswers)}
-              className="bg-sky-400 hover:bg-sky-500 text-white font-bold px-5 py-2 rounded-xl text-sm transition-all shadow-md"
+              className="bg-sky-500 hover:bg-sky-600 text-white font-bold px-5 py-2 rounded-lg text-sm transition-all"
             >
               Submit All
             </button>
@@ -186,7 +186,7 @@ function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions }) {
 
         <div className="space-y-5">
           {questions.map((q, idx) => (
-            <div key={q.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.05)] border border-gray-100">
+            <div key={q.id} className="bg-white rounded-lg p-5 shadow-sm border border-gray-200">
               <p className="text-sm font-semibold text-gray-700 mb-3 leading-snug">
                 <span className="text-sky-400 font-bold mr-1.5">{idx + 1}.</span>
                 {q.text}
@@ -203,7 +203,7 @@ function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions }) {
         <div className="fixed bottom-6 inset-x-0 flex justify-center px-6 z-20">
           <button
             onClick={() => onAnswerAll(localAnswers)}
-            className="bg-sky-400 hover:bg-sky-500 text-white font-bold px-8 py-4 rounded-2xl text-base transition-all shadow-xl flex items-center gap-2"
+            className="bg-sky-500 hover:bg-sky-600 text-white font-bold px-8 py-4 rounded-lg text-base transition-all shadow-md flex items-center gap-2"
           >
             Submit All Answers
             <ChevronRight className="w-5 h-5" />
@@ -274,8 +274,8 @@ export default function QuizShell({ questions, onComplete, renderOptions, quizKe
 
   if (viewAll && allowViewAll) {
     return (
-      <div className="min-h-screen flex flex-col bg-cream-50">
-        <div className="flex items-center justify-between px-6 pt-6 pb-3 bg-cream-50 sticky top-0 z-10 border-b border-gray-100/80">
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <div className="flex items-center justify-between px-6 pt-6 pb-3 bg-gray-50 sticky top-0 z-10 border-b border-gray-200">
           <button
             onClick={() => setViewAll(false)}
             aria-label="Back to one-at-a-time view"
@@ -304,7 +304,7 @@ export default function QuizShell({ questions, onComplete, renderOptions, quizKe
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Top bar with back button, view-all toggle, and exit */}
       <div className="flex items-center justify-between px-6 pt-6 pb-2">
         <button

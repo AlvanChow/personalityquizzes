@@ -127,7 +127,7 @@ export default function CakeResult() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 px-6 py-8">
+    <div className="min-h-screen bg-gray-50 px-6 py-8">
       <div className="max-w-lg mx-auto">
         <button
           onClick={() => navigate('/dashboard')}
@@ -142,7 +142,7 @@ export default function CakeResult() {
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className={`bg-gradient-to-br ${result.color} rounded-3xl p-8 md:p-10 shadow-[0_8px_40px_rgba(0,0,0,0.08)] border border-white/60 mb-8`}
+          className={`bg-gradient-to-br ${result.color} rounded-xl p-8 md:p-10 shadow-md border border-white/60 mb-8`}
         >
           <div className="text-center mb-6">
             <motion.div
@@ -171,7 +171,7 @@ export default function CakeResult() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-8"
+          className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8"
         >
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">
             Your Competency Breakdown
@@ -191,7 +191,7 @@ export default function CakeResult() {
           <>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5">
+              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-sky-100 text-sky-600">
                   <Briefcase className="w-4 h-4" />
@@ -207,7 +207,7 @@ export default function CakeResult() {
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
-              className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5">
+              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-rose-100 text-rose-500">
                   <Users className="w-4 h-4" />
@@ -219,7 +219,7 @@ export default function CakeResult() {
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
-              className="bg-white rounded-3xl p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 mb-5">
+              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-100 text-violet-600">
                   <Zap className="w-4 h-4" />
@@ -237,7 +237,7 @@ export default function CakeResult() {
             aria-label="Retake the Cake quiz"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-3.5 rounded-lg bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors flex items-center justify-center gap-2"
           >
             <RotateCcw className="w-4 h-4" />
             Retake
@@ -247,7 +247,7 @@ export default function CakeResult() {
             aria-label="Go to Dashboard"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors"
+            className="flex-1 py-3.5 rounded-lg bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors"
           >
             Dashboard
           </motion.button>
@@ -256,7 +256,7 @@ export default function CakeResult() {
             aria-label="Share your cake quiz result"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-sky-400 to-sky-500 text-white font-bold shadow-[0_4px_16px_rgba(26,127,212,0.3)] flex items-center justify-center gap-2"
+            className="flex-1 py-3.5 rounded-lg bg-gradient-to-r from-sky-400 to-sky-500 text-white font-bold shadow-md flex items-center justify-center gap-2"
           >
             <Share2 className="w-4 h-4" />
             Share
