@@ -154,16 +154,15 @@ export default function Landing() {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0" />
 
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4 mb-5">
                     <motion.div
                       whileHover={{ rotate: 10 }}
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center ${quiz.iconBg} shadow-sm`}
+                      className={`w-14 h-14 rounded-2xl flex items-center justify-center ${quiz.iconBg} shadow-sm shrink-0`}
                     >
-                      <Icon className="w-8 h-8" />
+                      <Icon className="w-7 h-7" />
                     </motion.div>
+                    <h3 className="text-2xl font-extrabold text-gray-900 leading-snug">{quiz.name}</h3>
                   </div>
-
-                  <h3 className="text-3xl font-extrabold text-gray-900 mb-3">{quiz.name}</h3>
                   <p className="text-gray-500 font-medium mb-8 leading-relaxed text-lg">
                     {quiz.description}
                   </p>
