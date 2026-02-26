@@ -148,7 +148,7 @@ export default function MBTIResult() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-8">
+    <div className="min-h-screen bg-cream-50 px-6 py-8">
       <div className="max-w-lg mx-auto">
         <button
           onClick={() => navigate('/')}

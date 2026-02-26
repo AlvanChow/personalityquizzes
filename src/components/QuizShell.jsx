@@ -70,8 +70,8 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
   }, [page, navigate, exitPath]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="flex items-center justify-between px-6 pt-6 pb-3 bg-gray-50 sticky top-0 z-10 border-b border-gray-200">
+    <div className="min-h-screen flex flex-col bg-cream-50">
+      <div className="flex items-center justify-between px-6 pt-6 pb-3 bg-cream-50 sticky top-0 z-10 border-b border-gray-200">
         <button
           onClick={handleBack}
           aria-label={page === 0 ? 'Exit quiz' : 'Go to previous page'}
@@ -118,7 +118,7 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
       </div>
 
       {/* Bottom bar with progress and next/submit button */}
-      <div className="fixed bottom-0 inset-x-0 bg-gray-50 border-t border-gray-200 px-6 py-4 z-20">
+      <div className="fixed bottom-0 inset-x-0 bg-cream-50 border-t border-gray-200 px-6 py-4 z-20">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-sky-500">
@@ -274,8 +274,8 @@ export default function QuizShell({ questions, onComplete, renderOptions, quizKe
 
   if (viewAll && allowViewAll) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <div className="flex items-center justify-between px-6 pt-6 pb-3 bg-gray-50 sticky top-0 z-10 border-b border-gray-200">
+      <div className="min-h-screen flex flex-col bg-cream-50">
+        <div className="flex items-center justify-between px-6 pt-6 pb-3 bg-cream-50 sticky top-0 z-10 border-b border-gray-200">
           <button
             onClick={() => setViewAll(false)}
             aria-label="Back to one-at-a-time view"
@@ -304,7 +304,7 @@ export default function QuizShell({ questions, onComplete, renderOptions, quizKe
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-cream-50">
       {/* Top bar with back button, view-all toggle, and exit */}
       <div className="flex items-center justify-between px-6 pt-6 pb-2">
         <button
