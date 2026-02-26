@@ -56,8 +56,8 @@ export default function UserMenu() {
               await signInWithGoogle();
             } catch (err) {
               console.error('Sign in failed:', err);
-              setSignInError('Sign-in failed. Please try again.');
-              setTimeout(() => setSignInError(null), 5000);
+              setSignInError(err?.message || 'Sign-in failed. Please try again.');
+              setTimeout(() => setSignInError(null), 8000);
             }
           }}
           className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200 text-sm font-semibold text-gray-700"
