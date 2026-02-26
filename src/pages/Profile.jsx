@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { User, ArrowLeft, LogOut, Calendar, ChevronRight, Trophy, Sparkles, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
@@ -65,13 +65,18 @@ export default function Profile() {
     return () => { cancelled = true; };
   }, [user, navigate]);
 
+  const quizResults = useMemo(() => profile?.quiz_results || {}, [profile?.quiz_results]);
+  const completedQuizzes = Object.entries(quizResults);
+
+  const summary = useMemo(
+    () => generateProfileSummary({ scores, hasCompleted, quizResults }),
+    [scores, hasCompleted, quizResults],
+  );
+
   if (!user) return null;
 
   const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
   const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email;
-
-  const quizResults = profile?.quiz_results || {};
-  const completedQuizzes = Object.entries(quizResults);
 
   const quizLocalKeys = {
     cake: 'personalens_cake',
@@ -210,58 +215,50 @@ export default function Profile() {
           </motion.div>
         )}
 
-        {(() => {
-          const summary = generateProfileSummary({
-            scores,
-            hasCompleted,
-            quizResults,
-          });
-          if (!summary) return null;
-          return (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="mb-8"
-            >
-              <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-violet-200">
-                {/* Header */}
-                <div className="flex items-center gap-2.5 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-200 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-violet-500" />
-                  </div>
-                  <div>
-                    <h2 className="text-sm font-bold text-violet-700 uppercase tracking-wider leading-none">Personality Mosaic</h2>
-                    <p className="text-[11px] text-violet-400 mt-0.5">Based on {summary.sourceCount} assessments</p>
-                  </div>
+        {summary && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mb-8"
+          >
+            <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-violet-200">
+              {/* Header */}
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-200 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-violet-500" />
                 </div>
-
-                {/* Body */}
-                <p className="text-sm text-gray-700 leading-relaxed mb-5">{summary.body}</p>
-
-                {/* Strengths */}
-                {summary.strengths.length > 0 && (
-                  <div className="space-y-2.5 mb-5">
-                    {summary.strengths.map((s, i) => (
-                      <div key={i} className="flex items-start gap-2.5">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-gray-700 leading-snug">{s}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Watch out */}
-                {summary.watchOut && (
-                  <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-                    <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-amber-800 leading-snug">{summary.watchOut}</p>
-                  </div>
-                )}
+                <div>
+                  <h2 className="text-sm font-bold text-violet-700 uppercase tracking-wider leading-none">Personality Mosaic</h2>
+                  <p className="text-[11px] text-violet-400 mt-0.5">Based on {summary.sourceCount} assessments</p>
+                </div>
               </div>
-            </motion.div>
-          );
-        })()}
+
+              {/* Body */}
+              <p className="text-sm text-gray-700 leading-relaxed mb-5">{summary.body}</p>
+
+              {/* Strengths */}
+              {summary.strengths.length > 0 && (
+                <div className="space-y-2.5 mb-5">
+                  {summary.strengths.map((s, i) => (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-gray-700 leading-snug">{s}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Watch out */}
+              {summary.watchOut && (
+                <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                  <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-amber-800 leading-snug">{summary.watchOut}</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

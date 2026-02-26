@@ -40,6 +40,11 @@ export default function UserMenu() {
   }, []);
 
   const [signInError, setSignInError] = useState(null);
+  const errorTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => clearTimeout(errorTimerRef.current);
+  }, []);
 
   if (loading) {
     return <div className="w-9 h-9 rounded-full bg-gray-100 animate-pulse" />;
@@ -57,7 +62,8 @@ export default function UserMenu() {
             } catch (err) {
               console.error('Sign in failed:', err);
               setSignInError(err?.message || 'Sign-in failed. Please try again.');
-              setTimeout(() => setSignInError(null), 8000);
+              clearTimeout(errorTimerRef.current);
+              errorTimerRef.current = setTimeout(() => setSignInError(null), 8000);
             }
           }}
           className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200 text-sm font-semibold text-gray-700"

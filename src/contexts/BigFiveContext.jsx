@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 import { track } from '../utils/analytics';
@@ -150,21 +150,21 @@ export function BigFiveProvider({ children }) {
     return () => { cancelled = true; };
   }, [user]);
 
-  function updateScores(newScores) {
+  const updateScores = useCallback((newScores) => {
     setScores((prev) => {
       const merged = { ...prev, ...newScores };
       syncToSupabase(merged, hasCompletedRef.current);
       return merged;
     });
-  }
+  }, [syncToSupabase]);
 
-  function completeBaseline(baselineScores) {
+  const completeBaseline = useCallback((baselineScores) => {
     setScores(baselineScores);
     setHasCompleted(true);
     syncToSupabase(baselineScores, true);
-  }
+  }, [syncToSupabase]);
 
-  function resetBaseline() {
+  const resetBaseline = useCallback(() => {
     setScores(defaultScores);
     setHasCompleted(false);
     // Only clear the Big Five localStorage keys — quiz results are preserved.
@@ -173,10 +173,15 @@ export function BigFiveProvider({ children }) {
     // Only reset Big Five fields in Supabase; quiz_results is left untouched.
     syncToSupabase(defaultScores, false);
     track('baseline_reset', {}, user?.id ?? null);
-  }
+  }, [syncToSupabase, user?.id]);
+
+  const value = useMemo(
+    () => ({ scores, hasCompleted, loading: contextLoading, updateScores, completeBaseline, resetBaseline }),
+    [scores, hasCompleted, contextLoading, updateScores, completeBaseline, resetBaseline],
+  );
 
   return (
-    <BigFiveContext.Provider value={{ scores, hasCompleted, loading: contextLoading, updateScores, completeBaseline, resetBaseline }}>
+    <BigFiveContext.Provider value={value}>
       {children}
     </BigFiveContext.Provider>
   );

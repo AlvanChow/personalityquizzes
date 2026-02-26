@@ -170,17 +170,15 @@ describe('computeBaselineScores – with real baselineQuestions', () => {
     ({ baselineQuestions } = await import('../data/baselineQuestions.js'));
   });
 
-  it('produces a score of 100 for a trait when all 5 questions answered 5', () => {
-    // All O questions: ids 1, 6, 11, 16, 21
-    // Q6 (reversed): value 5 → adjusted 1; Q16 (reversed): value 5 → adjusted 1
-    // Non-reversed (1,11,21): value 5 → adjusted 5
-    // To get 100 we need avg=5 for all, so reversed questions need value 1
+  it('produces a score of 100 for a trait when all 5 questions answered optimally', () => {
+    // O questions: ids 21,22,23 (non-reversed), 24,25 (reversed)
+    // Non-reversed: value 5 → adjusted 5; Reversed: value 1 → adjusted 5
     const answers = {
-      1:  { trait: 'O', value: 5 },
-      6:  { trait: 'O', value: 1 }, // reversed → adjusted 5
-      11: { trait: 'O', value: 5 },
-      16: { trait: 'O', value: 1 }, // reversed → adjusted 5
       21: { trait: 'O', value: 5 },
+      22: { trait: 'O', value: 5 },
+      23: { trait: 'O', value: 5 },
+      24: { trait: 'O', value: 1 }, // reversed → adjusted 5
+      25: { trait: 'O', value: 1 }, // reversed → adjusted 5
     };
     const scores = computeBaselineScores(answers, baselineQuestions);
     expect(scores.O).toBe(100);
@@ -189,11 +187,11 @@ describe('computeBaselineScores – with real baselineQuestions', () => {
   it('produces a score of 0 for a trait when all 5 questions answered at the minimum', () => {
     // Non-reversed: value 1 → adjusted 1; Reversed: value 5 → adjusted 1
     const answers = {
-      1:  { trait: 'O', value: 1 },
-      6:  { trait: 'O', value: 5 }, // reversed → adjusted 1
-      11: { trait: 'O', value: 1 },
-      16: { trait: 'O', value: 5 }, // reversed → adjusted 1
       21: { trait: 'O', value: 1 },
+      22: { trait: 'O', value: 1 },
+      23: { trait: 'O', value: 1 },
+      24: { trait: 'O', value: 5 }, // reversed → adjusted 1
+      25: { trait: 'O', value: 5 }, // reversed → adjusted 1
     };
     const scores = computeBaselineScores(answers, baselineQuestions);
     expect(scores.O).toBe(0);
@@ -202,11 +200,11 @@ describe('computeBaselineScores – with real baselineQuestions', () => {
   it('produces a score of 50 for a trait when all answers are neutral (3)', () => {
     // reversed: 6-3=3; non-reversed: 3 → avg=3 → score=50
     const answers = {
-      1:  { trait: 'O', value: 3 },
-      6:  { trait: 'O', value: 3 },
-      11: { trait: 'O', value: 3 },
-      16: { trait: 'O', value: 3 },
       21: { trait: 'O', value: 3 },
+      22: { trait: 'O', value: 3 },
+      23: { trait: 'O', value: 3 },
+      24: { trait: 'O', value: 3 },
+      25: { trait: 'O', value: 3 },
     };
     const scores = computeBaselineScores(answers, baselineQuestions);
     expect(scores.O).toBe(50);

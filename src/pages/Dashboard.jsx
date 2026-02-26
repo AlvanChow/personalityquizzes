@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Cake, Brain, CircleDashed, Share2, Check, Layers, ArrowRight } from 'lucide-react';
@@ -198,6 +198,14 @@ export default function Dashboard() {
 
   const [copied, setCopied] = useState(false);
 
+  const analyses = useMemo(
+    () => lifeAnalysis.map((category) => ({
+      ...category,
+      analysis: category.getAnalysis(scores),
+    })),
+    [scores],
+  );
+
   useEffect(() => {
     if (!loading && !hasCompleted) navigate('/');
   }, [loading, hasCompleted, navigate]);
@@ -340,12 +348,12 @@ export default function Dashboard() {
           </p>
 
           <div className="flex flex-col gap-4 mb-12">
-            {lifeAnalysis.map((category, ci) => {
-              const Icon = category.icon;
-              const analysis = category.getAnalysis(scores);
+            {analyses.map((entry, ci) => {
+              const Icon = entry.icon;
+              const { analysis } = entry;
               return (
                 <motion.div
-                  key={category.key}
+                  key={entry.key}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: ci * 0.05 }}
@@ -355,7 +363,7 @@ export default function Dashboard() {
                     <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
                       <Icon className="w-4 h-4 text-gray-600" />
                     </div>
-                    <h3 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider">{category.label}</h3>
+                    <h3 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider">{entry.label}</h3>
                   </div>
                   <p className="text-sm text-gray-600 leading-relaxed mb-3">
                     {analysis.summary}
