@@ -1,33 +1,38 @@
 export const baselineQuestions = [
-  { id: 1, text: 'I enjoy trying new and unfamiliar experiences.', trait: 'O', reversed: false },
-  { id: 2, text: 'I like to keep things organized and follow a plan.', trait: 'C', reversed: false },
-  { id: 3, text: 'I feel energized when spending time with large groups of people.', trait: 'E', reversed: false },
-  { id: 4, text: 'I go out of my way to make others feel comfortable.', trait: 'A', reversed: false },
-  { id: 5, text: 'I often worry about things that might go wrong.', trait: 'N', reversed: false },
+  // Extraversion (E)
+  { id: 1, text: 'Am the life of the party.', trait: 'E', reversed: false },
+  { id: 2, text: 'Feel comfortable around people.', trait: 'E', reversed: false },
+  { id: 3, text: "Don't mind being the center of attention.", trait: 'E', reversed: false },
+  { id: 4, text: "Don't talk a lot.", trait: 'E', reversed: true },
+  { id: 5, text: 'Keep in the background.', trait: 'E', reversed: true },
 
-  { id: 6, text: 'I have little interest in abstract or theoretical ideas.', trait: 'O', reversed: true },
-  { id: 7, text: 'I tend to procrastinate on important tasks.', trait: 'C', reversed: true },
-  { id: 8, text: 'I prefer working alone rather than in a team.', trait: 'E', reversed: true },
-  { id: 9, text: 'I sometimes find it hard to see things from another person\'s point of view.', trait: 'A', reversed: true },
-  { id: 10, text: 'I rarely feel anxious or stressed.', trait: 'N', reversed: true },
+  // Agreeableness (A)
+  { id: 6, text: "Sympathize with others' feelings.", trait: 'A', reversed: false },
+  { id: 7, text: 'Have a soft heart.', trait: 'A', reversed: false },
+  { id: 8, text: 'Take time out for others.', trait: 'A', reversed: false },
+  { id: 9, text: 'Feel little concern for others.', trait: 'A', reversed: true },
+  { id: 10, text: 'Am not really interested in others.', trait: 'A', reversed: true },
 
-  { id: 11, text: 'I am fascinated by art, music, or literature.', trait: 'O', reversed: false },
-  { id: 12, text: 'I pay close attention to details in my work.', trait: 'C', reversed: false },
-  { id: 13, text: 'I am usually the one who starts conversations with strangers.', trait: 'E', reversed: false },
-  { id: 14, text: 'I try to be considerate and thoughtful in my actions.', trait: 'A', reversed: false },
-  { id: 15, text: 'Small setbacks can really affect my mood for the day.', trait: 'N', reversed: false },
+  // Conscientiousness (C)
+  { id: 11, text: 'Am always prepared.', trait: 'C', reversed: false },
+  { id: 12, text: 'Pay attention to details.', trait: 'C', reversed: false },
+  { id: 13, text: 'Get chores done right away.', trait: 'C', reversed: false },
+  { id: 14, text: 'Often forget to put things back in their proper place.', trait: 'C', reversed: true },
+  { id: 15, text: 'Make a mess of things.', trait: 'C', reversed: true },
 
-  { id: 16, text: 'I prefer sticking to routines rather than exploring new approaches.', trait: 'O', reversed: true },
-  { id: 17, text: 'My workspace is often messy or disorganized.', trait: 'C', reversed: true },
-  { id: 18, text: 'I find small talk easy and enjoyable.', trait: 'E', reversed: false },
-  { id: 19, text: 'I tend to be skeptical of other people\'s intentions.', trait: 'A', reversed: true },
-  { id: 20, text: 'I get overwhelmed easily when things don\'t go as planned.', trait: 'N', reversed: false },
+  // Neuroticism (N)
+  { id: 16, text: 'Get stressed out easily.', trait: 'N', reversed: false },
+  { id: 17, text: 'Worry about things.', trait: 'N', reversed: false },
+  { id: 18, text: 'Am easily disturbed.', trait: 'N', reversed: false },
+  { id: 19, text: 'Am relaxed most of the time.', trait: 'N', reversed: true },
+  { id: 20, text: 'Seldom feel blue.', trait: 'N', reversed: true },
 
-  { id: 21, text: 'I enjoy thinking about complex philosophical questions.', trait: 'O', reversed: false },
-  { id: 22, text: 'I always finish what I start, even when it gets difficult.', trait: 'C', reversed: false },
-  { id: 23, text: 'After a long week, I recharge by being alone.', trait: 'E', reversed: true },
-  { id: 24, text: 'I believe most people are fundamentally good.', trait: 'A', reversed: false },
-  { id: 25, text: 'I feel calm and composed even under pressure.', trait: 'N', reversed: true },
+  // Openness to Experience (O)
+  { id: 21, text: 'Have a rich vocabulary.', trait: 'O', reversed: false },
+  { id: 22, text: 'Have a vivid imagination.', trait: 'O', reversed: false },
+  { id: 23, text: 'Have excellent ideas.', trait: 'O', reversed: false },
+  { id: 24, text: 'Am not interested in abstract ideas.', trait: 'O', reversed: true },
+  { id: 25, text: 'Do not have a good imagination.', trait: 'O', reversed: true },
 ];
 
 export const likertOptions = [

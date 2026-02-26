@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Brain, Feather, Heart, AlertTriangle, TrendingUp, Zap } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Brain, Feather, Heart, AlertTriangle, TrendingUp, Zap, Layers, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import { enneagramInsights } from '../data/enneagramInsights';
 import { getWing, WING_ADJACENTS } from '../data/enneagramWings';
+import NextQuizBanner from '../components/NextQuizBanner';
 
 const MAX_SCORE_PER_TYPE = 12;
 
@@ -264,6 +265,33 @@ export default function EnneagramResult() {
             </InsightCard>
           </>
         )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.7 }}
+          className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200 mb-5"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+              <Layers className="w-4.5 h-4.5 text-amber-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-extrabold text-gray-800 mb-1">Want a more nuanced result?</h3>
+              <p className="text-xs text-gray-500 leading-relaxed mb-3">
+                Take the 36-item core fears &amp; desires inventory with weighted scoring for deeper Enneagram insight.
+              </p>
+              <button
+                onClick={() => navigate('/quiz/enneagram-deep')}
+                className="text-sm font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1.5 transition-colors"
+              >
+                Go Deeper <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+
+        <NextQuizBanner currentQuizKey="enneagram" />
 
         <div className="flex gap-3 mt-2">
           <motion.button onClick={() => { track('quiz_retaken', { quiz: 'enneagram' }, user?.id ?? null); navigate('/quiz/enneagram'); }}

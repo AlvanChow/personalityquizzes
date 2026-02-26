@@ -82,3 +82,63 @@ export function computeEnneagramScores(answers) {
   });
   return scores;
 }
+
+/**
+ * Computes MBTI scores from forced-choice (A/B) deep quiz answers.
+ *
+ * Each question has two options, each with a `pointsTo` letter and `weight`.
+ * Counts weighted points per letter, then computes percentage for each dimension.
+ * Returns the same { IE, SN, TF, JP } shape as computeMBTIScores().
+ *
+ * @param {Record<string, { trait: string, value: string }>} answers
+ * @param {Array} questions - The mbtiDeepQuestions array
+ * @returns {{ IE: number, SN: number, TF: number, JP: number }}
+ */
+export function computeMBTIDeepScores(answers, questions) {
+  const points = { I: 0, E: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+  const questionMap = new Map(questions.map((q) => [q.id, q]));
+
+  Object.entries(answers).forEach(([qId, { value }]) => {
+    const q = questionMap.get(Number(qId));
+    if (!q) return;
+    const chosen = q.options.find((o) => o.value === value);
+    if (chosen) {
+      points[chosen.pointsTo] = (points[chosen.pointsTo] || 0) + chosen.weight;
+    }
+  });
+
+  return {
+    IE: Math.round((points.E / (points.I + points.E || 1)) * 100),
+    SN: Math.round((points.N / (points.S + points.N || 1)) * 100),
+    TF: Math.round((points.F / (points.T + points.F || 1)) * 100),
+    JP: Math.round((points.P / (points.J + points.P || 1)) * 100),
+  };
+}
+
+/**
+ * Computes Enneagram scores from the weighted-Likert deep quiz answers.
+ *
+ * Each option has `addsToType` (type number) and `weight` (score contribution).
+ * Accumulates weighted scores per type.
+ * Returns the same { '1': n, ..., '9': n } shape as computeEnneagramScores().
+ *
+ * @param {Record<string, { trait: string, value: number }>} answers
+ * @param {Array} questions - The enneagramDeepQuestions array
+ * @returns {Record<string, number>}
+ */
+export function computeEnneagramDeepScores(answers, questions) {
+  const scores = {};
+  const questionMap = new Map(questions.map((q) => [q.id, q]));
+
+  Object.entries(answers).forEach(([qId, { value }]) => {
+    const q = questionMap.get(Number(qId));
+    if (!q) return;
+    const chosen = q.options.find((o) => o.value === value);
+    if (chosen) {
+      const type = String(chosen.addsToType);
+      scores[type] = (scores[type] || 0) + chosen.weight;
+    }
+  });
+
+  return scores;
+}

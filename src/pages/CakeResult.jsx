@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
+import NextQuizBanner from '../components/NextQuizBanner';
 
 // MAX raw score per competency = 2 questions × 4 points = 8
 const MAX_COMPETENCY_SCORE = 8;
@@ -230,6 +231,8 @@ export default function CakeResult() {
             </motion.div>
           </>
         )}
+
+        <NextQuizBanner currentQuizKey="cake" />
 
         <div className="flex gap-3">
           <motion.button
