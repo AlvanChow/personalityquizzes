@@ -224,14 +224,14 @@ export default function Dashboard() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-cream-50 flex items-center justify-center">
       <div className="w-7 h-7 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
     </div>
   );
   if (!hasCompleted) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream-50">
       <header className="px-6 py-4 border-b border-gray-200 bg-white sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <button onClick={() => navigate('/')} className="text-lg font-extrabold tracking-tight text-gray-900">

@@ -101,7 +101,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream-50">
       <header className="px-6 py-4 border-b border-gray-200 bg-white sticky top-0 z-10">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <button
