@@ -1,5 +1,23 @@
 import { supabase } from '../lib/supabase';
 
+// ─── Allowed event names ──────────────────────────────────────────────────────
+// Must stay in sync with the analytics_events_event_format DB constraint
+// (pattern: ^[a-z][a-z0-9_]{0,99}$) and the events actually used in the app.
+const ALLOWED_EVENTS = new Set([
+  'page_view',
+  'baseline_completed',
+  'baseline_reset',
+  'quiz_started',
+  'quiz_completed',
+  'quiz_card_clicked',
+  'quiz_result_viewed',
+  'quiz_retaken',
+  'hero_cta_clicked',
+  'auth_sign_in_started',
+  'auth_sign_in_completed',
+  'auth_sign_out',
+]);
+
 // ─── Session ID ──────────────────────────────────────────────────────────────
 // One UUID per browser tab, stored in sessionStorage.
 // A new tab or a fresh browser open creates a new session.
@@ -61,13 +79,29 @@ function detectOS(ua) {
 export function track(event, properties = {}, userId = null) {
   if (!supabase) return;
 
+  // Drop events that aren't in the allowlist to keep analytics clean and to
+  // avoid hitting the DB-level event_format CHECK constraint.
+  if (!ALLOWED_EVENTS.has(event)) {
+    if (import.meta.env.DEV) console.warn('[analytics] unknown event dropped:', event);
+    return;
+  }
+
+  // Sanitize properties: ensure it is a plain object and cap individual string
+  // values at 500 chars so the row stays within the 10 KB properties limit.
+  const sanitizedProps = {};
+  if (properties && typeof properties === 'object' && !Array.isArray(properties)) {
+    for (const [k, v] of Object.entries(properties)) {
+      sanitizedProps[k] = typeof v === 'string' ? v.slice(0, 500) : v;
+    }
+  }
+
   const sessionId = getSessionId();
 
   // Merge device info into the first event of this session only.
   const DEVICE_SENT_KEY = 'pq_device_sent';
-  let mergedProperties = properties;
+  let finalProperties = sanitizedProps;
   if (!sessionStorage.getItem(DEVICE_SENT_KEY)) {
-    mergedProperties = { ...getDeviceInfo(), ...properties };
+    finalProperties = { ...getDeviceInfo(), ...sanitizedProps };
     sessionStorage.setItem(DEVICE_SENT_KEY, '1');
   }
 
@@ -77,7 +111,7 @@ export function track(event, properties = {}, userId = null) {
       session_id:  sessionId,
       user_id:     userId ?? null,
       event,
-      properties:  mergedProperties,
+      properties:  finalProperties,
     })
     .then(({ error }) => {
       if (error && import.meta.env.DEV) {

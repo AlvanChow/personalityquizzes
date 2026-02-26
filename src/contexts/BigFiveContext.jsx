@@ -34,6 +34,19 @@ function readLocalJson(key) {
 }
 
 /**
+ * Clamp each Big Five trait score to [0, 100] and coerce to a finite number.
+ * This ensures the DB-level CHECK constraint is never violated from client data.
+ */
+function clampScores(scores) {
+  const result = {};
+  for (const key of ['O', 'C', 'E', 'A', 'N']) {
+    const v = Number(scores?.[key]);
+    result[key] = Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : 0;
+  }
+  return result;
+}
+
+/**
  * After login, upload any quiz results that were completed as a guest and are
  * not yet in the user's Supabase profile. Each localStorage entry already uses
  * the same normalized shape written by the quiz completion handlers.
@@ -98,7 +111,7 @@ export function BigFiveProvider({ children }) {
 
   const syncToSupabase = useCallback(async (newScores, completed, quizResults) => {
     if (!user || !supabase) return;
-    const update = { big5_scores: newScores, baseline_completed: completed };
+    const update = { big5_scores: clampScores(newScores), baseline_completed: completed };
     if (quizResults !== undefined) update.quiz_results = quizResults;
     const { error } = await supabase
       .from('profiles')
@@ -134,7 +147,7 @@ export function BigFiveProvider({ children }) {
           await supabase
             .from('profiles')
             .update({
-              big5_scores: localScores,
+              big5_scores: clampScores(localScores),
               baseline_completed: true,
             })
             .eq('id', user.id);
