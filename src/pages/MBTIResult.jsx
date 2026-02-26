@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Brain, Star, ShieldAlert, Sparkles, TrendingUp, Zap, AlertTriangle, ChevronDown, Layers, ArrowRight } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Star, ShieldAlert, Sparkles, TrendingUp, Zap, AlertTriangle, ChevronDown, Layers, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import { mbtiInsights } from '../data/mbtiInsights';
 import { mbtiRoles } from '../data/mbtiResults';
 import NextQuizBanner from '../components/NextQuizBanner';
+import InsightCard from '../components/InsightCard';
 
 const DIMENSION_LABELS = {
   IE: { low: 'Introversion (I)', high: 'Extraversion (E)' },
@@ -54,25 +55,6 @@ function DimensionBar({ dim, score, delay }) {
       </div>
       <p className="text-right text-xs text-gray-400 mt-1">{activeLetter}</p>
     </div>
-  );
-}
-
-function InsightCard({ icon: Icon, title, children, delay, color }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
-      className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-5"
-    >
-      <div className="flex items-center gap-2 mb-4">
-        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${color}`}>
-          <Icon className="w-4 h-4" />
-        </div>
-        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">{title}</h3>
-      </div>
-      {children}
-    </motion.div>
   );
 }
 

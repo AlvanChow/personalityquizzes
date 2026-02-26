@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 
@@ -28,7 +28,7 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function signInWithGoogle() {
+  const signInWithGoogle = useCallback(async () => {
     if (!supabase) throw new Error('Authentication is not available right now.');
     track('auth_sign_in_started', {}, null);
     const { error } = await supabase.auth.signInWithOAuth({
@@ -38,18 +38,20 @@ export function AuthProvider({ children }) {
       },
     });
     if (error) throw error;
-  }
+  }, []);
 
-  async function signOut() {
+  const signOut = useCallback(async () => {
     if (!supabase) return;
     track('auth_sign_out', {}, user?.id ?? null);
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     // onAuthStateChange already sets user to null; no need to do it here too.
-  }
+  }, [user?.id]);
+
+  const value = useMemo(() => ({ user, loading, signInWithGoogle, signOut }), [user, loading, signInWithGoogle, signOut]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
