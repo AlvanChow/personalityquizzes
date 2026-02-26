@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function signInWithGoogle() {
-    if (!supabase) return;
+    if (!supabase) throw new Error('Authentication is not available right now.');
     track('auth_sign_in_started', {}, null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
