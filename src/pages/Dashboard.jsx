@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Cake, Brain, CircleDashed, Share2, Check } from 'lucide-react';
+import { Cake, Brain, CircleDashed, Share2, Check, Layers, ArrowRight } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
 import QuizCard from '../components/QuizCard';
+import NextQuizBanner from '../components/NextQuizBanner';
 import { track } from '../utils/analytics';
 import lifeAnalysis from '../data/lifeAnalysis';
 
@@ -385,6 +386,8 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
+        <NextQuizBanner currentQuizKey="big5" />
+
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -406,6 +409,42 @@ export default function Dashboard() {
                   track('quiz_card_clicked', { quiz: quiz.quizKey, from: 'dashboard' }, user?.id ?? null)
                 }
               />
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.35 }}
+          className="mt-10"
+        >
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+              <Layers className="w-4 h-4 text-amber-600" />
+            </div>
+            <h2 className="text-xl md:text-2xl font-extrabold text-gray-900">Go Deeper</h2>
+          </div>
+          <p className="text-gray-500 mb-5">
+            Extended assessments for a more nuanced personality profile.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { label: 'Big 5 Deep (IPIP-50)', desc: '50 items for a more precise OCEAN profile', path: '/quiz/big5-deep', accent: 'text-teal-600' },
+              { label: 'MBTI Deep (OEJTS)', desc: 'Scientific forced-choice for sharper typing', path: '/quiz/mbti-deep', accent: 'text-coral-600' },
+              { label: 'Enneagram Deep (36-item)', desc: 'Core fears & desires weighted inventory', path: '/quiz/enneagram-deep', accent: 'text-violet-600' },
+            ].map((dq) => (
+              <button
+                key={dq.path}
+                onClick={() => { track('quiz_card_clicked', { quiz: dq.path, from: 'dashboard' }, user?.id ?? null); navigate(dq.path); }}
+                className="text-left p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all group"
+              >
+                <p className="text-sm font-bold text-gray-800 mb-1">{dq.label}</p>
+                <p className="text-xs text-gray-500 leading-relaxed mb-2">{dq.desc}</p>
+                <span className={`text-xs font-bold ${dq.accent} flex items-center gap-1`}>
+                  Take Quiz <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                </span>
+              </button>
             ))}
           </div>
         </motion.div>

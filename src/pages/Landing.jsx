@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
-import { Activity, Brain, CircleDashed, Cake, ArrowRight, Sparkles, Users, ChevronDown } from 'lucide-react';
+import { Activity, Brain, CircleDashed, Cake, ArrowRight, Sparkles, Users, ChevronDown, Layers } from 'lucide-react';
 import { track } from '../utils/analytics';
 
 export default function Landing() {
@@ -209,6 +209,82 @@ export default function Landing() {
               </motion.div>
             );
           })}
+        </motion.div>
+
+        {/* ── Go Deeper section ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.6 }}
+          className="w-full max-w-5xl mt-16"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <Layers className="w-5 h-5 text-amber-600" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-gray-900">Go Deeper</h2>
+              <p className="text-sm text-gray-500 font-medium">Extended assessments for more nuanced results</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                id: 'big5-deep',
+                name: 'Big 5 Deep',
+                badge: 'IPIP-50',
+                description: '50-item assessment for a more precise OCEAN profile with double the questions.',
+                path: '/quiz/big5-deep',
+                border: 'border-teal-200',
+                badgeBg: 'bg-teal-100 text-teal-700',
+                accent: 'text-teal-600',
+              },
+              {
+                id: 'mbti-deep',
+                name: 'MBTI Deep',
+                badge: 'OEJTS',
+                description: 'Open Extended Jungian Type Scales — a scientific forced-choice format for sharper typing.',
+                path: '/quiz/mbti-deep',
+                border: 'border-coral-200',
+                badgeBg: 'bg-coral-100 text-coral-700',
+                accent: 'text-coral-600',
+              },
+              {
+                id: 'enneagram-deep',
+                name: 'Enneagram Deep',
+                badge: '36-Item',
+                description: 'Core fears & desires inventory with 4 questions per type and weighted scoring.',
+                path: '/quiz/enneagram-deep',
+                border: 'border-violet-200',
+                badgeBg: 'bg-violet-100 text-violet-700',
+                accent: 'text-violet-600',
+              },
+            ].map((quiz, i) => (
+              <motion.button
+                key={quiz.id}
+                onClick={() => trackAndNavigate(quiz.id, quiz.path)}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.65 + i * 0.08 }}
+                whileHover={{ y: -4, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`text-left p-6 rounded-xl bg-white border-2 ${quiz.border} shadow-sm hover:shadow-md transition-all group`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full ${quiz.badgeBg}`}>
+                    {quiz.badge}
+                  </span>
+                </div>
+                <h3 className="text-lg font-extrabold text-gray-900 mb-1">{quiz.name}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed mb-4">{quiz.description}</p>
+                <span className={`text-sm font-bold ${quiz.accent} flex items-center gap-1.5`}>
+                  Take Quiz
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </motion.button>
+            ))}
+          </div>
         </motion.div>
       </main>
     </div>

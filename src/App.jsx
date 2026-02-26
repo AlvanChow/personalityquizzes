@@ -12,6 +12,9 @@ import MBTIQuiz from './pages/MBTIQuiz';
 import MBTIResult from './pages/MBTIResult';
 import EnneagramQuiz from './pages/EnneagramQuiz';
 import EnneagramResult from './pages/EnneagramResult';
+import BigFiveDeepQuiz from './pages/BigFiveDeepQuiz';
+import MBTIDeepQuiz from './pages/MBTIDeepQuiz';
+import EnneagramDeepQuiz from './pages/EnneagramDeepQuiz';
 import Profile from './pages/Profile';
 import Frameworks from './pages/Frameworks';
 import NotFound from './pages/NotFound';
@@ -60,6 +63,9 @@ function AppRoutes() {
         <Route path="/quiz/mbti/result" element={<MBTIResult />} />
         <Route path="/quiz/enneagram" element={<EnneagramQuiz />} />
         <Route path="/quiz/enneagram/result" element={<EnneagramResult />} />
+        <Route path="/quiz/big5-deep" element={<BigFiveDeepQuiz />} />
+        <Route path="/quiz/mbti-deep" element={<MBTIDeepQuiz />} />
+        <Route path="/quiz/enneagram-deep" element={<EnneagramDeepQuiz />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/how-it-works" element={<Frameworks />} />
         <Route path="*" element={<NotFound />} />
