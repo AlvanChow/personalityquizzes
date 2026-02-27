@@ -25,12 +25,18 @@ const ALLOWED_EVENTS = new Set([
 const SESSION_KEY = 'pq_session_id';
 
 function getSessionId() {
-  let id = sessionStorage.getItem(SESSION_KEY);
-  if (!id) {
-    id = crypto.randomUUID();
-    sessionStorage.setItem(SESSION_KEY, id);
+  try {
+    let id = sessionStorage.getItem(SESSION_KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+      sessionStorage.setItem(SESSION_KEY, id);
+    }
+    return id;
+  } catch {
+    // sessionStorage unavailable (e.g. private browsing with storage blocked).
+    // Return an ephemeral ID so analytics still fires for this call.
+    return crypto.randomUUID();
   }
-  return id;
 }
 
 // ─── Device / browser metadata ───────────────────────────────────────────────
@@ -100,9 +106,14 @@ export function track(event, properties = {}, userId = null) {
   // Merge device info into the first event of this session only.
   const DEVICE_SENT_KEY = 'pq_device_sent';
   let finalProperties = sanitizedProps;
-  if (!sessionStorage.getItem(DEVICE_SENT_KEY)) {
+  try {
+    if (!sessionStorage.getItem(DEVICE_SENT_KEY)) {
+      finalProperties = { ...getDeviceInfo(), ...sanitizedProps };
+      sessionStorage.setItem(DEVICE_SENT_KEY, '1');
+    }
+  } catch {
+    // sessionStorage unavailable — include device info as best effort.
     finalProperties = { ...getDeviceInfo(), ...sanitizedProps };
-    sessionStorage.setItem(DEVICE_SENT_KEY, '1');
   }
 
   supabase
