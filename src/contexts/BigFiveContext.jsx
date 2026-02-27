@@ -99,8 +99,11 @@ export function BigFiveProvider({ children }) {
   const [hasCompleted, setHasCompleted] = useState(readLocalCompleted);
   const [contextLoading, setContextLoading] = useState(true);
   const hasCompletedRef = useRef(hasCompleted);
+  // Tracks the live scores value so callbacks don't close over stale state.
+  const scoresRef = useRef(scores);
 
   useEffect(() => {
+    scoresRef.current = scores;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
   }, [scores]);
 
@@ -129,46 +132,52 @@ export function BigFiveProvider({ children }) {
         return;
       }
 
-      const { data } = await supabase
-        .from('profiles')
-        .select('big5_scores, baseline_completed, quiz_results')
-        .eq('id', user.id)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('big5_scores, baseline_completed, quiz_results')
+          .eq('id', user.id)
+          .maybeSingle();
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      if (data && data.baseline_completed) {
-        setScores(data.big5_scores);
-        setHasCompleted(true);
-      } else {
-        const localScores = readLocal();
-        const localCompleted = readLocalCompleted();
-        if (localCompleted) {
-          await supabase
-            .from('profiles')
-            .update({
-              big5_scores: clampScores(localScores),
-              baseline_completed: true,
-            })
-            .eq('id', user.id);
+        if (error) {
+          if (import.meta.env.DEV) console.error('[bigfive] profile fetch failed:', error);
+          return;
         }
+
+        if (data && data.baseline_completed) {
+          setScores(data.big5_scores);
+          setHasCompleted(true);
+        } else {
+          const localScores = readLocal();
+          const localCompleted = readLocalCompleted();
+          if (localCompleted) {
+            await supabase
+              .from('profiles')
+              .update({
+                big5_scores: clampScores(localScores),
+                baseline_completed: true,
+              })
+              .eq('id', user.id);
+          }
+        }
+
+        // Upload any quiz results completed as a guest that aren't yet in Supabase.
+        await syncGuestQuizResults(user.id, data?.quiz_results || {});
+      } finally {
+        if (!cancelled) setContextLoading(false);
       }
-
-      // Upload any quiz results completed as a guest that aren't yet in Supabase.
-      await syncGuestQuizResults(user.id, data?.quiz_results || {});
-
-      if (!cancelled) setContextLoading(false);
     })();
 
     return () => { cancelled = true; };
   }, [user]);
 
+  // updateScores reads from scoresRef so it never triggers a state-updater side effect.
   const updateScores = useCallback((newScores) => {
-    setScores((prev) => {
-      const merged = { ...prev, ...newScores };
-      syncToSupabase(merged, hasCompletedRef.current);
-      return merged;
-    });
+    const merged = { ...scoresRef.current, ...newScores };
+    setScores(merged);
+    syncToSupabase(merged, hasCompletedRef.current);
   }, [syncToSupabase]);
 
   const completeBaseline = useCallback((baselineScores) => {
