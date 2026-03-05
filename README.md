@@ -1,16 +1,63 @@
-# React + Vite
+# My Personality Quizzes
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Endless personality quizzes — discover who you really are.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Frontend**: React + Vite + Tailwind CSS
+- **Backend**: Supabase (auth + database)
+- **Hosting**: Cloudflare Workers
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Domain Setup (Fix GoDaddy Landing Page)
 
-## Expanding the ESLint configuration
+If your site is showing a GoDaddy parking/landing page instead of your app, the domain's nameservers haven't been pointed to Cloudflare yet. Follow these steps:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Step 1 — Add your domain to Cloudflare
+
+1. Log in to [Cloudflare](https://dash.cloudflare.com)
+2. Click **Add a Site** and enter `mypersonalityquizzes.com`
+3. Choose the **Free** plan
+4. Cloudflare will scan your existing DNS records — review them and continue
+5. Cloudflare will give you **two nameserver addresses** (e.g. `anna.ns.cloudflare.com` and `bart.ns.cloudflare.com`)
+
+### Step 2 — Update nameservers at GoDaddy
+
+1. Log in to [GoDaddy](https://dcc.godaddy.com)
+2. Go to **My Products → Domains → mypersonalityquizzes.com → Manage**
+3. Scroll to **Nameservers** and click **Change**
+4. Select **Enter my own nameservers**
+5. Replace the existing nameservers with the two Cloudflare nameservers from Step 1
+6. Save
+
+> **Note:** DNS propagation can take up to 48 hours, but usually completes within a few hours.
+
+### Step 3 — Deploy the Cloudflare Worker
+
+Once your domain is active in Cloudflare (you'll get an email confirmation), run:
+
+```bash
+npm run build
+npx wrangler deploy
+```
+
+Wrangler will use the `custom_domains` in `wrangler.jsonc` to automatically wire up `mypersonalityquizzes.com` and `www.mypersonalityquizzes.com` to the Worker.
+
+---
+
+## Local Development
+
+```bash
+npm install
+npm run dev
+```
+
+Create a `.env` file based on `.env.example` and fill in your Supabase credentials.
+
+## Build & Deploy
+
+```bash
+npm run build
+npx wrangler deploy
+```
