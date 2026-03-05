@@ -9,14 +9,8 @@
     "directory": "./dist",
     "not_found_handling": "single-page-application"
   },
-  "routes": [
-    {
-      "pattern": "mypersonalityquizzes.com/*",
-      "zone_name": "mypersonalityquizzes.com"
-    },
-    {
-      "pattern": "www.mypersonalityquizzes.com/*",
-      "zone_name": "mypersonalityquizzes.com"
-    }
+  "custom_domains": [
+    "mypersonalityquizzes.com",
+    "www.mypersonalityquizzes.com"
   ]
 }
