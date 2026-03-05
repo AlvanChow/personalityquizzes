@@ -10,7 +10,7 @@
     "not_found_handling": "single-page-application"
   },
   "custom_domains": [
-    "mypersonalityquizzes.com",
-    "www.mypersonalityquizzes.com"
+    { "hostname": "mypersonalityquizzes.com", "override_existing_dns_record": true },
+    { "hostname": "www.mypersonalityquizzes.com", "override_existing_dns_record": true }
   ]
 }
