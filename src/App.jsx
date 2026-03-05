@@ -23,6 +23,7 @@ const MBTIDeepQuiz = lazy(() => import('./pages/MBTIDeepQuiz'));
 const EnneagramDeepQuiz = lazy(() => import('./pages/EnneagramDeepQuiz'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Frameworks = lazy(() => import('./pages/Frameworks'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Tracks page_view on every route change. Must live inside BrowserRouter and
@@ -79,6 +80,7 @@ function AppRoutes() {
           <Route path="/quiz/enneagram-deep" element={<EnneagramDeepQuiz />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/how-it-works" element={<Frameworks />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
