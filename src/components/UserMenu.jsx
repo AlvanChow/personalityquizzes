@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, User, UserCircle } from 'lucide-react';
+import { useAdmin } from '../hooks/useAdmin';
+import { LogOut, User, UserCircle, Shield } from 'lucide-react';
 
 function GoogleIcon() {
   return (
@@ -16,6 +17,7 @@ function GoogleIcon() {
 
 export default function UserMenu() {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
@@ -122,6 +124,18 @@ export default function UserMenu() {
             <UserCircle className="w-4 h-4" />
             My Profile
           </button>
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setOpen(false);
+                navigate('/admin');
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-sky-600 hover:bg-sky-50 transition-colors"
+            >
+              <Shield className="w-4 h-4" />
+              Admin Dashboard
+            </button>
+          )}
           <button
             onClick={async () => {
               setOpen(false);
