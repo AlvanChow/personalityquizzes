@@ -126,6 +126,59 @@ export function computeMBTIDeepScores(answers, questions) {
  * @param {Array} questions - The enneagramDeepQuestions array
  * @returns {Record<string, number>}
  */
+/**
+ * Accumulates raw CliftonStrengths scores per theme from quiz answers.
+ *
+ * Each question targets one of the 34 themes (trait = theme name string).
+ * Option values 1–4: 1 = not like me at all, 4 = very much like me.
+ * With 2 questions per theme, max raw score per theme = 8.
+ *
+ * @param {Record<string, { trait: string, value: number }>} answers
+ * @returns {Record<string, number>}  e.g. { Achiever: 7, Strategic: 5, ... }
+ */
+export function computeStrengthsScores(answers) {
+  const raw = {};
+  Object.values(answers).forEach(({ trait, value }) => {
+    raw[trait] = (raw[trait] || 0) + value;
+  });
+  return raw;
+}
+
+/**
+ * Normalises raw CliftonStrengths scores to a 0–100 scale.
+ *
+ * @param {Record<string, number>} rawScores
+ * @param {number} questionsPerTheme - default 2
+ * @returns {Record<string, number>}
+ */
+export function normalizeStrengthsScores(rawScores, questionsPerTheme = 2) {
+  const min = questionsPerTheme;
+  const max = questionsPerTheme * 4;
+  const normalized = {};
+  for (const [theme, raw] of Object.entries(rawScores)) {
+    normalized[theme] = Math.round(((raw - min) / (max - min)) * 100);
+  }
+  return normalized;
+}
+
+/**
+ * Derives the StrengthsFinder result from normalised theme scores.
+ *
+ * Returns the top 5 themes and the full ranked list.
+ * Tie-breaking: alphabetical by theme name (stable / reproducible).
+ *
+ * @param {Record<string, number>} normalizedScores
+ * @returns {{ top5: string[], ranked: [string, number][] }}
+ */
+export function getStrengthsResult(normalizedScores) {
+  const ranked = Object.entries(normalizedScores).sort(([nameA, a], [nameB, b]) => {
+    if (b !== a) return b - a;
+    return nameA.localeCompare(nameB);
+  });
+  const top5 = ranked.slice(0, 5).map(([theme]) => theme);
+  return { top5, ranked };
+}
+
 export function computeEnneagramDeepScores(answers, questions) {
   const scores = {};
   const questionMap = new Map(questions.map((q) => [q.id, q]));
