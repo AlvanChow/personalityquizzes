@@ -1,4 +1,4 @@
-import { Activity, Brain, CircleDashed, Cake } from 'lucide-react';
+import { Activity, Brain, CircleDashed, Cake, Zap } from 'lucide-react';
 
 const QUIZ_ORDER = [
   {
@@ -40,6 +40,16 @@ const QUIZ_ORDER = [
     icon: Cake,
     gradient: 'from-pink-400 to-rose-500',
     time: '~2 min',
+  },
+  {
+    key: 'strengths',
+    check: () => !!localStorage.getItem('personalens_strengths'),
+    label: 'CliftonStrengths',
+    description: 'Discover your top 5 talent themes across all 34 CliftonStrengths.',
+    path: '/quiz/strengths',
+    icon: Zap,
+    gradient: 'from-violet-500 to-purple-600',
+    time: '~10 min',
   },
 ];
 
