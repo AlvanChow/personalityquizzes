@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
-import { Activity, Brain, CircleDashed, Cake, ArrowRight, Sparkles, Users, ChevronDown, Layers } from 'lucide-react';
+import { Activity, Brain, CircleDashed, Zap, ArrowRight, Sparkles, Users, ChevronDown, Layers } from 'lucide-react';
 import { track } from '../utils/analytics';
 
 export default function Landing() {
@@ -60,17 +60,17 @@ export default function Landing() {
       featured: true
     },
     {
-      id: 'cakeme',
-      name: 'Cake.me',
-      tagline: 'Viral Hit',
-      description: 'The viral sensation. What kind of cake matches your vibe? Sweet, layered, or a little nutty?',
-      icon: Cake,
-      cardGradient: 'from-pink-400 to-rose-500',
+      id: 'strengths',
+      name: 'CliftonStrengths',
+      tagline: 'Top 5 Talents',
+      description: 'Uncover your top 5 talent themes from all 34 CliftonStrengths. Find out exactly what makes you uniquely powerful.',
+      icon: Zap,
+      cardGradient: 'from-violet-500 to-purple-600',
       iconBg: 'bg-white/20',
-      buttonBg: 'bg-white text-pink-600 hover:bg-white/90',
-      glowColor: 'shadow-pink-400/25',
-      buttonText: 'Find Your Cake',
-      action: () => trackAndNavigate('cakeme', '/quiz/cake'),
+      buttonBg: 'bg-white text-violet-700 hover:bg-white/90',
+      glowColor: 'shadow-violet-500/25',
+      buttonText: 'Find My Strengths',
+      action: () => trackAndNavigate('strengths', '/quiz/strengths'),
       featured: true
     }
   ];
