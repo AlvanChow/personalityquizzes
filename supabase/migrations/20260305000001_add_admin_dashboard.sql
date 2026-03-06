@@ -1,21 +1,44 @@
 /*
   # Add admin dashboard support
 
-  1. New Tables
-    - `admins` — stores user IDs of admin users
-      - `user_id` (uuid, primary key, references auth.users)
-      - `created_at` (timestamptz)
+  Creates the `admins` table and grants admin users read access to
+  `analytics_events` and `profiles`. Safe to run even if prior migrations
+  haven't been applied — uses CREATE TABLE IF NOT EXISTS and guards each
+  policy creation with an existence check.
 
-  2. New Policies
-    - `admins` table: authenticated users can read their own row (to check admin status)
-    - `analytics_events`: admins can SELECT all rows
-    - `profiles`: admins can SELECT all rows (existing per-user policy stays intact)
-
-  To grant admin access to a user, INSERT their user_id into the `admins` table:
-    INSERT INTO public.admins (user_id) VALUES ('<user-uuid>');
+  To grant admin access to a user after running this migration:
+    INSERT INTO public.admins (user_id) VALUES ('<your-user-uuid>');
 */
 
--- ─── admins table ────────────────────────────────────────────────────────────
+-- ─── analytics_events (create if not yet applied) ────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.analytics_events (
+  id          bigint      GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  session_id  uuid        NOT NULL,
+  user_id     uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
+  event       text        NOT NULL,
+  properties  jsonb       NOT NULL DEFAULT '{}',
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_analytics_events_session_id ON public.analytics_events (session_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_user_id    ON public.analytics_events (user_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_event      ON public.analytics_events (event);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_created_at ON public.analytics_events (created_at DESC);
+
+ALTER TABLE public.analytics_events ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  CREATE POLICY "analytics_insert_anon"
+    ON public.analytics_events FOR INSERT TO anon WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "analytics_insert_authenticated"
+    ON public.analytics_events FOR INSERT TO authenticated WITH CHECK (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- ─── admins table ─────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS public.admins (
   user_id    uuid        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -24,35 +47,23 @@ CREATE TABLE IF NOT EXISTS public.admins (
 
 ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 
--- Authenticated users can check their own admin status.
-CREATE POLICY "Users can read own admin row"
-  ON public.admins
-  FOR SELECT
-  TO authenticated
-  USING (auth.uid() = user_id);
+DO $$ BEGIN
+  CREATE POLICY "Users can read own admin row"
+    ON public.admins FOR SELECT TO authenticated USING (auth.uid() = user_id);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
--- ─── analytics_events admin read ─────────────────────────────────────────────
+-- ─── analytics_events admin read ──────────────────────────────────────────────
 
-CREATE POLICY "Admins can read all analytics events"
-  ON public.analytics_events
-  FOR SELECT
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.admins WHERE user_id = auth.uid()
-    )
-  );
+DO $$ BEGIN
+  CREATE POLICY "Admins can read all analytics events"
+    ON public.analytics_events FOR SELECT TO authenticated
+    USING (EXISTS (SELECT 1 FROM public.admins WHERE user_id = auth.uid()));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ─── profiles admin read ──────────────────────────────────────────────────────
 
--- The existing "Users can read own profile" policy stays in place.
--- This additional policy lets admins read every profile row.
-CREATE POLICY "Admins can read all profiles"
-  ON public.profiles
-  FOR SELECT
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.admins WHERE user_id = auth.uid()
-    )
-  );
+DO $$ BEGIN
+  CREATE POLICY "Admins can read all profiles"
+    ON public.profiles FOR SELECT TO authenticated
+    USING (EXISTS (SELECT 1 FROM public.admins WHERE user_id = auth.uid()));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
