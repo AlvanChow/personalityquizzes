@@ -21,8 +21,6 @@ const EnneagramResult = lazy(() => import('./pages/EnneagramResult'));
 const BigFiveDeepQuiz = lazy(() => import('./pages/BigFiveDeepQuiz'));
 const MBTIDeepQuiz = lazy(() => import('./pages/MBTIDeepQuiz'));
 const EnneagramDeepQuiz = lazy(() => import('./pages/EnneagramDeepQuiz'));
-const StrengthsQuiz = lazy(() => import('./pages/StrengthsQuiz'));
-const StrengthsResult = lazy(() => import('./pages/StrengthsResult'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Frameworks = lazy(() => import('./pages/Frameworks'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -77,8 +75,6 @@ function AppRoutes() {
           <Route path="/quiz/mbti/result" element={<MBTIResult />} />
           <Route path="/quiz/enneagram" element={<EnneagramQuiz />} />
           <Route path="/quiz/enneagram/result" element={<EnneagramResult />} />
-          <Route path="/quiz/strengths" element={<StrengthsQuiz />} />
-          <Route path="/quiz/strengths/result" element={<StrengthsResult />} />
           <Route path="/quiz/big5-deep" element={<BigFiveDeepQuiz />} />
           <Route path="/quiz/mbti-deep" element={<MBTIDeepQuiz />} />
           <Route path="/quiz/enneagram-deep" element={<EnneagramDeepQuiz />} />

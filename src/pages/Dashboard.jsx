@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Cake, Brain, CircleDashed, Share2, Check, Layers, ArrowRight, Zap } from 'lucide-react';
+import { Cake, Brain, CircleDashed, Share2, Check, Layers, ArrowRight } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
@@ -183,14 +183,6 @@ const quizzes = [
     description: 'Discover which of the 9 types drives your deepest motivations.',
     icon: CircleDashed,
     to: '/quiz/enneagram',
-    locked: false,
-  },
-  {
-    quizKey: 'strengths',
-    title: 'CliftonStrengths',
-    description: 'Discover your top 5 talent themes across all 34 CliftonStrengths.',
-    icon: Zap,
-    to: '/quiz/strengths',
     locked: false,
   },
 ];

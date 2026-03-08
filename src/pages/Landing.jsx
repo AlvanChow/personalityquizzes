@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
-import { Activity, Brain, CircleDashed, Zap, ArrowRight, Sparkles, Users, ChevronDown, Layers } from 'lucide-react';
+import { Activity, Brain, CircleDashed, ArrowRight, Sparkles, Users, ChevronDown, Layers } from 'lucide-react';
 import { track } from '../utils/analytics';
 
 export default function Landing() {
@@ -59,20 +59,6 @@ export default function Landing() {
       action: () => trackAndNavigate('enneagram', '/quiz/enneagram'),
       featured: true
     },
-    {
-      id: 'strengths',
-      name: 'CliftonStrengths',
-      tagline: 'Top 5 Talents',
-      description: 'Uncover your top 5 talent themes from all 34 CliftonStrengths. Find out exactly what makes you uniquely powerful.',
-      icon: Zap,
-      cardGradient: 'from-violet-500 to-purple-600',
-      iconBg: 'bg-white/20',
-      buttonBg: 'bg-white text-violet-700 hover:bg-white/90',
-      glowColor: 'shadow-violet-500/25',
-      buttonText: 'Find My Strengths',
-      action: () => trackAndNavigate('strengths', '/quiz/strengths'),
-      featured: true
-    }
   ];
 
   return (
