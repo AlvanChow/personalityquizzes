@@ -107,11 +107,12 @@ export function computeMBTIDeepScores(answers, questions) {
     }
   });
 
+  const pct = (a, b) => (a + b === 0 ? 50 : Math.round((b / (a + b)) * 100));
   return {
-    IE: Math.round((points.E / (points.I + points.E || 1)) * 100),
-    SN: Math.round((points.N / (points.S + points.N || 1)) * 100),
-    TF: Math.round((points.F / (points.T + points.F || 1)) * 100),
-    JP: Math.round((points.P / (points.J + points.P || 1)) * 100),
+    IE: pct(points.I, points.E),
+    SN: pct(points.S, points.N),
+    TF: pct(points.T, points.F),
+    JP: pct(points.J, points.P),
   };
 }
 
