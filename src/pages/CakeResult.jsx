@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Zap } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Briefcase, Users, Zap } from 'lucide-react';
+import SharePanel from '../components/SharePanel';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import NextQuizBanner from '../components/NextQuizBanner';
@@ -104,28 +105,11 @@ export default function CakeResult() {
     track('quiz_result_viewed', { quiz: 'cake' }, user?.id ?? null);
   }, [storedData, user?.id]);
 
-  const [shareError, setShareError] = useState(null);
-
   if (!storedData) return null;
 
   const result = storedData.result;
   const competencyScores = storedData.scores ?? {};
   const insights = cakeInsights[result.trait];
-
-  async function handleShare() {
-    const text = `I got "${result.name}" on My Personality Quizzes! My top workplace competency: ${result.competency}. ${result.tagline} Find out what cake you are!`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: 'My Personality Quizzes Result', text });
-      } else {
-        await navigator.clipboard.writeText(text);
-      }
-    } catch (err) {
-      if (err?.name === 'AbortError') return;
-      console.error('Share failed:', err);
-      setShareError('Could not share. Please try copying manually.');
-    }
-  }
 
   return (
     <div className="min-h-screen bg-cream-50 px-6 py-8">
@@ -254,22 +238,8 @@ export default function CakeResult() {
           >
             Dashboard
           </motion.button>
-          <motion.button
-            onClick={handleShare}
-            aria-label="Share your cake quiz result"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-lg bg-gradient-to-r from-sky-400 to-sky-500 text-white font-bold shadow-md flex items-center justify-center gap-2"
-          >
-            <Share2 className="w-4 h-4" />
-            Share
-          </motion.button>
+          <SharePanel quizType="cake" result={result} btnColor="from-sky-400 to-sky-500" />
         </div>
-        {shareError && (
-          <p role="alert" className="mt-3 text-sm text-red-600 text-center font-medium">
-            {shareError}
-          </p>
-        )}
       </div>
     </div>
   );

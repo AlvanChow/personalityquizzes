@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Star, ShieldAlert, Sparkles, TrendingUp, Zap, AlertTriangle, ChevronDown, Layers, ArrowRight } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Briefcase, Users, Star, ShieldAlert, Sparkles, TrendingUp, Zap, AlertTriangle, ChevronDown, Layers, ArrowRight } from 'lucide-react';
+import SharePanel from '../components/SharePanel';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import { mbtiInsights } from '../data/mbtiInsights';
@@ -94,8 +95,6 @@ export default function MBTIResult() {
       return null;
     }
   });
-  const [shareError, setShareError] = useState(null);
-
   useEffect(() => {
     if (!data) navigate('/');
   }, [data, navigate]);
@@ -114,21 +113,6 @@ export default function MBTIResult() {
   const roleData = result.role ? mbtiRoles[result.role] : null;
   const roleIconColor = result.role ? ROLE_ICON_COLORS[result.role] : '';
   const roleBadgeColor = result.role ? ROLE_BADGE_COLORS[result.role] : '';
-
-  async function handleShare() {
-    const text = `I got ${result.name} — ${result.nickname} on My Personality Quizzes! Discover your MBTI type too.`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: 'My MBTI Result', text });
-      } else {
-        await navigator.clipboard.writeText(text);
-      }
-    } catch (err) {
-      if (err?.name === 'AbortError') return;
-      console.error('Share failed:', err);
-      setShareError('Could not share. Please try copying manually.');
-    }
-  }
 
   return (
     <div className="min-h-screen bg-cream-50 px-6 py-8">
@@ -372,22 +356,8 @@ export default function MBTIResult() {
           >
             All Quizzes
           </motion.button>
-          <motion.button
-            onClick={handleShare}
-            aria-label="Share your MBTI result"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-lg bg-gradient-to-r from-coral-400 to-coral-500 text-white font-bold shadow-md flex items-center justify-center gap-2"
-          >
-            <Share2 className="w-4 h-4" />
-            Share
-          </motion.button>
+          <SharePanel quizType="mbti" result={result} btnColor="from-coral-400 to-coral-500" />
         </div>
-        {shareError && (
-          <p role="alert" className="mt-3 text-sm text-red-600 text-center font-medium">
-            {shareError}
-          </p>
-        )}
       </div>
     </div>
   );
