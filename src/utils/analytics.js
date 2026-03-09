@@ -16,6 +16,10 @@ const ALLOWED_EVENTS = new Set([
   'auth_sign_in_started',
   'auth_sign_in_completed',
   'auth_sign_out',
+  // Sharing / virality
+  'share_link_created',
+  'share_button_clicked',
+  'shared_result_viewed',
 ]);
 
 // ─── Session ID ──────────────────────────────────────────────────────────────

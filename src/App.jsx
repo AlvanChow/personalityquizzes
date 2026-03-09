@@ -24,6 +24,7 @@ const EnneagramDeepQuiz = lazy(() => import('./pages/EnneagramDeepQuiz'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Frameworks = lazy(() => import('./pages/Frameworks'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const SharedResult = lazy(() => import('./pages/SharedResult'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Tracks page_view on every route change. Must live inside BrowserRouter and
@@ -81,6 +82,7 @@ function AppRoutes() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/how-it-works" element={<Frameworks />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/s/:shareId" element={<SharedResult />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

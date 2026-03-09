@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Share2, Briefcase, Users, Brain, Feather, Heart, AlertTriangle, TrendingUp, Zap, Layers, ArrowRight } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Briefcase, Users, Brain, Feather, Heart, AlertTriangle, TrendingUp, Zap, Layers, ArrowRight } from 'lucide-react';
+import SharePanel from '../components/SharePanel';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import { enneagramInsights } from '../data/enneagramInsights';
@@ -47,8 +48,6 @@ export default function EnneagramResult() {
       return null;
     }
   });
-  const [shareError, setShareError] = useState(null);
-
   useEffect(() => { if (!data) navigate('/'); }, [data, navigate]);
 
   const viewedRef = useRef(false);
@@ -70,17 +69,6 @@ export default function EnneagramResult() {
     left: { type: adj1, name: TYPE_NAMES[adj1], score: scores[adj1] ?? 0 },
     right: { type: adj2, name: TYPE_NAMES[adj2], score: scores[adj2] ?? 0 },
   };
-
-  async function handleShare() {
-    const text = `I'm a ${result.name} on the Enneagram! My core desire: ${result.coreDesire}. Find out your type!`;
-    try {
-      if (navigator.share) { await navigator.share({ title: 'My Enneagram Result', text }); }
-      else { await navigator.clipboard.writeText(text); }
-    } catch (err) {
-      if (err?.name === 'AbortError') return;
-      setShareError('Could not share. Please try copying manually.');
-    }
-  }
 
   return (
     <div className="min-h-screen bg-cream-50 px-6 py-8">
@@ -285,12 +273,8 @@ export default function EnneagramResult() {
             className="flex-1 py-3.5 rounded-lg bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors">
             All Quizzes
           </motion.button>
-          <motion.button onClick={handleShare} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            className="flex-1 py-3.5 rounded-lg bg-gradient-to-r from-mint-400 to-mint-500 text-white font-bold shadow-md flex items-center justify-center gap-2">
-            <Share2 className="w-4 h-4" /> Share
-          </motion.button>
+          <SharePanel quizType="enneagram" result={result} btnColor="from-mint-400 to-mint-500" />
         </div>
-        {shareError && <p role="alert" className="mt-3 text-sm text-red-600 text-center font-medium">{shareError}</p>}
       </div>
     </div>
   );
