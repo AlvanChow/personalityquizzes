@@ -75,12 +75,11 @@ export default function SharePanel({ quizType, result, className = '', btnColor 
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      track('share_button_clicked', { quiz: quizType, platform: 'copy' }, user?.id ?? null);
     } catch {
-      // Clipboard not available — show the URL as text
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      // Clipboard API unavailable — nothing was copied, so don't show success feedback.
+      // The URL is visible in the panel for manual copying.
     }
-    track('share_button_clicked', { quiz: quizType, platform: 'copy' }, user?.id ?? null);
   }
 
   function handleTwitter() {

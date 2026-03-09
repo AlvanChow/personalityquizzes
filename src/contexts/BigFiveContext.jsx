@@ -153,13 +153,14 @@ export function BigFiveProvider({ children }) {
           const localScores = readLocal();
           const localCompleted = readLocalCompleted();
           if (localCompleted) {
-            await supabase
+            const { error: uploadError } = await supabase
               .from('profiles')
               .update({
                 big5_scores: clampScores(localScores),
                 baseline_completed: true,
               })
               .eq('id', user.id);
+            if (uploadError) console.error('[bigfive] failed to sync local baseline to Supabase:', uploadError);
           }
         }
 
