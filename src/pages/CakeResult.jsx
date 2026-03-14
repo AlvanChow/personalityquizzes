@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Briefcase, Users, Zap } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Briefcase, Users, Zap, Activity, ArrowRight } from 'lucide-react';
 import SharePanel from '../components/SharePanel';
 import { useAuth } from '../contexts/AuthContext';
+import { useBigFive } from '../contexts/BigFiveContext';
 import { track } from '../utils/analytics';
 import NextQuizBanner from '../components/NextQuizBanner';
 
@@ -84,6 +85,7 @@ const cakeInsights = {
 export default function CakeResult() {
   const navigate = useNavigate();
   const { user, signInWithGoogle } = useAuth();
+  const { hasCompleted: hasBig5 } = useBigFive();
 
   const [storedData] = useState(() => {
     try {
@@ -214,6 +216,33 @@ export default function CakeResult() {
               <p className="text-sm text-gray-600 leading-relaxed">{insights.workStyle}</p>
             </motion.div>
           </>
+        )}
+
+        {!hasBig5 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.6 }}
+            className="bg-gradient-to-br from-teal-50 to-mint-50 rounded-xl p-5 border border-teal-200 mb-5"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-teal-100 flex items-center justify-center shrink-0">
+                <Activity className="w-4 h-4 text-teal-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-extrabold text-gray-800 mb-1">See the science behind your cake</h3>
+                <p className="text-xs text-gray-500 leading-relaxed mb-3">
+                  Your cake type is based on your Big Five personality profile. Take the full OCEAN assessment to see exactly which traits drove your result.
+                </p>
+                <button
+                  onClick={() => { track('quiz_card_clicked', { quiz: 'big5', from: 'cake_result' }, user?.id ?? null); navigate('/assessment'); }}
+                  className="text-sm font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1.5 transition-colors"
+                >
+                  Take the Big 5 <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
         )}
 
         <NextQuizBanner currentQuizKey="cake" />

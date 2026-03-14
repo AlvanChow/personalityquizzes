@@ -9,6 +9,7 @@ import QuizCard from '../components/QuizCard';
 import NextQuizBanner from '../components/NextQuizBanner';
 import { track } from '../utils/analytics';
 import lifeAnalysis from '../data/lifeAnalysis';
+import { getCompletedCount } from '../utils/quizProgression';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 
@@ -281,9 +282,22 @@ export default function Dashboard() {
           transition={{ duration: 0.35 }}
         >
           <div className="flex items-start justify-between gap-4 mb-1">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
-              Your Personality Profile
-            </h1>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
+                Your Personality Profile
+              </h1>
+              {(() => {
+                const count = getCompletedCount();
+                const total = 4;
+                return (
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full mt-1.5 ${
+                    count === total ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                  }`}>
+                    {count === total ? '✓' : `${count}/${total}`} {count === total ? 'All quizzes completed' : 'quizzes completed'}
+                  </span>
+                );
+              })()}
+            </div>
             <motion.button
               onClick={handleShare}
               whileHover={{ scale: 1.04 }}
