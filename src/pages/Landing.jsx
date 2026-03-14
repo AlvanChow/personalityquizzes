@@ -161,13 +161,16 @@ export default function Landing() {
             return (
               <motion.div
                 key={quiz.id}
+                role="button"
+                tabIndex={0}
                 onClick={quiz.action}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); quiz.action(); } }}
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.25 + index * 0.08 }}
                 whileHover={{ y: -6, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`relative overflow-hidden rounded-2xl p-8 cursor-pointer shadow-lg ${quiz.glowColor} hover:shadow-xl transition-shadow duration-300 flex flex-col group bg-gradient-to-br ${quiz.cardGradient} ${index === 0 ? 'sm:col-span-2 lg:col-span-1' : ''}`}
+                className={`relative overflow-hidden rounded-2xl p-8 cursor-pointer shadow-lg ${quiz.glowColor} hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50 transition-shadow duration-300 flex flex-col group bg-gradient-to-br ${quiz.cardGradient} ${index === 0 ? 'sm:col-span-2 lg:col-span-1' : ''}`}
               >
                 {/* Decorative background circles */}
                 <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full" />
@@ -186,11 +189,11 @@ export default function Landing() {
                   {quiz.description}
                 </p>
 
-                <div className="relative mt-auto">
-                  <button className={`w-full font-extrabold text-base py-4 px-5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg ${quiz.buttonBg}`}>
+                <div className="relative mt-auto pointer-events-none">
+                  <span className={`w-full font-extrabold text-base py-4 px-5 rounded-xl flex items-center justify-center gap-2.5 shadow-md ${quiz.buttonBg}`}>
                     {quiz.buttonText}
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-                  </button>
+                  </span>
                 </div>
               </motion.div>
             );
