@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Cake, Brain, CircleDashed, Share2, Check, Layers, ArrowRight, RotateCcw, ChevronDown } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -199,6 +199,12 @@ export default function Dashboard() {
   const [copied, setCopied] = useState(false);
   const [expandedSections, setExpandedSections] = useState(() => new Set(['careers', 'relationships']));
 
+  // Derive which secondary quizzes have saved results in localStorage
+  const completedQuizKeys = useMemo(() => {
+    const lsKeys = { cake: 'personalens_cake', mbti: 'personalens_mbti', enneagram: 'personalens_enneagram' };
+    return new Set(Object.entries(lsKeys).filter(([, k]) => !!localStorage.getItem(k)).map(([q]) => q));
+  }, []);
+
   function toggleSection(key) {
     setExpandedSections(prev => {
       const next = new Set(prev);
@@ -395,33 +401,44 @@ export default function Dashboard() {
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
                   </button>
 
-                  {isOpen && (
-                    <div className="px-5 pb-5 border-t border-gray-100">
-                      <p className="text-sm text-gray-600 leading-relaxed mt-4 mb-3">
-                        {analysis.summary}
-                      </p>
-                      {analysis.careers && (
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {analysis.careers.map((c) => (
-                            <span
-                              key={c}
-                              className="text-xs font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded border border-gray-200"
-                            >
-                              {c}
-                            </span>
-                          ))}
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        key="content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.22, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-5 pb-5 border-t border-gray-100">
+                          <p className="text-sm text-gray-600 leading-relaxed mt-4 mb-3">
+                            {analysis.summary}
+                          </p>
+                          {analysis.careers && (
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              {analysis.careers.map((c) => (
+                                <span
+                                  key={c}
+                                  className="text-xs font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded border border-gray-200"
+                                >
+                                  {c}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <ul className="flex flex-col gap-2">
+                            {analysis.items.map((item, i) => (
+                              <li key={i} className="text-sm text-gray-600 leading-relaxed flex gap-2">
+                                <span className="text-gray-400 shrink-0 mt-1">•</span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                      )}
-                      <ul className="flex flex-col gap-2">
-                        {analysis.items.map((item, i) => (
-                          <li key={i} className="text-sm text-gray-600 leading-relaxed flex gap-2">
-                            <span className="text-gray-400 shrink-0 mt-1">•</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               );
             })}
@@ -443,15 +460,21 @@ export default function Dashboard() {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {quizzes.map((quiz) => (
-              <QuizCard
-                key={quiz.title}
-                {...quiz}
-                onBeforeNavigate={() =>
-                  track('quiz_card_clicked', { quiz: quiz.quizKey, from: 'dashboard' }, user?.id ?? null)
-                }
-              />
-            ))}
+            {quizzes.map((quiz) => {
+              const isDone = completedQuizKeys.has(quiz.quizKey);
+              const resultRoutes = { cake: '/quiz/cake/result', mbti: '/quiz/mbti/result', enneagram: '/quiz/enneagram/result' };
+              return (
+                <QuizCard
+                  key={quiz.title}
+                  {...quiz}
+                  to={isDone ? (resultRoutes[quiz.quizKey] ?? quiz.to) : quiz.to}
+                  completed={isDone}
+                  onBeforeNavigate={() =>
+                    track('quiz_card_clicked', { quiz: quiz.quizKey, from: 'dashboard' }, user?.id ?? null)
+                  }
+                />
+              );
+            })}
           </div>
         </motion.div>
 

@@ -22,6 +22,7 @@ export default function Landing() {
       name: 'Big 5 Personality',
       tagline: '#1 Most Accurate',
       description: 'The scientifically-backed OCEAN model. Discover your core traits and how you navigate the world.',
+      meta: '25 questions · ~5 min',
       icon: Activity,
       cardGradient: 'from-teal-500 to-emerald-600',
       iconBg: 'bg-white/20',
@@ -36,6 +37,7 @@ export default function Landing() {
       name: 'MBTI (16 Types)',
       tagline: 'Most Popular',
       description: 'Are you an INTJ or an ESFP? Find your Myers-Briggs type and understand your cognitive functions.',
+      meta: '28 questions · ~6 min',
       icon: Brain,
       cardGradient: 'from-coral-400 to-rose-500',
       iconBg: 'bg-white/20',
@@ -50,6 +52,7 @@ export default function Landing() {
       name: 'Enneagram',
       tagline: 'Deep Insight',
       description: 'Discover which of the 9 interconnected personality types drives your deepest motivations and fears.',
+      meta: '27 questions · ~5 min',
       icon: CircleDashed,
       cardGradient: 'from-violet-500 to-purple-600',
       iconBg: 'bg-white/20',
@@ -185,8 +188,12 @@ export default function Landing() {
                     <h3 className="text-2xl font-black text-white leading-snug">{quiz.name}</h3>
                   </div>
                 </div>
-                <p className="relative text-white/80 font-semibold mb-8 leading-relaxed text-[15px]">
+                <p className="relative text-white/80 font-semibold mb-3 leading-relaxed text-[15px]">
                   {quiz.description}
+                </p>
+
+                <p className="relative text-white/50 text-xs font-semibold mb-6">
+                  {quiz.meta}
                 </p>
 
                 <div className="relative mt-auto pointer-events-none">
