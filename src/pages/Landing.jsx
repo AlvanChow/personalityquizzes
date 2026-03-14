@@ -154,7 +154,7 @@ export default function Landing() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6"
+          className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {quizzes.map((quiz, index) => {
             const Icon = quiz.icon;
@@ -167,7 +167,7 @@ export default function Landing() {
                 transition={{ duration: 0.4, delay: 0.25 + index * 0.08 }}
                 whileHover={{ y: -6, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`relative overflow-hidden rounded-2xl p-8 cursor-pointer shadow-lg ${quiz.glowColor} hover:shadow-xl transition-shadow duration-300 flex flex-col group bg-gradient-to-br ${quiz.cardGradient}`}
+                className={`relative overflow-hidden rounded-2xl p-8 cursor-pointer shadow-lg ${quiz.glowColor} hover:shadow-xl transition-shadow duration-300 flex flex-col group bg-gradient-to-br ${quiz.cardGradient} ${index === 0 ? 'sm:col-span-2 lg:col-span-1' : ''}`}
               >
                 {/* Decorative background circles */}
                 <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full" />
@@ -273,6 +273,28 @@ export default function Landing() {
           </div>
         </motion.div>
       </main>
+
+      <footer className="border-t border-rose-100/60 bg-white/70 backdrop-blur-sm py-8 px-6 mt-4">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <span className="text-sm text-gray-400 font-medium">
+            &copy; {new Date().getFullYear()} My Personality Quizzes. All rights reserved.
+          </span>
+          <nav className="flex items-center gap-5">
+            <button
+              onClick={() => navigate('/how-it-works')}
+              className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-colors"
+            >
+              How It Works
+            </button>
+            <button
+              onClick={() => navigate('/assessment')}
+              className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-colors"
+            >
+              Take the Big 5
+            </button>
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }

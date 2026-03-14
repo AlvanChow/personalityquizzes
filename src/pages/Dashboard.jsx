@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Cake, Brain, CircleDashed, Share2, Check, Layers, ArrowRight } from 'lucide-react';
+import { Cake, Brain, CircleDashed, Share2, Check, Layers, ArrowRight, RotateCcw } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
@@ -286,7 +286,7 @@ export default function Dashboard() {
             Based on your baseline assessment. Take more quizzes to refine your scores.
           </p>
 
-          <div className="flex flex-col gap-4 mb-12">
+          <div className="flex flex-col gap-4 mb-5">
             {traitOrder.map((trait, i) => {
               const data = traitData[trait];
               const score = scores[trait];
@@ -332,6 +332,19 @@ export default function Dashboard() {
                 </motion.div>
               );
             })}
+          </div>
+
+          <div className="flex justify-end mb-12">
+            <button
+              onClick={() => {
+                track('quiz_retaken', { quiz: 'big5' }, user?.id ?? null);
+                navigate('/assessment');
+              }}
+              className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Retake Assessment
+            </button>
           </div>
         </motion.div>
 
