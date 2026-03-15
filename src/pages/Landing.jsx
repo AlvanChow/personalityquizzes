@@ -76,7 +76,7 @@ export default function Landing() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/how-it-works')}
-              className="text-sm font-bold text-gray-500 hover:text-gray-800 transition-colors hidden sm:block"
+              className="text-sm font-bold text-gray-600 hover:text-gray-800 transition-colors hidden sm:block"
             >
               How It Works
             </button>
@@ -112,7 +112,7 @@ export default function Landing() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.12 }}
-            className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto font-medium leading-relaxed mb-9"
+            className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed mb-9"
           >
             Most people go their whole lives without understanding why they think, feel, and act the way they do. Our research-backed assessments decode the patterns behind your personality in under 10 minutes.
           </motion.p>
@@ -135,7 +135,7 @@ export default function Landing() {
             </button>
             <button
               onClick={() => navigate('/how-it-works')}
-              className="text-gray-500 hover:text-gray-700 font-bold text-base px-5 py-3.5 rounded-lg hover:bg-white/60 transition-all duration-200 flex items-center gap-2"
+              className="text-gray-600 hover:text-gray-800 font-bold text-base px-5 py-3.5 rounded-lg hover:bg-white/60 transition-all duration-200 flex items-center gap-2"
             >
               How it works
               <ChevronDown className="w-4 h-4" />
@@ -146,10 +146,10 @@ export default function Landing() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.3 }}
-            className="flex items-center justify-center gap-2 text-sm text-gray-400 font-medium"
+            className="flex items-center justify-center gap-2 text-sm text-gray-500 font-medium"
           >
             <Users className="w-4 h-4" />
-            <span>Taken by <strong className="text-gray-600">50,000+</strong> curious humans</span>
+            <span>Taken by <strong className="text-gray-700">50,000+</strong> curious humans</span>
           </motion.div>
         </div>
 
@@ -184,11 +184,11 @@ export default function Landing() {
                     <Icon className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <span className="inline-block text-[11px] font-extrabold uppercase tracking-widest text-white/70 mb-1">{quiz.tagline}</span>
+                    <span className="inline-block text-xs font-extrabold uppercase tracking-widest text-white/70 mb-1">{quiz.tagline}</span>
                     <h3 className="text-2xl font-black text-white leading-snug">{quiz.name}</h3>
                   </div>
                 </div>
-                <p className="relative text-white/80 font-semibold mb-3 leading-relaxed text-[15px]">
+                <p className="relative text-white/80 font-semibold mb-3 leading-relaxed text-sm">
                   {quiz.description}
                 </p>
 
@@ -220,7 +220,7 @@ export default function Landing() {
             </div>
             <div>
               <h2 className="text-2xl font-black text-gray-900">Go Deeper</h2>
-              <p className="text-sm text-gray-500 font-medium">Extended assessments for more nuanced results</p>
+              <p className="text-sm text-gray-600 font-medium">Extended assessments for more nuanced results</p>
             </div>
           </div>
 
@@ -234,7 +234,6 @@ export default function Landing() {
                 path: '/quiz/big5-deep',
                 border: 'border-teal-200',
                 badgeBg: 'bg-teal-100 text-teal-700',
-                accent: 'text-teal-600',
               },
               {
                 id: 'mbti-deep',
@@ -244,7 +243,6 @@ export default function Landing() {
                 path: '/quiz/mbti-deep',
                 border: 'border-coral-200',
                 badgeBg: 'bg-coral-100 text-coral-700',
-                accent: 'text-coral-600',
               },
               {
                 id: 'enneagram-deep',
@@ -254,7 +252,6 @@ export default function Landing() {
                 path: '/quiz/enneagram-deep',
                 border: 'border-violet-200',
                 badgeBg: 'bg-violet-100 text-violet-700',
-                accent: 'text-violet-600',
               },
             ].map((quiz, i) => (
               <motion.button
@@ -268,13 +265,13 @@ export default function Landing() {
                 className={`text-left p-6 rounded-xl bg-white border-2 ${quiz.border} shadow-sm hover:shadow-md transition-all group`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full ${quiz.badgeBg}`}>
+                  <span className={`text-xs font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full ${quiz.badgeBg}`}>
                     {quiz.badge}
                   </span>
                 </div>
                 <h3 className="text-lg font-extrabold text-gray-900 mb-1">{quiz.name}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed mb-4">{quiz.description}</p>
-                <span className={`text-sm font-bold ${quiz.accent} flex items-center gap-1.5`}>
+                <p className="text-sm text-gray-600 leading-relaxed mb-4">{quiz.description}</p>
+                <span className="text-sm font-bold text-coral-500 flex items-center gap-1.5">
                   Take Quiz
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
@@ -286,19 +283,19 @@ export default function Landing() {
 
       <footer className="border-t border-rose-100/60 bg-white/70 backdrop-blur-sm py-8 px-6 mt-4">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-sm text-gray-400 font-medium">
+          <span className="text-sm text-gray-500 font-medium">
             &copy; {new Date().getFullYear()} My Personality Quizzes. All rights reserved.
           </span>
           <nav className="flex items-center gap-5">
             <button
               onClick={() => navigate('/how-it-works')}
-              className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-colors"
+              className="text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors"
             >
               How It Works
             </button>
             <button
               onClick={() => navigate('/assessment')}
-              className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-colors"
+              className="text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors"
             >
               Take the Big 5
             </button>
