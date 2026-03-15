@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Cake, Brain, CircleDashed, Share2, Check, Layers, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Cake, Brain, CircleDashed, Share2, Check, Layers, ArrowRight, RotateCcw, ChevronDown } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
@@ -9,6 +9,7 @@ import QuizCard from '../components/QuizCard';
 import NextQuizBanner from '../components/NextQuizBanner';
 import { track } from '../utils/analytics';
 import lifeAnalysis from '../data/lifeAnalysis';
+import { getCompletedCount } from '../utils/quizProgression';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 
@@ -187,6 +188,8 @@ const quizzes = [
   },
 ];
 
+const resultRoutes = { cake: '/quiz/cake/result', mbti: '/quiz/mbti/result', enneagram: '/quiz/enneagram/result' };
+
 function getRange(data, score) {
   return data.ranges.find((r) => score <= r.max) ?? data.ranges[data.ranges.length - 1];
 }
@@ -197,6 +200,24 @@ export default function Dashboard() {
   const { user } = useAuth();
 
   const [copied, setCopied] = useState(false);
+  const [expandedSections, setExpandedSections] = useState(() => new Set(['careers', 'relationships']));
+
+  // Derive which secondary quizzes have saved results in localStorage
+  const completedQuizKeys = useMemo(() => {
+    const lsKeys = { cake: 'personalens_cake', mbti: 'personalens_mbti', enneagram: 'personalens_enneagram' };
+    return new Set(Object.entries(lsKeys).filter(([, k]) => !!localStorage.getItem(k)).map(([q]) => q));
+  }, []);
+
+  const completedCount = useMemo(() => getCompletedCount(), []);
+
+  function toggleSection(key) {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   const analyses = useMemo(
     () => lifeAnalysis.map((category) => ({
@@ -265,9 +286,16 @@ export default function Dashboard() {
           transition={{ duration: 0.35 }}
         >
           <div className="flex items-start justify-between gap-4 mb-1">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
-              Your Personality Profile
-            </h1>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
+                Your Personality Profile
+              </h1>
+              <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full mt-1.5 ${
+                completedCount === 4 ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
+              }`}>
+                {completedCount === 4 ? '✓ All quizzes completed' : `${completedCount}/4 quizzes completed`}
+              </span>
+            </div>
             <motion.button
               onClick={handleShare}
               whileHover={{ scale: 1.04 }}
@@ -286,7 +314,7 @@ export default function Dashboard() {
             Based on your baseline assessment. Take more quizzes to refine your scores.
           </p>
 
-          <div className="flex flex-col gap-4 mb-12">
+          <div className="flex flex-col gap-4 mb-5">
             {traitOrder.map((trait, i) => {
               const data = traitData[trait];
               const score = scores[trait];
@@ -333,6 +361,19 @@ export default function Dashboard() {
               );
             })}
           </div>
+
+          <div className="flex justify-end mb-12">
+            <button
+              onClick={() => {
+                track('quiz_retaken', { quiz: 'big5' }, user?.id ?? null);
+                navigate('/assessment');
+              }}
+              className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Retake Assessment
+            </button>
+          </div>
         </motion.div>
 
         <motion.div
@@ -347,47 +388,69 @@ export default function Dashboard() {
             How your personality plays out across major areas of life.
           </p>
 
-          <div className="flex flex-col gap-4 mb-12">
+          <div className="flex flex-col gap-3 mb-12">
             {analyses.map((entry, ci) => {
               const Icon = entry.icon;
               const { analysis } = entry;
+              const isOpen = expandedSections.has(entry.key);
               return (
                 <motion.div
                   key={entry.key}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: ci * 0.05 }}
-                  className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+                  className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden"
                 >
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                  <button
+                    onClick={() => toggleSection(entry.key)}
+                    className="w-full flex items-center gap-2.5 p-5 text-left hover:bg-gray-50 transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
                       <Icon className="w-4 h-4 text-gray-600" />
                     </div>
-                    <h3 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider">{entry.label}</h3>
-                  </div>
-                  <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                    {analysis.summary}
-                  </p>
-                  {analysis.careers && (
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {analysis.careers.map((c) => (
-                        <span
-                          key={c}
-                          className="text-xs font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded border border-gray-200"
-                        >
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <ul className="flex flex-col gap-2">
-                    {analysis.items.map((item, i) => (
-                      <li key={i} className="text-sm text-gray-600 leading-relaxed flex gap-2">
-                        <span className="text-gray-400 shrink-0 mt-1">•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+                    <h3 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider flex-1">{entry.label}</h3>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        key="content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.22, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-5 pb-5 border-t border-gray-100">
+                          <p className="text-sm text-gray-600 leading-relaxed mt-4 mb-3">
+                            {analysis.summary}
+                          </p>
+                          {analysis.careers && (
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              {analysis.careers.map((c) => (
+                                <span
+                                  key={c}
+                                  className="text-xs font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded border border-gray-200"
+                                >
+                                  {c}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <ul className="flex flex-col gap-2">
+                            {analysis.items.map((item, i) => (
+                              <li key={i} className="text-sm text-gray-600 leading-relaxed flex gap-2">
+                                <span className="text-gray-400 shrink-0 mt-1">•</span>
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               );
             })}
@@ -409,15 +472,20 @@ export default function Dashboard() {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {quizzes.map((quiz) => (
-              <QuizCard
-                key={quiz.title}
-                {...quiz}
-                onBeforeNavigate={() =>
-                  track('quiz_card_clicked', { quiz: quiz.quizKey, from: 'dashboard' }, user?.id ?? null)
-                }
-              />
-            ))}
+            {quizzes.map((quiz) => {
+              const isDone = completedQuizKeys.has(quiz.quizKey);
+              return (
+                <QuizCard
+                  key={quiz.quizKey}
+                  {...quiz}
+                  to={isDone ? (resultRoutes[quiz.quizKey] ?? quiz.to) : quiz.to}
+                  completed={isDone}
+                  onBeforeNavigate={() =>
+                    track('quiz_card_clicked', { quiz: quiz.quizKey, from: 'dashboard' }, user?.id ?? null)
+                  }
+                />
+              );
+            })}
           </div>
         </motion.div>
 

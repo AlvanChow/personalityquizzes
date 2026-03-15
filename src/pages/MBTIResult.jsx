@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import { mbtiInsights } from '../data/mbtiInsights';
 import { mbtiRoles } from '../data/mbtiResults';
+import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
 import InsightCard from '../components/InsightCard';
 
@@ -335,6 +336,8 @@ export default function MBTIResult() {
         </motion.div>
 
         <NextQuizBanner currentQuizKey="mbti" />
+
+        <AuthNudgeBanner quiz="mbti" />
 
         <div className="flex gap-3 mt-2">
           <motion.button

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Activity, Brain, CircleDashed, Cake, BookOpen, FlaskConical, Star } from 'lucide-react';
+import { ArrowLeft, Activity, Brain, CircleDashed, Cake, BookOpen, FlaskConical, Star, ArrowRight } from 'lucide-react';
 
 const frameworks = [
   {
@@ -14,6 +14,8 @@ const frameworks = [
     accent: 'text-teal-700',
     badge: 'Empirically validated',
     badgeColor: 'bg-teal-100 text-teal-700',
+    quizPath: '/assessment',
+    quizLabel: 'Take the Big 5',
     origin: 'Developed over decades of psychometric research, the Big Five emerged from factor analysis of thousands of personality descriptors. Lewis Goldberg coined the "Big Five" label in 1981, and the model was further formalised by Costa & McCrae\'s NEO-PI instrument.',
     howItWorks: 'The model measures five broad, independent dimensions of personality — Openness, Conscientiousness, Extraversion, Agreeableness, and Neuroticism (OCEAN). Each trait exists on a continuous spectrum rather than a binary category. Scores are derived from Likert-scale self-report items and normalised against population distributions.',
     validity: 'The Big Five is the most scientifically validated personality model in existence. It has been replicated cross-culturally in over 50 countries, demonstrates strong test-retest reliability, and predicts real-world outcomes including academic performance, career success, relationship satisfaction, and health behaviour.',
@@ -31,6 +33,8 @@ const frameworks = [
     accent: 'text-coral-700',
     badge: 'Widely used',
     badgeColor: 'bg-coral-100 text-coral-700',
+    quizPath: '/quiz/mbti',
+    quizLabel: 'Take the MBTI',
     origin: 'Developed by Isabel Briggs Myers and her mother Katharine Cook Briggs during World War II, the MBTI was inspired by Carl Jung\'s theory of psychological types (1921). Myers and Briggs operationalised Jung\'s theory into a practical assessment that could be used for career guidance and team building.',
     howItWorks: 'The MBTI classifies people across four dichotomies: Introversion/Extraversion, Sensing/iNtuition, Thinking/Feeling, and Judging/Perceiving — producing 16 distinct type profiles. Each letter represents a preferred mode of perception or judgment, not a fixed trait.',
     validity: 'MBTI has enormous cultural reach — over 2 million assessments are completed annually. Research confirms that it meaningfully captures real differences in cognitive style, communication preference, and work behaviour. It correlates meaningfully with Big Five traits (e.g., E/I maps onto Extraversion; J/P onto Conscientiousness).',
@@ -48,6 +52,8 @@ const frameworks = [
     accent: 'text-mint-700',
     badge: 'Depth psychology',
     badgeColor: 'bg-mint-100 text-mint-700',
+    quizPath: '/quiz/enneagram',
+    quizLabel: 'Take the Enneagram',
     origin: 'The Enneagram\'s origins are contested and layered. The nine-pointed symbol appeared in the work of G.I. Gurdjieff in the early 20th century. Oscar Ichazo and Claudio Naranjo later mapped nine psychological fixations onto it in the 1960s-70s. Don Richard Riso and Russ Hudson (The Enneagram Institute) systematised it into the research-informed model widely used today.',
     howItWorks: 'The Enneagram describes nine core personality structures, each defined by a dominant motivation (core desire) and a core fear. Each type has a characteristic defence mechanism, a stress direction (disintegration), and a growth direction (integration). Rather than measuring traits, it seeks to illuminate the deeper "why" beneath surface behaviour.',
     validity: 'The Enneagram has generated a growing body of academic research since the 2000s. Studies show adequate test-retest reliability and meaningful correlations with Big Five traits (e.g., Type 1 correlates with high Conscientiousness; Type 4 with high Openness and Neuroticism). Its depth and clinical utility are widely acknowledged by psychotherapists.',
@@ -65,6 +71,8 @@ const frameworks = [
     accent: 'text-rose-700',
     badge: 'For fun',
     badgeColor: 'bg-rose-100 text-rose-700',
+    quizPath: '/quiz/cake',
+    quizLabel: 'Take the Cake Quiz',
     origin: 'Cake.me is a playful personality framework that maps Big Five trait profiles onto six distinct cake archetypes. It was designed to make personality psychology accessible, shareable, and fun — while staying grounded in real trait science.',
     howItWorks: 'The quiz uses 10 scenario-based questions that measure tendencies across Extraversion, Openness, Conscientiousness, Agreeableness, and Neuroticism. Your answers adjust your underlying Big Five scores, and the dominant adjusted trait determines which cake archetype you match. Funfetti = high Extraversion. Matcha Crepe = high Openness. Red Velvet = high Agreeableness. Lava Cake = high Neuroticism. Wedding Cake = high Conscientiousness. Chocolate = balanced.',
     validity: 'Cake.me is not a clinical instrument. It is a pedagogical tool — a gateway to understanding the Big Five in a low-stakes, engaging format. The underlying scoring mechanism is directly grounded in OCEAN trait research.',
@@ -75,6 +83,7 @@ const frameworks = [
 
 function FrameworkCard({ fw, delay }) {
   const Icon = fw.icon;
+  const navigate = useNavigate();
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -115,6 +124,16 @@ function FrameworkCard({ fw, delay }) {
           </ul>
         </div>
       </div>
+
+      {fw.quizPath && (
+        <button
+          onClick={() => navigate(fw.quizPath)}
+          className={`mt-5 w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-white/70 hover:bg-white/90 transition-colors ${fw.accent}`}
+        >
+          {fw.quizLabel}
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      )}
     </motion.div>
   );
 }

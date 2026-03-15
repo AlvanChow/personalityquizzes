@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import { enneagramInsights } from '../data/enneagramInsights';
 import { getWing, WING_ADJACENTS } from '../data/enneagramWings';
+import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
 import InsightCard from '../components/InsightCard';
 
@@ -262,6 +263,8 @@ export default function EnneagramResult() {
         </motion.div>
 
         <NextQuizBanner currentQuizKey="enneagram" />
+
+        <AuthNudgeBanner quiz="enneagram" />
 
         <div className="flex gap-3 mt-2">
           <motion.button onClick={() => { track('quiz_retaken', { quiz: 'enneagram' }, user?.id ?? null); navigate('/quiz/enneagram'); }}
