@@ -81,8 +81,9 @@ const frameworks = [
   },
 ];
 
-function FrameworkCard({ fw, delay, onQuizClick }) {
+function FrameworkCard({ fw, delay }) {
   const Icon = fw.icon;
+  const navigate = useNavigate();
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -126,7 +127,7 @@ function FrameworkCard({ fw, delay, onQuizClick }) {
 
       {fw.quizPath && (
         <button
-          onClick={() => onQuizClick(fw.quizPath)}
+          onClick={() => navigate(fw.quizPath)}
           className={`mt-5 w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-white/70 hover:bg-white/90 transition-colors ${fw.accent}`}
         >
           {fw.quizLabel}
@@ -179,7 +180,7 @@ export default function Frameworks() {
 
         <div className="space-y-8">
           {frameworks.map((fw, i) => (
-            <FrameworkCard key={fw.id} fw={fw} delay={i * 0.1} onQuizClick={navigate} />
+            <FrameworkCard key={fw.id} fw={fw} delay={i * 0.1} />
           ))}
         </div>
       </main>

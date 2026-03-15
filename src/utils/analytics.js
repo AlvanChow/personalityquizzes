@@ -16,6 +16,8 @@ const ALLOWED_EVENTS = new Set([
   'auth_sign_in_started',
   'auth_sign_in_completed',
   'auth_sign_out',
+  // Auth
+  'auth_nudge_clicked',
   // Sharing / virality
   'share_link_created',
   'share_button_clicked',

@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import { mbtiInsights } from '../data/mbtiInsights';
 import { mbtiRoles } from '../data/mbtiResults';
+import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
 import InsightCard from '../components/InsightCard';
 
@@ -86,7 +87,7 @@ function ExpandableItem({ title, text, accent }) {
 
 export default function MBTIResult() {
   const navigate = useNavigate();
-  const { user, signInWithGoogle } = useAuth();
+  const { user } = useAuth();
   const [data] = useState(() => {
     try {
       const raw = localStorage.getItem('personalens_mbti');
@@ -336,24 +337,7 @@ export default function MBTIResult() {
 
         <NextQuizBanner currentQuizKey="mbti" />
 
-        {!user && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.8 }}
-            className="flex items-center justify-between gap-3 bg-sky-50 border border-sky-200 rounded-xl px-4 py-3 mb-3"
-          >
-            <p className="text-xs text-sky-700 font-semibold leading-snug">
-              Sign in to save your result permanently
-            </p>
-            <button
-              onClick={() => { track('auth_nudge_clicked', { quiz: 'mbti' }, null); signInWithGoogle(); }}
-              className="text-xs font-bold text-white bg-sky-500 hover:bg-sky-600 px-3 py-1.5 rounded-lg transition-colors shrink-0"
-            >
-              Sign in
-            </button>
-          </motion.div>
-        )}
+        <AuthNudgeBanner quiz="mbti" />
 
         <div className="flex gap-3 mt-2">
           <motion.button

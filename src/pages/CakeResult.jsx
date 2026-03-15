@@ -6,6 +6,7 @@ import SharePanel from '../components/SharePanel';
 import { useAuth } from '../contexts/AuthContext';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { track } from '../utils/analytics';
+import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
 
 // MAX raw score per competency = 2 questions × 4 points = 8
@@ -84,7 +85,7 @@ const cakeInsights = {
 
 export default function CakeResult() {
   const navigate = useNavigate();
-  const { user, signInWithGoogle } = useAuth();
+  const { user } = useAuth();
   const { hasCompleted: hasBig5 } = useBigFive();
 
   const [storedData] = useState(() => {
@@ -247,24 +248,7 @@ export default function CakeResult() {
 
         <NextQuizBanner currentQuizKey="cake" />
 
-        {!user && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.8 }}
-            className="flex items-center justify-between gap-3 bg-sky-50 border border-sky-200 rounded-xl px-4 py-3 mb-3"
-          >
-            <p className="text-xs text-sky-700 font-semibold leading-snug">
-              Sign in to save your result permanently
-            </p>
-            <button
-              onClick={() => { track('auth_nudge_clicked', { quiz: 'cake' }, null); signInWithGoogle(); }}
-              className="text-xs font-bold text-white bg-sky-500 hover:bg-sky-600 px-3 py-1.5 rounded-lg transition-colors shrink-0"
-            >
-              Sign in
-            </button>
-          </motion.div>
-        )}
+        <AuthNudgeBanner quiz="cake" />
 
         <div className="flex gap-3">
           <motion.button

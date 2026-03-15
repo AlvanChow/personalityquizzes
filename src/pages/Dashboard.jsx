@@ -188,6 +188,8 @@ const quizzes = [
   },
 ];
 
+const resultRoutes = { cake: '/quiz/cake/result', mbti: '/quiz/mbti/result', enneagram: '/quiz/enneagram/result' };
+
 function getRange(data, score) {
   return data.ranges.find((r) => score <= r.max) ?? data.ranges[data.ranges.length - 1];
 }
@@ -205,6 +207,8 @@ export default function Dashboard() {
     const lsKeys = { cake: 'personalens_cake', mbti: 'personalens_mbti', enneagram: 'personalens_enneagram' };
     return new Set(Object.entries(lsKeys).filter(([, k]) => !!localStorage.getItem(k)).map(([q]) => q));
   }, []);
+
+  const completedCount = useMemo(() => getCompletedCount(), []);
 
   function toggleSection(key) {
     setExpandedSections(prev => {
@@ -286,17 +290,11 @@ export default function Dashboard() {
               <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
                 Your Personality Profile
               </h1>
-              {(() => {
-                const count = getCompletedCount();
-                const total = 4;
-                return (
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full mt-1.5 ${
-                    count === total ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                  }`}>
-                    {count === total ? '✓' : `${count}/${total}`} {count === total ? 'All quizzes completed' : 'quizzes completed'}
-                  </span>
-                );
-              })()}
+              <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full mt-1.5 ${
+                completedCount === 4 ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
+              }`}>
+                {completedCount === 4 ? '✓ All quizzes completed' : `${completedCount}/4 quizzes completed`}
+              </span>
             </div>
             <motion.button
               onClick={handleShare}
@@ -476,10 +474,9 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {quizzes.map((quiz) => {
               const isDone = completedQuizKeys.has(quiz.quizKey);
-              const resultRoutes = { cake: '/quiz/cake/result', mbti: '/quiz/mbti/result', enneagram: '/quiz/enneagram/result' };
               return (
                 <QuizCard
-                  key={quiz.title}
+                  key={quiz.quizKey}
                   {...quiz}
                   to={isDone ? (resultRoutes[quiz.quizKey] ?? quiz.to) : quiz.to}
                   completed={isDone}
