@@ -6,7 +6,7 @@
  * renamed) the quiz save/load and Profile history display will break.
  */
 import { describe, it, expect } from 'vitest';
-import { cakeResults, getCakeResult, cakeResultNameToKey } from './cakeResults.js';
+import { cakeResults, getCakeResult } from './cakeResults.js';
 import { mbtiResults, getMBTIResult } from './mbtiResults.js';
 import { enneagramResults, getEnneagramResult } from './enneagramResults.js';
 
@@ -24,20 +24,15 @@ describe('Cake save-format contract', () => {
   ];
 
   allCakeScores.forEach((scores, i) => {
-    it(`getCakeResult[${i}] returns an object with name, emoji, and trait`, () => {
-      const result = getCakeResult(scores);
+    it(`getCakeResult[${i}] returns an object with key, and result with name, emoji, and trait`, () => {
+      const { key, result } = getCakeResult(scores);
+      expect(typeof key).toBe('string');
+      expect(cakeResults).toHaveProperty(key);
       expect(typeof result.name).toBe('string');
       expect(result.name.trim().length).toBeGreaterThan(0);
       expect(typeof result.emoji).toBe('string');
       expect(typeof result.trait).toBe('string');
       expect(result.trait.trim().length).toBeGreaterThan(0);
-    });
-
-    it(`getCakeResult[${i}].name resolves to a valid key via cakeResultNameToKey`, () => {
-      const result = getCakeResult(scores);
-      const key = cakeResultNameToKey[result.name];
-      expect(key).toBeDefined();
-      expect(cakeResults).toHaveProperty(key);
     });
   });
 

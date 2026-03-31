@@ -66,29 +66,35 @@ async function syncGuestQuizResults(userId, remoteResults) {
   }
 
   const mbtiData = readLocalJson('personalens_mbti');
-  if (mbtiData?.result && !remoteResults.mbti) {
+  const mbtiQuizKey = mbtiData?.quizKey || 'mbti';
+  if (mbtiData?.result && !remoteResults[mbtiQuizKey]) {
     const r = mbtiData.result;
     tasks.push(supabase.rpc('upsert_quiz_result', {
       p_user_id: userId,
-      p_quiz_key: 'mbti',
-      p_result: { resultKey: r.name, name: `${r.name} — ${r.nickname}`, emoji: r.emoji, trait: r.nickname, quizName: 'MBTI (16 Types)' },
+      p_quiz_key: mbtiQuizKey,
+      p_result: { resultKey: r.name, name: `${r.name} — ${r.nickname}`, emoji: r.emoji, trait: r.nickname, quizName: mbtiData.quizName || 'MBTI (16 Types)' },
     }));
   }
 
   const enneagramData = readLocalJson('personalens_enneagram');
-  if (enneagramData?.result && !remoteResults.enneagram) {
+  const enneagramQuizKey = enneagramData?.quizKey || 'enneagram';
+  if (enneagramData?.result && !remoteResults[enneagramQuizKey]) {
     const r = enneagramData.result;
     tasks.push(supabase.rpc('upsert_quiz_result', {
       p_user_id: userId,
-      p_quiz_key: 'enneagram',
-      p_result: { resultKey: r.typeNumber, name: r.name, emoji: r.emoji, trait: r.nickname, quizName: 'Enneagram' },
+      p_quiz_key: enneagramQuizKey,
+      p_result: { resultKey: r.typeNumber, name: r.name, emoji: r.emoji, trait: r.nickname, quizName: enneagramData.quizName || 'Enneagram' },
     }));
   }
 
   if (tasks.length > 0) {
-    const results = await Promise.all(tasks);
-    results.forEach(({ error }) => {
-      if (error) console.error('Failed to sync guest quiz result to Supabase:', error);
+    const results = await Promise.allSettled(tasks);
+    results.forEach((outcome) => {
+      if (outcome.status === 'rejected') {
+        console.error('Failed to sync guest quiz result to Supabase:', outcome.reason);
+      } else if (outcome.value?.error) {
+        console.error('Failed to sync guest quiz result to Supabase:', outcome.value.error);
+      }
     });
   }
 }

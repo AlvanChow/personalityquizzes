@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cakeResults, getCakeResult, cakeResultNameToKey } from './cakeResults.js';
+import { cakeResults, getCakeResult } from './cakeResults.js';
 
 const EXPECTED_KEYS = ['layercake', 'cupcake', 'macaron', 'strawberrycake', 'rollcake', 'tiramisu'];
 
@@ -35,22 +35,6 @@ describe('cakeResults – data integrity', () => {
 });
 
 // ─────────────────────────────────────────────
-// cakeResultNameToKey – reverse lookup
-// ─────────────────────────────────────────────
-describe('cakeResultNameToKey – reverse lookup', () => {
-  it('maps every result name back to its key', () => {
-    EXPECTED_KEYS.forEach((key) => {
-      const name = cakeResults[key].name;
-      expect(cakeResultNameToKey[name]).toBe(key);
-    });
-  });
-
-  it('contains exactly 6 entries', () => {
-    expect(Object.keys(cakeResultNameToKey)).toHaveLength(6);
-  });
-});
-
-// ─────────────────────────────────────────────
 // getCakeResult – each competency result is reachable
 // ─────────────────────────────────────────────
 describe('getCakeResult – competency-dominant results', () => {
@@ -67,18 +51,23 @@ describe('getCakeResult – competency-dominant results', () => {
     it(`returns ${expectedKey} when ${competency} clearly dominates`, () => {
       const scores = { AO: 2, PS: 2, IN: 2, TM: 2, AD: 2, INF: 2 };
       scores[competency] = 8;
-      const result = getCakeResult(scores);
+      const { key, result } = getCakeResult(scores);
+      expect(key).toBe(expectedKey);
       expect(result).toBe(cakeResults[expectedKey]);
     });
   });
 
   it('returns the highest-scoring competency result when one is clearly ahead', () => {
     const scores = { AO: 8, PS: 4, IN: 3, TM: 2, AD: 2, INF: 2 };
-    expect(getCakeResult(scores)).toBe(cakeResults.layercake);
+    const { key, result } = getCakeResult(scores);
+    expect(key).toBe('layercake');
+    expect(result).toBe(cakeResults.layercake);
   });
 
   it('all-zero scores returns first competency result (AO / layercake)', () => {
     const scores = { AO: 0, PS: 0, IN: 0, TM: 0, AD: 0, INF: 0 };
-    expect(getCakeResult(scores)).toBe(cakeResults.layercake);
+    const { key, result } = getCakeResult(scores);
+    expect(key).toBe('layercake');
+    expect(result).toBe(cakeResults.layercake);
   });
 });
