@@ -75,7 +75,9 @@ export default function Profile() {
 
   if (!user) return null;
 
-  const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+  const rawAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+  // Only allow HTTPS URLs from trusted OAuth avatar providers
+  const avatarUrl = typeof rawAvatar === 'string' && /^https:\/\/(lh3\.googleusercontent\.com|avatars\.githubusercontent\.com|platform-lookaside\.fbsbx\.com)\//.test(rawAvatar) ? rawAvatar : null;
   const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email;
 
   const quizLocalKeys = {

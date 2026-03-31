@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
 import { cakeQuestions } from '../data/cakeQuestions';
-import { getCakeResult, cakeResultNameToKey } from '../data/cakeResults';
+import { getCakeResult } from '../data/cakeResults';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
@@ -25,8 +25,7 @@ export default function CakeQuiz() {
       scores[trait] = (scores[trait] || 0) + value;
     });
 
-    const result = getCakeResult(scores);
-    const resultKey = cakeResultNameToKey[result.name] ?? 'layercake';
+    const { key: resultKey, result } = getCakeResult(scores);
 
     // Store scores alongside result so CakeResult can render the competency breakdown
     localStorage.setItem('personalens_cake', JSON.stringify({ result, resultKey, scores }));

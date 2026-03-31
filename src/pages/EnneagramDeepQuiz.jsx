@@ -22,7 +22,7 @@ export default function EnneagramDeepQuiz() {
     const scores = computeEnneagramDeepScores(answers, enneagramDeepQuestions);
     const result = getEnneagramResult(scores);
 
-    localStorage.setItem('personalens_enneagram', JSON.stringify({ scores, result, isDeep: true }));
+    localStorage.setItem('personalens_enneagram', JSON.stringify({ scores, result, quizKey: 'enneagram_deep', quizName: 'Enneagram Deep (36-item)' }));
 
     if (user && supabase) {
       try {

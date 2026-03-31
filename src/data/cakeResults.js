@@ -61,23 +61,23 @@ export const cakeResults = {
   },
 };
 
-// Reverse-lookup: result display name → result key (e.g. 'Macaron' → 'macaron')
-export const cakeResultNameToKey = Object.fromEntries(
-  Object.entries(cakeResults).map(([key, { name }]) => [name, key])
-);
+// Maps competency trait code → result object key
+const competencyToResultKey = {
+  AO: 'layercake',
+  PS: 'cupcake',
+  IN: 'macaron',
+  TM: 'strawberrycake',
+  AD: 'rollcake',
+  INF: 'tiramisu',
+};
 
+/**
+ * Returns { key, result } where `key` is the cakeResults object key (e.g. 'macaron')
+ * and `result` is the full result object.
+ */
 export function getCakeResult(scores) {
   // scores = { AO: n, PS: n, IN: n, TM: n, AD: n, INF: n }
-  const competencyMap = {
-    AO: 'layercake',
-    PS: 'cupcake',
-    IN: 'macaron',
-    TM: 'strawberrycake',
-    AD: 'rollcake',
-    INF: 'tiramisu',
-  };
-
-  const competencies = Object.keys(competencyMap);
+  const competencies = Object.keys(competencyToResultKey);
   let topKey = competencies[0];
   let topScore = scores[competencies[0]] ?? 0;
 
@@ -88,5 +88,6 @@ export function getCakeResult(scores) {
     }
   }
 
-  return cakeResults[competencyMap[topKey]];
+  const resultKey = competencyToResultKey[topKey];
+  return { key: resultKey, result: cakeResults[resultKey] };
 }

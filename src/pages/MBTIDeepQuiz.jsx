@@ -23,7 +23,7 @@ export default function MBTIDeepQuiz() {
     const scores = computeMBTIDeepScores(answers, mbtiDeepQuestions);
     const result = getMBTIResult(scores);
 
-    localStorage.setItem('personalens_mbti', JSON.stringify({ scores, result }));
+    localStorage.setItem('personalens_mbti', JSON.stringify({ scores, result, quizKey: 'mbti_deep', quizName: 'MBTI Deep (OEJTS)' }));
 
     if (user && supabase) {
       try {
