@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Brain, Sparkles, Cake, Star } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
+import { allowViewIncrement } from '../utils/rateLimiter';
+import { isValidShareId } from '../utils/security';
 
 const QUIZ_META = {
   mbti: {
@@ -53,6 +55,13 @@ export default function SharedResult() {
   useEffect(() => {
     if (!supabase) { setNotFound(true); setLoading(false); return; }
 
+    // Validate share ID format before querying the database
+    if (!isValidShareId(shareId)) {
+      setNotFound(true);
+      setLoading(false);
+      return;
+    }
+
     (async () => {
       const { data, error } = await supabase
         .from('shared_results')
@@ -64,8 +73,10 @@ export default function SharedResult() {
         setNotFound(true);
       } else {
         setShared(data);
-        // Fire-and-forget view count increment
-        supabase.rpc('increment_shared_result_views', { p_id: shareId }).then(() => {});
+        // Rate-limited fire-and-forget view count increment
+        if (allowViewIncrement()) {
+          supabase.rpc('increment_shared_result_views', { p_id: shareId }).then(() => {});
+        }
       }
       setLoading(false);
     })();

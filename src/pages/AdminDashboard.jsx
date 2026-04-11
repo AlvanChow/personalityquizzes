@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useAdmin } from '../hooks/useAdmin';
+import { allowAdminFetch } from '../utils/rateLimiter';
 import UserMenu from '../components/UserMenu';
 import {
   Users, Activity, BarChart2, CheckCircle,
@@ -88,6 +89,11 @@ export default function AdminDashboard() {
 
   const fetchData = useCallback(async () => {
     if (!supabase) return;
+    // Rate limit admin dashboard refreshes (max 5 per 30s)
+    if (!allowAdminFetch()) {
+      setError('Too many refreshes. Please wait a moment before trying again.');
+      return;
+    }
     setLoading(true);
     setError(null);
 

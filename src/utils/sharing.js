@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { allowShare } from './rateLimiter';
 
 const BASE_URL = 'https://mypersonalityquizzes.com';
 
@@ -12,6 +13,12 @@ export function generateShareId() {
 // Returns null if Supabase is unavailable.
 export async function createShareableLink(quizType, result) {
   if (!supabase) return null;
+
+  // Rate limit: max 5 share links per 60 seconds.
+  if (!allowShare()) {
+    if (import.meta.env.DEV) console.warn('[sharing] rate-limited');
+    return null;
+  }
 
   const id = generateShareId();
 

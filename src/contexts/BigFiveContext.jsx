@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, us
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 import { track } from '../utils/analytics';
+import { allowProfileSync } from '../utils/rateLimiter';
+import { safeJsonParse, isPlainObject } from '../utils/security';
 
 const STORAGE_KEY = 'personalens_bigfive';
 const defaultScores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
@@ -10,7 +12,11 @@ const BigFiveContext = createContext(null);
 function readLocal() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : defaultScores;
+    if (!stored) return defaultScores;
+    const parsed = safeJsonParse(stored, null);
+    // Validate the shape: must be a plain object with expected keys
+    if (!isPlainObject(parsed)) return defaultScores;
+    return parsed;
   } catch {
     return defaultScores;
   }
@@ -27,7 +33,10 @@ function readLocalCompleted() {
 function readLocalJson(key) {
   try {
     const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const parsed = safeJsonParse(raw, null);
+    // Only return plain objects to prevent prototype pollution
+    return isPlainObject(parsed) ? parsed : null;
   } catch {
     return null;
   }
@@ -120,6 +129,11 @@ export function BigFiveProvider({ children }) {
 
   const syncToSupabase = useCallback(async (newScores, completed, quizResults) => {
     if (!user || !supabase) return;
+    // Rate limit profile syncs to prevent excessive DB writes
+    if (!allowProfileSync()) {
+      if (import.meta.env.DEV) console.warn('[bigfive] profile sync rate-limited');
+      return;
+    }
     const update = { big5_scores: clampScores(newScores), baseline_completed: completed };
     if (quizResults !== undefined) update.quiz_results = quizResults;
     const { error } = await supabase

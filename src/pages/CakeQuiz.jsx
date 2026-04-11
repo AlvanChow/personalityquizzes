@@ -7,6 +7,7 @@ import { getCakeResult } from '../data/cakeResults';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
+import { allowQuizSave } from '../utils/rateLimiter';
 
 export default function CakeQuiz() {
   const navigate = useNavigate();
@@ -18,7 +19,13 @@ export default function CakeQuiz() {
     startTimeRef.current = Date.now();
   }, []);
 
+  const submittingRef = useRef(false);
+
   const handleComplete = useCallback(async (answers) => {
+    // Guard against double submission
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+
     // Direct accumulation: sum option values per competency key
     const scores = {};
     Object.values(answers).forEach(({ trait, value }) => {
@@ -30,7 +37,7 @@ export default function CakeQuiz() {
     // Store scores alongside result so CakeResult can render the competency breakdown
     localStorage.setItem('personalens_cake', JSON.stringify({ result, resultKey, scores }));
 
-    if (user && supabase) {
+    if (user && supabase && allowQuizSave()) {
       try {
         const { error } = await supabase.rpc('upsert_quiz_result', {
           p_user_id: user.id,

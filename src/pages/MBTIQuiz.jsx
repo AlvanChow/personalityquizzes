@@ -8,6 +8,7 @@ import { computeMBTIScores } from '../utils/scoring';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
+import { allowQuizSave } from '../utils/rateLimiter';
 
 export default function MBTIQuiz() {
   const navigate = useNavigate();
@@ -19,13 +20,19 @@ export default function MBTIQuiz() {
     startTimeRef.current = Date.now();
   }, []);
 
+  const submittingRef = useRef(false);
+
   const handleComplete = useCallback(async (answers) => {
+    // Guard against double submission
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+
     const scores = computeMBTIScores(answers);
     const result = getMBTIResult(scores);
 
     localStorage.setItem('personalens_mbti', JSON.stringify({ scores, result }));
 
-    if (user && supabase) {
+    if (user && supabase && allowQuizSave()) {
       try {
         const { error } = await supabase.rpc('upsert_quiz_result', {
           p_user_id: user.id,

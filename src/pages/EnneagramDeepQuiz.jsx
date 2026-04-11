@@ -7,6 +7,7 @@ import { computeEnneagramDeepScores } from '../utils/scoring';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
+import { allowQuizSave } from '../utils/rateLimiter';
 
 export default function EnneagramDeepQuiz() {
   const navigate = useNavigate();
@@ -18,13 +19,19 @@ export default function EnneagramDeepQuiz() {
     startTimeRef.current = Date.now();
   }, []);
 
+  const submittingRef = useRef(false);
+
   const handleComplete = useCallback(async (answers) => {
+    // Guard against double submission
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+
     const scores = computeEnneagramDeepScores(answers, enneagramDeepQuestions);
     const result = getEnneagramResult(scores);
 
     localStorage.setItem('personalens_enneagram', JSON.stringify({ scores, result, quizKey: 'enneagram_deep', quizName: 'Enneagram Deep (36-item)' }));
 
-    if (user && supabase) {
+    if (user && supabase && allowQuizSave()) {
       try {
         const { error } = await supabase.rpc('upsert_quiz_result', {
           p_user_id: user.id,

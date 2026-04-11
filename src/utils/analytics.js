@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { allowAnalytics } from './rateLimiter';
 
 // ─── Allowed event names ──────────────────────────────────────────────────────
 // Must stay in sync with the analytics_events_event_format DB constraint
@@ -95,6 +96,12 @@ export function track(event, properties = {}, userId = null) {
   // avoid hitting the DB-level event_format CHECK constraint.
   if (!ALLOWED_EVENTS.has(event)) {
     if (import.meta.env.DEV) console.warn('[analytics] unknown event dropped:', event);
+    return;
+  }
+
+  // Rate limit: prevent runaway event flooding (max 30 events / 60s).
+  if (!allowAnalytics()) {
+    if (import.meta.env.DEV) console.warn('[analytics] rate-limited, dropping:', event);
     return;
   }
 
