@@ -133,7 +133,7 @@ CREATE TRIGGER trg_analytics_rate_limit
 
 
 -- ─── 2. Rate-limited shared_results insert ───────────────────────────────────
--- Max 10 new share links per minute globally per source (identified by result_key).
+-- Global limit: max 30 new share links per minute across all users.
 -- This prevents automated spam while still allowing normal usage.
 
 CREATE OR REPLACE FUNCTION public.enforce_share_rate_limit()
@@ -260,6 +260,12 @@ BEGIN
   WHERE id = p_user_id;
 END;
 $$;
+
+-- Restore the security grants from migration 20260303000001.
+-- CREATE OR REPLACE does not preserve existing grants, so we must re-apply
+-- the REVOKE PUBLIC + GRANT authenticated to prevent anon access.
+REVOKE EXECUTE ON FUNCTION public.upsert_quiz_result(uuid, text, jsonb) FROM PUBLIC;
+GRANT  EXECUTE ON FUNCTION public.upsert_quiz_result(uuid, text, jsonb) TO authenticated;
 
 
 -- ─── 5. Pin search_path on handle_updated_at ─────────────────────────────────

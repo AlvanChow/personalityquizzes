@@ -50,6 +50,7 @@ export default function MBTIDeepQuiz() {
       } catch (err) {
         console.error('Failed to save MBTI deep quiz result:', err);
         setSaveError('Could not save your result. Please check your connection and try again.');
+        submittingRef.current = false;
         return;
       }
     }

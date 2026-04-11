@@ -54,6 +54,7 @@ export default function CakeQuiz() {
       } catch (err) {
         console.error('Failed to save cake quiz result:', err);
         setSaveError('Could not save your result. Please check your connection and try again.');
+        submittingRef.current = false;
         return;
       }
     }

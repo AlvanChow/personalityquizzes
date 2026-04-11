@@ -48,6 +48,7 @@ export default function EnneagramQuiz() {
       } catch (err) {
         console.error('Failed to save Enneagram quiz result:', err);
         setSaveError('Could not save your result. Please check your connection and try again.');
+        submittingRef.current = false;
         return;
       }
     }
