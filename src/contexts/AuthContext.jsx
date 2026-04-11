@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
+import { allowAuth } from '../utils/rateLimiter';
 
 const AuthContext = createContext(null);
 
@@ -36,6 +37,7 @@ export function AuthProvider({ children }) {
 
   const signInWithGoogle = useCallback(async () => {
     if (!supabase) throw new Error('Authentication is not available right now.');
+    if (!allowAuth()) throw new Error('Too many sign-in attempts. Please wait a moment.');
     track('auth_sign_in_started', {}, null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -48,6 +50,7 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     if (!supabase) return;
+    if (!allowAuth()) return;
     track('auth_sign_out', {}, user?.id ?? null);
     const { error } = await supabase.auth.signOut();
     if (error) throw error;

@@ -6,6 +6,7 @@ import SharePanel from '../components/SharePanel';
 import { useAuth } from '../contexts/AuthContext';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { track } from '../utils/analytics';
+import { safeLocalStorageRead } from '../utils/security';
 import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
 
@@ -89,12 +90,7 @@ export default function CakeResult() {
   const { hasCompleted: hasBig5 } = useBigFive();
 
   const [storedData] = useState(() => {
-    try {
-      const raw = localStorage.getItem('personalens_cake');
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
+    return safeLocalStorageRead('personalens_cake', null);
   });
 
   useEffect(() => {

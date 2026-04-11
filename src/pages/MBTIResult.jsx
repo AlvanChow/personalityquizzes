@@ -5,6 +5,7 @@ import { ArrowLeft, RotateCcw, Briefcase, Users, Star, ShieldAlert, Sparkles, Tr
 import SharePanel from '../components/SharePanel';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
+import { safeLocalStorageRead } from '../utils/security';
 import { mbtiInsights } from '../data/mbtiInsights';
 import { mbtiRoles } from '../data/mbtiResults';
 import AuthNudgeBanner from '../components/AuthNudgeBanner';
@@ -89,12 +90,7 @@ export default function MBTIResult() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [data] = useState(() => {
-    try {
-      const raw = localStorage.getItem('personalens_mbti');
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
+    return safeLocalStorageRead('personalens_mbti', null);
   });
   useEffect(() => {
     if (!data) navigate('/');

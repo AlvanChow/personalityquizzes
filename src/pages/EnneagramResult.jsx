@@ -5,6 +5,7 @@ import { ArrowLeft, RotateCcw, Briefcase, Users, Brain, Feather, Heart, AlertTri
 import SharePanel from '../components/SharePanel';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
+import { safeLocalStorageRead } from '../utils/security';
 import { enneagramInsights } from '../data/enneagramInsights';
 import { getWing, WING_ADJACENTS } from '../data/enneagramWings';
 import AuthNudgeBanner from '../components/AuthNudgeBanner';
@@ -42,12 +43,7 @@ export default function EnneagramResult() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [data] = useState(() => {
-    try {
-      const raw = localStorage.getItem('personalens_enneagram');
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
+    return safeLocalStorageRead('personalens_enneagram', null);
   });
   useEffect(() => { if (!data) navigate('/'); }, [data, navigate]);
 

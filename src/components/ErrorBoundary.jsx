@@ -11,7 +11,11 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    console.error('ErrorBoundary caught an error:', error, info);
+    // Only log full error details in development to avoid leaking stack
+    // traces or internal paths to the browser console in production.
+    if (import.meta.env.DEV) {
+      console.error('ErrorBoundary caught an error:', error, info);
+    }
   }
 
   render() {
