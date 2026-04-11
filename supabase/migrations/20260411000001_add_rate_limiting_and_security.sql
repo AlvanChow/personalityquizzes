@@ -8,11 +8,11 @@
      - Prevents automated flooding of the analytics table.
 
   2. Rate-limit shared_results INSERT
-     - Global limiter: max 20 new rows per minute across all anonymous users.
+     - Global limiter: max 30 new rows per minute across all users.
      - Prevents spam creation of share links.
 
   3. Rate-limit increment_shared_result_views RPC
-     - Per-share-ID limit: max 5 increments per minute per share ID.
+     - Per-share-ID limit: max 10 increments per minute per share ID.
      - Prevents artificial inflation of view counts.
 
   4. Expand upsert_quiz_result quiz key whitelist
