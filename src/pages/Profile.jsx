@@ -80,14 +80,9 @@ export default function Profile() {
   const avatarUrl = typeof rawAvatar === 'string' && /^https:\/\/(lh3\.googleusercontent\.com|avatars\.githubusercontent\.com|platform-lookaside\.fbsbx\.com)\//.test(rawAvatar) ? rawAvatar : null;
   const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email;
 
-  const quizLocalKeys = {
-    cake: 'personalens_cake',
-    mbti: 'personalens_mbti',
-    enneagram: 'personalens_enneagram',
-  };
-
   async function handleQuizReset(quizKey) {
-    localStorage.removeItem(quizLocalKeys[quizKey]);
+    // Every quiz (legacy and catalog) stores its result under personalens_<key>.
+    localStorage.removeItem(`personalens_${quizKey}`);
     const newResults = { ...quizResults };
     delete newResults[quizKey];
     if (supabase) {

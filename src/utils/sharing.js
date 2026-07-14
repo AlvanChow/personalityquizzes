@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { allowShare } from './rateLimiter';
+import { getQuizMeta } from '../data/quizzes';
 
 const BASE_URL = 'https://mypersonalityquizzes.com';
 
@@ -48,7 +49,7 @@ export function getShareText(platform, result, shareUrl, quizType) {
     cake:       'CAKE Workplace',
     big5:       'Big Five',
   };
-  const quizLabel = quizNames[quizType] ?? 'Personality';
+  const quizLabel = quizNames[quizType] ?? getQuizMeta(quizType)?.quizName ?? 'Personality';
   const emoji     = result.emoji ?? '';
   const name      = result.name ?? '';
   const tagline   = result.tagline ?? result.nickname ?? result.coreDesire ?? '';

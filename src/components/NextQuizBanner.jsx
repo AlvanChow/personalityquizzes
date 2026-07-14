@@ -48,7 +48,7 @@ export default function NextQuizBanner({ currentQuizKey }) {
     );
   }
 
-  const NextIcon = next.icon;
+  const NextIcon = next.icon ?? null;
 
   return (
     <motion.div
@@ -76,7 +76,9 @@ export default function NextQuizBanner({ currentQuizKey }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-              <NextIcon className="w-5 h-5 text-white" />
+              {NextIcon
+                ? <NextIcon className="w-5 h-5 text-white" />
+                : <span className="text-xl leading-none">{next.emoji}</span>}
             </div>
             <div className="text-left">
               <p className="text-[11px] font-extrabold text-white/70 uppercase tracking-wider">

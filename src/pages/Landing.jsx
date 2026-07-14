@@ -3,8 +3,30 @@ import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
-import { Activity, Brain, CircleDashed, ArrowRight, Sparkles, Users, ChevronDown, Layers } from 'lucide-react';
+import { Activity, Brain, CircleDashed, ArrowRight, Sparkles, Users, ChevronDown, Layers, Compass, Popcorn } from 'lucide-react';
 import { track } from '../utils/analytics';
+import { getQuizzesByCategory, getQuizPath } from '../data/quizzes';
+
+const catalogSections = [
+  {
+    key: 'know',
+    heading: 'Know Yourself',
+    blurb: 'Legendary introspective exercises — from the Flower Petal exercise to grit, ikigai, and attachment styles',
+    icon: Compass,
+    iconBg: 'bg-rose-100',
+    iconColor: 'text-rose-500',
+    quizzes: getQuizzesByCategory('know'),
+  },
+  {
+    key: 'pop',
+    heading: 'Pop Culture Zone',
+    blurb: 'Which NBA legend, anime hero, or sitcom character are you? Find your famous twin',
+    icon: Popcorn,
+    iconBg: 'bg-violet-100',
+    iconColor: 'text-violet-600',
+    quizzes: getQuizzesByCategory('pop'),
+  },
+];
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -206,6 +228,52 @@ export default function Landing() {
             );
           })}
         </motion.div>
+
+        {/* ── Catalog sections: Know Yourself + Pop Culture ── */}
+        {catalogSections.map((section) => {
+          const SectionIcon = section.icon;
+          return (
+            <motion.div
+              key={section.key}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.45 }}
+              className="w-full max-w-5xl mt-16"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className={`w-10 h-10 rounded-xl ${section.iconBg} flex items-center justify-center`}>
+                  <SectionIcon className={`w-5 h-5 ${section.iconColor}`} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-gray-900">{section.heading}</h2>
+                  <p className="text-sm text-gray-600 font-medium">{section.blurb}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {section.quizzes.map((quiz, i) => (
+                  <motion.button
+                    key={quiz.key}
+                    onClick={() => trackAndNavigate(quiz.key, getQuizPath(quiz))}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.5 + i * 0.04 }}
+                    whileHover={{ y: -3, scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="text-left p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all group flex flex-col"
+                  >
+                    <span className="text-3xl mb-2">{quiz.emoji}</span>
+                    <h3 className="text-sm font-extrabold text-gray-900 leading-snug mb-1">{quiz.title}</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{quiz.description}</p>
+                    <span className="mt-auto text-xs font-bold text-coral-500 flex items-center gap-1">
+                      {quiz.time}
+                      <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                    </span>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })}
 
         {/* ── Go Deeper section ── */}
         <motion.div

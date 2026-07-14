@@ -8,6 +8,25 @@ Endless personality quizzes — discover who you really are.
 - **Backend**: Supabase (auth + database)
 - **Hosting**: Cloudflare Workers
 
+## Adding a New Quiz
+
+Quizzes are data, not pages. To ship a new one:
+
+1. Create `src/data/quizzes/<key>.js` following the spec documented at the top
+   of `src/data/quizzes/index.js` (`pick` mode for archetype quizzes, `likert`
+   for agree/disagree assessments — see `naruto.js` and `grit.js` as examples).
+2. Register it in the `QUIZ_CATALOG` array in `src/data/quizzes/index.js`
+   (metadata + a lazy `load()` import — quiz data is code-split per quiz).
+3. Run `npx vitest run src/data/quizzes/catalog.test.js` — it structurally
+   validates every quiz (reachable results, valid point targets, required
+   display fields, engine smoke tests).
+
+That's it: routing (`/quiz/<key>` + `/quiz/<key>/result`), scoring, result
+rendering, sharing, dashboard/landing cards, and the next-quiz journey all
+pick the quiz up from the catalog automatically. Database saves require the
+quiz key to match `^[a-z][a-z0-9_]{1,31}$` (enforced by
+`supabase/migrations/20260714000001_expand_quiz_catalog.sql`).
+
 ---
 
 ## Domain Setup (Fix GoDaddy Landing Page)

@@ -26,6 +26,9 @@ const Frameworks = lazy(() => import('./pages/Frameworks'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const SharedResult = lazy(() => import('./pages/SharedResult'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const CatalogQuiz = lazy(() => import('./pages/CatalogQuiz'));
+const CatalogResult = lazy(() => import('./pages/CatalogResult'));
+const FlowerPetal = lazy(() => import('./pages/FlowerPetal'));
 
 // Tracks page_view on every route change. Must live inside BrowserRouter and
 // AuthProvider so it can access both useLocation and useAuth.
@@ -79,6 +82,10 @@ function AppRoutes() {
           <Route path="/quiz/big5-deep" element={<BigFiveDeepQuiz />} />
           <Route path="/quiz/mbti-deep" element={<MBTIDeepQuiz />} />
           <Route path="/quiz/enneagram-deep" element={<EnneagramDeepQuiz />} />
+          {/* Generic catalog quizzes — static routes above always win over :quizKey. */}
+          <Route path="/quiz/:quizKey" element={<CatalogQuiz />} />
+          <Route path="/quiz/:quizKey/result" element={<CatalogResult />} />
+          <Route path="/exercise/flower-petal" element={<FlowerPetal />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/how-it-works" element={<Frameworks />} />
           <Route path="/admin" element={<AdminDashboard />} />
