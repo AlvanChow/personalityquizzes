@@ -40,7 +40,7 @@ export default function Landing() {
     {
       key: 'core',
       heading: 'Core Personality Tests',
-      blurb: 'Science-backed frameworks — new here? Start with the Big 5, it powers your dashboard',
+      blurb: 'The research-validated models psychologists and employers actually use — the deepest read on who you are',
       icon: FlaskConical,
       tests: [
         { key: 'big5', emoji: '🧬', title: 'Big 5 Personality', description: 'The OCEAN model — your five core traits and how you navigate the world.', time: '~5 min', action: () => trackAndNavigate('big5', hasCompleted ? '/dashboard' : '/assessment') },
@@ -200,12 +200,13 @@ export default function Landing() {
                     <button
                       key={t.key}
                       onClick={t.action ?? (() => trackAndNavigate(t.key, t.to))}
-                      className="text-left p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-coral-300 transition-all group flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
+                      className="text-left p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-coral-300 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
                     >
-                      <span className="text-3xl mb-2">{t.emoji}</span>
-                      <h3 className="text-sm font-extrabold text-gray-900 leading-snug mb-1">{t.title}</h3>
-                      <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{t.description}</p>
-                      <span className="mt-auto text-xs font-bold text-coral-500 flex items-center gap-1">
+                      {/* Icon floats so the title and description wrap around it — keeps cards compact. */}
+                      <span className="float-left text-2xl leading-none mr-2.5 mt-0.5">{t.emoji}</span>
+                      <h3 className="text-sm font-extrabold text-gray-900 leading-snug">{t.title}</h3>
+                      <p className="text-xs text-gray-500 leading-relaxed mt-1">{t.description}</p>
+                      <span className="clear-left flex items-center gap-1 mt-2.5 text-xs font-bold text-coral-500">
                         {t.time}
                         <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </span>
