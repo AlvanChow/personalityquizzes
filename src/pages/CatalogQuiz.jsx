@@ -109,21 +109,45 @@ export default function CatalogQuiz() {
     ));
   }, []);
 
+  // Likert answers render as a sized-dot scale (big at the extremes, small in
+  // the middle) instead of five stacked buttons — same values, same scoring.
   const renderLikertOptions = useCallback((question, onAnswer, selectedValue) => {
-    return LIKERT_OPTIONS.map((opt) => (
-      <motion.button
-        key={opt.value}
-        onClick={() => onAnswer(opt.value)}
-        whileTap={{ scale: 0.97 }}
-        className={`w-full px-5 py-3 rounded-xl text-left text-sm font-semibold transition-all duration-150 border-2
-          ${selectedValue === opt.value
-            ? 'bg-sky-400 border-sky-400 text-white shadow-[0_2px_10px_rgba(59,154,229,0.35)]'
-            : 'bg-white border-gray-200 text-gray-700 hover:border-sky-300 hover:bg-sky-50 shadow-sm'
-          }`}
-      >
-        {opt.label}
-      </motion.button>
-    ));
+    const sizes = ['w-9 h-9', 'w-7 h-7', 'w-5 h-5', 'w-7 h-7', 'w-9 h-9'];
+    return (
+      <div className="max-w-md mx-auto py-1">
+        <div className="flex items-center justify-between mb-2 text-[11px] font-bold uppercase tracking-wider">
+          <span className="text-coral-500">Disagree</span>
+          <span className="text-gray-300">Neutral</span>
+          <span className="text-sky-500">Agree</span>
+        </div>
+        <div className="relative flex items-center justify-between" role="radiogroup" aria-label="How much do you agree?">
+          <div className="absolute left-2 right-2 top-1/2 -translate-y-1/2 h-0.5 bg-gray-200" aria-hidden="true" />
+          {LIKERT_OPTIONS.map((opt, i) => {
+            const side = i < 2 ? 'coral' : i > 2 ? 'sky' : 'gray';
+            const sel = selectedValue === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => onAnswer(opt.value)}
+                role="radio"
+                aria-checked={sel}
+                aria-label={opt.label}
+                className="relative p-1.5 group"
+              >
+                <span className={`block rounded-full border-2 transition-all duration-150 ${sizes[i]} ${sel
+                  ? side === 'coral'
+                    ? 'bg-coral-400 border-coral-400 shadow-[0_0_12px_rgba(255,138,92,0.55)] scale-110'
+                    : side === 'sky'
+                      ? 'bg-sky-400 border-sky-400 shadow-[0_0_12px_rgba(59,154,229,0.55)] scale-110'
+                      : 'bg-gray-400 border-gray-400 scale-110'
+                  : 'bg-white border-gray-300 group-hover:border-gray-500 group-hover:scale-110'}`}
+                />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
   }, []);
 
   if (!meta) return null;
