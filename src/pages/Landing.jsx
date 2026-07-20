@@ -99,9 +99,8 @@ export default function Landing() {
             transition={{ duration: 0.4, delay: 0.05 }}
             className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 leading-[1.05] tracking-tight mb-4"
           >
-            Your personality is a{' '}
-            <span className="text-coral-500">superpower.</span>{' '}
-            Learn it.
+            Discover your personality{' '}
+            <span className="text-coral-500">superpower.</span>
           </motion.h1>
 
           <motion.p
@@ -110,7 +109,9 @@ export default function Landing() {
             transition={{ duration: 0.4, delay: 0.12 }}
             className="text-base md:text-lg text-gray-600 max-w-xl mx-auto font-medium leading-relaxed mb-7"
           >
-            {totalTests} tests — take one, discover your type in a few minutes, then share it and see how you match with your friends.
+            Decades of research show Big Five traits predict career success, relationship
+            stability, and even longevity about as well as IQ or income. Mapping your own
+            profile takes about five minutes.
           </motion.p>
 
           <motion.div
