@@ -6,8 +6,10 @@ import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import { computeBaselineScores } from '../utils/scoring';
 import { track } from '../utils/analytics';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function BigFiveDeepQuiz() {
+  usePageTitle('Big Five Deep Assessment — My Personality Quizzes');
   const navigate = useNavigate();
   const { completeBaseline } = useBigFive();
   const { user } = useAuth();

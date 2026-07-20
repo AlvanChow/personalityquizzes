@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { cakeResults } from '../data/cakeResults';
 import { mbtiResults } from '../data/mbtiResults';
 import { enneagramResults } from '../data/enneagramResults';
+import { houseResults } from '../data/houseResults';
 import ScoreBar from '../components/ScoreBar';
 import { generateProfileSummary } from '../utils/generateSummary';
 
@@ -15,9 +16,15 @@ import { generateProfileSummary } from '../utils/generateSummary';
 // to extract the lookup key from the stored result object, and whether the result
 // page requires the Big Five baseline to have been completed first.
 const quizResultMaps = {
-  cake: { results: cakeResults, route: '/quiz/cake/result', getResultKey: (r) => r.resultKey, requiresBaseline: true },
+  // CakeResult renders fine without the Big Five baseline (it shows a nudge
+  // instead of the science section), so don't gate the history row on it.
+  cake: { results: cakeResults, route: '/quiz/cake/result', getResultKey: (r) => r.resultKey, requiresBaseline: false },
   mbti: { results: mbtiResults, route: '/quiz/mbti/result', getResultKey: (r) => r.resultKey, requiresBaseline: false },
   enneagram: { results: enneagramResults, route: '/quiz/enneagram/result', getResultKey: (r) => r.resultKey, requiresBaseline: false },
+  // Deep variants store under their own keys but reuse the base result pages.
+  mbti_deep: { results: mbtiResults, route: '/quiz/mbti/result', getResultKey: (r) => r.resultKey, requiresBaseline: false },
+  enneagram_deep: { results: enneagramResults, route: '/quiz/enneagram/result', getResultKey: (r) => r.resultKey, requiresBaseline: false },
+  house: { results: houseResults, route: '/quiz/house/result', getResultKey: (r) => r.resultKey, requiresBaseline: false },
 };
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
@@ -39,6 +46,10 @@ export default function Profile() {
   // Tracks which item is pending confirmation: a quiz key ('cake'/'mbti'/'enneagram')
   // or 'baseline' for the Big Five reset.
   const [confirmReset, setConfirmReset] = useState(null);
+
+  useEffect(() => {
+    document.title = 'My Profile — My Personality Quizzes';
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -84,10 +95,13 @@ export default function Profile() {
     cake: 'personalens_cake',
     mbti: 'personalens_mbti',
     enneagram: 'personalens_enneagram',
+    mbti_deep: 'personalens_mbti',
+    enneagram_deep: 'personalens_enneagram',
+    house: 'personalens_house',
   };
 
   async function handleQuizReset(quizKey) {
-    localStorage.removeItem(quizLocalKeys[quizKey]);
+    if (quizLocalKeys[quizKey]) localStorage.removeItem(quizLocalKeys[quizKey]);
     const newResults = { ...quizResults };
     delete newResults[quizKey];
     if (supabase) {
@@ -270,7 +284,11 @@ export default function Profile() {
         >
           <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Quiz History</h2>
 
-          {completedQuizzes.length > 0 ? (
+          {loadingProfile ? (
+            <div className="bg-white rounded-lg p-6 border border-gray-200 flex justify-center">
+              <div className="w-6 h-6 border-4 border-sky-200 border-t-sky-400 rounded-full animate-spin" />
+            </div>
+          ) : completedQuizzes.length > 0 ? (
             <div className="grid gap-3">
               {completedQuizzes.map(([quizKey, result]) => {
                 const quizMap = quizResultMaps[quizKey];

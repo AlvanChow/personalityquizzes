@@ -237,7 +237,15 @@ export function getWing(coreType, scores) {
   const score1 = scores[adj1] ?? 0;
   const score2 = scores[adj2] ?? 0;
 
-  const wingType = score2 > score1 ? adj2 : adj1;
+  // On a tie, pick the lower-numbered wing (documented contract). This
+  // matters for the wrap-around types (1's neighbors are 9 and 2; 9's are 8
+  // and 1), where the first adjacent entry is the higher number.
+  let wingType;
+  if (score1 === score2) {
+    wingType = Number(adj1) < Number(adj2) ? adj1 : adj2;
+  } else {
+    wingType = score2 > score1 ? adj2 : adj1;
+  }
   const wingKey = `${coreType}w${wingType}`;
 
   return {

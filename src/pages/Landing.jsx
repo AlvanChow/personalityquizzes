@@ -1,15 +1,22 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
-import { Activity, Brain, CircleDashed, ArrowRight, Sparkles, Users, ChevronDown, Layers } from 'lucide-react';
+import { Activity, Brain, CircleDashed, ArrowRight, Sparkles, Users, ChevronDown, Layers, Wand2, Flame, Cake } from 'lucide-react';
 import { track } from '../utils/analytics';
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { hasCompleted } = useBigFive();
+  // `loading` covers the window where a signed-in user's completion only
+  // exists in Supabase — until it resolves, don't claim they haven't done it.
+  const { hasCompleted, loading } = useBigFive();
   const { user } = useAuth();
+
+  useEffect(() => {
+    document.title = 'My Personality Quizzes — Discover Who You Really Are';
+  }, []);
 
   function trackAndNavigate(quizId, destination) {
     track('quiz_card_clicked', { quiz: quizId, from: 'landing' }, user?.id ?? null);
@@ -28,7 +35,7 @@ export default function Landing() {
       iconBg: 'bg-white/20',
       buttonBg: 'bg-white text-teal-700 hover:bg-white/90',
       glowColor: 'shadow-teal-500/25',
-      buttonText: hasCompleted ? 'View Results' : 'Take the Big 5',
+      buttonText: hasCompleted ? 'View Results' : loading ? 'Big 5 Personality' : 'Take the Big 5',
       action: () => trackAndNavigate('big5', hasCompleted ? '/dashboard' : '/assessment'),
       featured: true
     },
@@ -130,7 +137,7 @@ export default function Landing() {
               }}
               className="group/cta bg-coral-500 hover:bg-coral-600 text-white font-extrabold text-xl md:text-2xl px-12 md:px-14 py-4 md:py-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-3 hover:scale-[1.02] active:scale-[0.98]"
             >
-              {hasCompleted ? 'See My Results' : 'Start Your Deep Dive'}
+              {hasCompleted ? 'See My Results' : loading ? 'Explore Your Personality' : 'Start Your Deep Dive'}
               <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1 transition-transform duration-200" />
             </button>
             <button
@@ -205,6 +212,86 @@ export default function Landing() {
               </motion.div>
             );
           })}
+        </motion.div>
+
+        {/* ── Just for Fun section ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.5 }}
+          className="w-full max-w-5xl mt-16"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
+              <Flame className="w-5 h-5 text-rose-500" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-gray-900">Just for Fun</h2>
+              <p className="text-sm text-gray-600 font-medium">Quick hits to share with friends</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                id: 'house',
+                name: 'Wizarding House',
+                badge: 'Sorting Quiz',
+                icon: Wand2,
+                description: 'Gryffindor, Hufflepuff, Ravenclaw, or Slytherin — where do you truly belong?',
+                path: '/quiz/house',
+                border: 'border-amber-200',
+                badgeBg: 'bg-amber-100 text-amber-700',
+              },
+              {
+                id: 'hot_takes',
+                name: 'Hot Takes',
+                badge: 'Great Debates',
+                icon: Flame,
+                description: 'The dress. Tennis balls. Hotdogs. Pick your side and see how the internet voted.',
+                path: '/hot-takes',
+                border: 'border-rose-200',
+                badgeBg: 'bg-rose-100 text-rose-600',
+              },
+              {
+                id: 'cake',
+                name: 'What Cake Are You?',
+                badge: 'Workplace',
+                icon: Cake,
+                description: 'Your work superpower, served as dessert. Find your professional flavor.',
+                path: '/quiz/cake',
+                border: 'border-sky-200',
+                badgeBg: 'bg-sky-100 text-sky-700',
+              },
+            ].map((quiz, i) => {
+              const FunIcon = quiz.icon;
+              return (
+                <motion.button
+                  key={quiz.id}
+                  onClick={() => trackAndNavigate(quiz.id, quiz.path)}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.55 + i * 0.08 }}
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`text-left p-6 rounded-xl bg-white border-2 ${quiz.border} shadow-sm hover:shadow-md transition-all group`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <FunIcon className="w-4 h-4 text-gray-500" />
+                    <span className={`text-xs font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full ${quiz.badgeBg}`}>
+                      {quiz.badge}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-extrabold text-gray-900 mb-1">{quiz.name}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed mb-4">{quiz.description}</p>
+                  <span className="text-sm font-bold text-coral-500 flex items-center gap-1.5">
+                    Jump In
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </motion.button>
+              );
+            })}
+          </div>
         </motion.div>
 
         {/* ── Go Deeper section ── */}

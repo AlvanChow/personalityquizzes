@@ -89,6 +89,9 @@ export default function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(!open)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Account menu"
         className="flex items-center gap-2.5 px-2 py-1.5 pr-4 rounded-lg bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200"
       >
         {avatarUrl ? (
@@ -109,12 +112,13 @@ export default function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-md border border-gray-200 py-2 z-50">
+        <div role="menu" aria-label="Account" className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-md border border-gray-200 py-2 z-50">
           <div className="px-4 py-3 border-b border-gray-100">
             <p className="text-sm font-semibold text-gray-800 truncate">{displayName}</p>
             <p className="text-xs text-gray-400 truncate">{user.email}</p>
           </div>
           <button
+            role="menuitem"
             onClick={() => {
               setOpen(false);
               navigate('/profile');
@@ -126,6 +130,7 @@ export default function UserMenu() {
           </button>
           {isAdmin && (
             <button
+              role="menuitem"
               onClick={() => {
                 setOpen(false);
                 navigate('/admin');
@@ -137,6 +142,7 @@ export default function UserMenu() {
             </button>
           )}
           <button
+            role="menuitem"
             onClick={async () => {
               setOpen(false);
               try {

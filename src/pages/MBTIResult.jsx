@@ -10,6 +10,8 @@ import { mbtiInsights } from '../data/mbtiInsights';
 import { mbtiRoles } from '../data/mbtiResults';
 import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
+import CompareBanner from '../components/CompareBanner';
+import FeedbackWidget from '../components/FeedbackWidget';
 import InsightCard from '../components/InsightCard';
 
 const DIMENSION_LABELS = {
@@ -90,11 +92,17 @@ export default function MBTIResult() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [data] = useState(() => {
-    return safeLocalStorageRead('personalens_mbti', null);
+    const stored = safeLocalStorageRead('personalens_mbti', null);
+    // Guard against partial/corrupt stored data, not just missing data.
+    return stored?.result?.name ? stored : null;
   });
   useEffect(() => {
     if (!data) navigate('/');
   }, [data, navigate]);
+
+  useEffect(() => {
+    if (data) document.title = `${data.result.name} — My Personality Quizzes`;
+  }, [data]);
 
   const viewedRef = useRef(false);
   useEffect(() => {
@@ -105,7 +113,7 @@ export default function MBTIResult() {
 
   if (!data) return null;
 
-  const { result, scores } = data;
+  const { result, scores = {} } = data;
   const insights = mbtiInsights[result.name];
   const roleData = result.role ? mbtiRoles[result.role] : null;
   const roleIconColor = result.role ? ROLE_ICON_COLORS[result.role] : '';
@@ -331,6 +339,10 @@ export default function MBTIResult() {
           </div>
         </motion.div>
 
+        <FeedbackWidget quizKey={data.quizKey || 'mbti'} />
+
+        <CompareBanner quizType="mbti" />
+
         <NextQuizBanner currentQuizKey="mbti" />
 
         <AuthNudgeBanner quiz="mbti" />
@@ -355,7 +367,7 @@ export default function MBTIResult() {
           >
             All Quizzes
           </motion.button>
-          <SharePanel quizType="mbti" result={result} btnColor="from-coral-400 to-coral-500" />
+          <SharePanel quizType="mbti" result={result} scores={scores} btnColor="from-coral-400 to-coral-500" />
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Activity, Brain, CircleDashed, ArrowRight } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const suggestions = [
   { label: 'Big 5 Personality', path: '/assessment', Icon: Activity, color: 'bg-teal-100 text-teal-700' },
@@ -9,6 +10,7 @@ const suggestions = [
 ];
 
 export default function NotFound() {
+  usePageTitle('Page Not Found — My Personality Quizzes');
   const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-cream-50 flex items-center justify-center px-6 py-16">

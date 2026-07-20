@@ -108,17 +108,20 @@ export const enneagramResults = {
  * @returns {object} The matching entry from enneagramResults
  */
 export function getEnneagramResult(scores) {
-  let maxType = '1';
-  let maxScore = scores['1'] ?? 0;
+  // Deep-quiz weights can produce negative totals, so a missing key must not
+  // default to 0 (which would outrank genuinely-negative types). Missing
+  // types are treated as -Infinity: only actually-scored types can win.
+  let maxType = null;
+  let maxScore = -Infinity;
 
-  for (let t = 2; t <= 9; t++) {
+  for (let t = 1; t <= 9; t++) {
     const key = String(t);
-    const score = scores[key] ?? 0;
-    if (score > maxScore) {
+    const score = scores[key];
+    if (typeof score === 'number' && Number.isFinite(score) && score > maxScore) {
       maxScore = score;
       maxType = key;
     }
   }
 
-  return enneagramResults[maxType];
+  return enneagramResults[maxType ?? '1'];
 }

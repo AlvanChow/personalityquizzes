@@ -23,6 +23,11 @@ const ALLOWED_EVENTS = new Set([
   'share_link_created',
   'share_button_clicked',
   'shared_result_viewed',
+  'compat_viewed',
+  'compare_quiz_started',
+  // Feedback / engagement
+  'quiz_feedback_given',
+  'hot_take_voted',
 ]);
 
 // ─── Session ID ──────────────────────────────────────────────────────────────
@@ -31,7 +36,7 @@ const ALLOWED_EVENTS = new Set([
 // A same-tab page refresh preserves the session.
 const SESSION_KEY = 'pq_session_id';
 
-function getSessionId() {
+export function getSessionId() {
   try {
     let id = sessionStorage.getItem(SESSION_KEY);
     if (!id) {
