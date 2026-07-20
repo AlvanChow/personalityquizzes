@@ -99,8 +99,8 @@ export default function Landing() {
             transition={{ duration: 0.4, delay: 0.05 }}
             className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 leading-[1.05] tracking-tight mb-4"
           >
-            Discover your personality{' '}
-            <span className="text-coral-500">superpower.</span>
+            Discover your{' '}
+            <span className="text-coral-500">superpowers.</span>
           </motion.h1>
 
           <motion.p
