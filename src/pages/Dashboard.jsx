@@ -1,16 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cake, Brain, CircleDashed, Share2, Check, Layers, ArrowRight, RotateCcw, ChevronDown } from 'lucide-react';
+import { Share2, Check, ArrowRight, RotateCcw, ChevronDown } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
-import QuizCard from '../components/QuizCard';
 import NextQuizBanner from '../components/NextQuizBanner';
 import FeedbackWidget from '../components/FeedbackWidget';
 import { track } from '../utils/analytics';
 import lifeAnalysis from '../data/lifeAnalysis';
 import { getCompletedCount, QUIZ_ORDER } from '../utils/quizProgression';
-import { getQuizzesByCategory, getQuizPath, isQuizCompleted } from '../data/quizzes';
+import { getQuizzesByCategory, getQuizPath, isQuizCompleted, storageKeyFor } from '../data/quizzes';
+import { safeLocalStorageRead } from '../utils/security';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 
@@ -162,34 +162,6 @@ const traitData = {
   },
 };
 
-const quizzes = [
-  {
-    quizKey: 'cake',
-    title: 'What Cake Are You?',
-    description: 'Discover which delicious cake matches your personality profile.',
-    icon: Cake,
-    to: '/quiz/cake',
-    locked: false,
-  },
-  {
-    quizKey: 'mbti',
-    title: 'MBTI (16 Types)',
-    description: 'Find your Myers-Briggs type and understand your cognitive style.',
-    icon: Brain,
-    to: '/quiz/mbti',
-    locked: false,
-  },
-  {
-    quizKey: 'enneagram',
-    title: 'Enneagram',
-    description: 'Discover which of the 9 types drives your deepest motivations.',
-    icon: CircleDashed,
-    to: '/quiz/enneagram',
-    locked: false,
-  },
-];
-
-const resultRoutes = { cake: '/quiz/cake/result', mbti: '/quiz/mbti/result', enneagram: '/quiz/enneagram/result' };
 
 // Catalog-driven sections: introspective assessments and pop-culture matches.
 const catalogSections = [
@@ -217,15 +189,39 @@ export default function Dashboard() {
   const { user } = useAuth();
 
   const [copied, setCopied] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(() => new Set(['careers', 'relationships']));
-
-  // Derive which secondary quizzes have saved results in localStorage
-  const completedQuizKeys = useMemo(() => {
-    const lsKeys = { cake: 'personalens_cake', mbti: 'personalens_mbti', enneagram: 'personalens_enneagram' };
-    return new Set(Object.entries(lsKeys).filter(([, k]) => !!localStorage.getItem(k)).map(([q]) => q));
-  }, []);
+  const [expandedTrait, setExpandedTrait] = useState(null);
+  const [expandedSections, setExpandedSections] = useState(() => new Set(['careers']));
 
   const completedCount = useMemo(() => getCompletedCount(), []);
+
+  // Everything the visitor has finished, as one shelf of result tiles.
+  const completedTiles = useMemo(() => {
+    const tiles = [];
+    const core = [
+      { key: 'mbti', emoji: '🧠', title: 'MBTI', to: '/quiz/mbti/result' },
+      { key: 'enneagram', emoji: '✳️', title: 'Enneagram', to: '/quiz/enneagram/result' },
+      { key: 'cake', emoji: '🍰', title: 'Cake', to: '/quiz/cake/result' },
+    ];
+    for (const c of core) {
+      const stored = safeLocalStorageRead(`personalens_${c.key}`, null);
+      if (stored?.result) tiles.push({ ...c, resultName: stored.result.name ?? '', resultEmoji: stored.result.emoji ?? c.emoji });
+    }
+    for (const section of catalogSections) {
+      for (const q of section.quizzes) {
+        if (!isQuizCompleted(q.key)) continue;
+        const stored = safeLocalStorageRead(storageKeyFor(q.key), null);
+        tiles.push({
+          key: q.key,
+          emoji: q.emoji,
+          title: q.title,
+          to: q.custom ? getQuizPath(q) : `/quiz/${q.key}/result`,
+          resultName: stored?.result?.name ?? '',
+          resultEmoji: stored?.result?.emoji ?? q.emoji,
+        });
+      }
+    }
+    return tiles;
+  }, []);
 
   function toggleSection(key) {
     setExpandedSections(prev => {
@@ -238,11 +234,7 @@ export default function Dashboard() {
 
   const analyses = useMemo(
     () => lifeAnalysis
-      .map((category) => ({
-        ...category,
-        analysis: category.getAnalysis(scores),
-      }))
-      // A missing profile key should skip that card, not crash the page.
+      .map((category) => ({ ...category, analysis: category.getAnalysis(scores) }))
       .filter((entry) => entry.analysis?.summary && Array.isArray(entry.analysis.items)),
     [scores],
   );
@@ -256,9 +248,7 @@ export default function Dashboard() {
   }, [loading, hasCompleted, navigate]);
 
   async function handleShare() {
-    const lines = traitOrder
-      .map((t) => `${traitData[t].label} ${scores[t]}`)
-      .join('\n');
+    const lines = traitOrder.map((t) => `${traitData[t].label} ${scores[t]}`).join('\n');
     const text = `My Big Five Personality:\n\n${lines}\n\nTake yours at mypersonalityquizzes.com`;
     try {
       await navigator.clipboard.writeText(text);
@@ -266,13 +256,9 @@ export default function Dashboard() {
       setTimeout(() => setCopied(false), 2000);
     } catch {
       try {
-        if (navigator.share) {
-          await navigator.share({ title: 'My Big Five Personality', text });
-        }
+        if (navigator.share) await navigator.share({ title: 'My Big Five Personality', text });
       } catch (err) {
-        if (err?.name !== 'AbortError') {
-          console.error('Share failed:', err);
-        }
+        if (err?.name !== 'AbortError') console.error('Share failed:', err);
       }
     }
   }
@@ -287,16 +273,12 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-cream-50">
       <main className="px-6 py-10 max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-        >
+
+        {/* ── Header ── */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
           <div className="flex items-start justify-between gap-4 mb-1">
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
-                Your Personality Profile
-              </h1>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">Your Personality Profile</h1>
               <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full mt-1.5 ${
                 completedCount === QUIZ_ORDER.length ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
               }`}>
@@ -308,96 +290,86 @@ export default function Dashboard() {
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors shrink-0 ${
-                copied
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-gray-900 text-white hover:bg-gray-800'
+                copied ? 'bg-emerald-500 text-white' : 'bg-gray-900 text-white hover:bg-gray-800'
               }`}
             >
               {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Share'}
             </motion.button>
           </div>
-          <p className="text-gray-500 mb-8">
-            Based on your baseline assessment. Take more quizzes to refine your scores.
-          </p>
+          <p className="text-gray-500 mb-6">Your Big Five at a glance — tap a trait for the full read.</p>
 
-          <div className="flex flex-col gap-4 mb-5">
+          {/* ── Big Five: one compact card, expandable rows ── */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-8">
             {traitOrder.map((trait, i) => {
               const data = traitData[trait];
               const score = scores[trait];
               const range = getRange(data, score);
+              const isOpen = expandedTrait === trait;
               return (
-                <motion.div
-                  key={trait}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.06 }}
-                  className={`rounded-xl border ${data.border} ${data.bg} p-5 shadow-sm`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className={`text-xs font-extrabold uppercase tracking-wider ${data.accent}`}>{data.label}</span>
-                    <span className="text-sm font-bold text-gray-500">{score}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs text-gray-400 w-20 shrink-0">{data.lowLabel}</span>
+                <div key={trait} className={i > 0 ? 'border-t border-gray-100' : ''}>
+                  <button
+                    onClick={() => setExpandedTrait(isOpen ? null : trait)}
+                    aria-expanded={isOpen}
+                    className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${data.color}`} />
+                    <span className="text-sm font-extrabold text-gray-800 w-36 shrink-0">{data.label}</span>
+                    <span className="text-[11px] text-gray-400 w-20 shrink-0 hidden sm:block text-right">{data.lowLabel}</span>
                     <div className={`flex-1 h-2 ${data.trackColor} rounded-full overflow-hidden`}>
                       <motion.div
                         className={`h-full rounded-full ${data.color}`}
                         initial={{ width: 0 }}
                         animate={{ width: `${score}%` }}
-                        transition={{ duration: 0.6, delay: i * 0.06, ease: 'easeOut' }}
+                        transition={{ duration: 0.6, delay: i * 0.07, ease: 'easeOut' }}
                       />
                     </div>
-                    <span className="text-xs text-gray-400 w-20 shrink-0 text-right">{data.highLabel}</span>
-                  </div>
-
-                  <p className="text-sm text-gray-500 leading-relaxed mb-3">
-                    {data.description}
-                  </p>
-
-                  <div className="border-t border-white/80 pt-3">
-                    <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${data.accent}`}>
-                      Your result — {range.heading}
-                    </p>
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {range.text}
-                    </p>
-                  </div>
-                </motion.div>
+                    <span className="text-[11px] text-gray-400 w-20 shrink-0 hidden sm:block">{data.highLabel}</span>
+                    <span className="text-sm font-black text-gray-700 w-8 text-right shrink-0 tabular-nums">{score}</span>
+                    <ChevronDown className={`w-4 h-4 text-gray-300 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        key="detail"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.22, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className={`mx-5 mb-4 rounded-lg border ${data.border} ${data.bg} p-4`}>
+                          <p className="text-sm text-gray-500 leading-relaxed mb-3">{data.description}</p>
+                          <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${data.accent}`}>
+                            Your result — {range.heading}
+                          </p>
+                          <p className="text-sm text-gray-700 leading-relaxed">{range.text}</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               );
             })}
-          </div>
-
-          <div className="flex justify-end mb-6">
-            <button
-              onClick={() => {
-                track('quiz_retaken', { quiz: 'big5' }, user?.id ?? null);
-                navigate('/assessment');
-              }}
-              className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Retake Assessment
-            </button>
-          </div>
-
-          <div className="mb-12">
-            <FeedbackWidget quizKey="big5" delay={0.3} />
+            <div className="flex justify-end px-5 py-2.5 border-t border-gray-100 bg-gray-50/60">
+              <button
+                onClick={() => {
+                  track('quiz_retaken', { quiz: 'big5' }, user?.id ?? null);
+                  navigate('/assessment');
+                }}
+                className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Retake Assessment
+              </button>
+            </div>
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.15 }}
-        >
-          <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">
-            Life Analysis
-          </h2>
-          <p className="text-gray-500 mb-5">
-            How your personality plays out across major areas of life.
-          </p>
+        {/* ── Life Analysis ── */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }}>
+          <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">Life Analysis</h2>
+          <p className="text-gray-500 mb-5">How your personality plays out across major areas of life.</p>
 
           <div className="flex flex-col gap-3 mb-12">
             {analyses.map((entry, ci) => {
@@ -435,16 +407,11 @@ export default function Dashboard() {
                         className="overflow-hidden"
                       >
                         <div className="px-5 pb-5 border-t border-gray-100">
-                          <p className="text-sm text-gray-600 leading-relaxed mt-4 mb-3">
-                            {analysis.summary}
-                          </p>
+                          <p className="text-sm text-gray-600 leading-relaxed mt-4 mb-3">{analysis.summary}</p>
                           {analysis.careers && (
                             <div className="flex flex-wrap gap-1.5 mb-3">
                               {analysis.careers.map((c) => (
-                                <span
-                                  key={c}
-                                  className="text-xs font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded border border-gray-200"
-                                >
+                                <span key={c} className="text-xs font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded border border-gray-200">
                                   {c}
                                 </span>
                               ))}
@@ -468,109 +435,44 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        <NextQuizBanner currentQuizKey="big5" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.25 }}
-        >
-          <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">
-            Quiz Library
-          </h2>
-          <p className="text-gray-500 mb-5">
-            Each quiz maps your personality into a fun new world.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {quizzes.map((quiz) => {
-              const isDone = completedQuizKeys.has(quiz.quizKey);
-              return (
-                <QuizCard
-                  key={quiz.quizKey}
-                  {...quiz}
-                  to={isDone ? (resultRoutes[quiz.quizKey] ?? quiz.to) : quiz.to}
-                  completed={isDone}
-                  onBeforeNavigate={() =>
-                    track('quiz_card_clicked', { quiz: quiz.quizKey, from: 'dashboard' }, user?.id ?? null)
-                  }
-                />
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {catalogSections.map((section) => (
-          <motion.div
-            key={section.key}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.3 }}
-            className="mt-10"
-          >
-            <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">
-              {section.heading}
-            </h2>
-            <p className="text-gray-500 mb-5">{section.blurb}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {section.quizzes.map((quiz) => {
-                const isDone = isQuizCompleted(quiz.key);
-                const takePath = getQuizPath(quiz);
-                const donePath = quiz.custom ? takePath : `/quiz/${quiz.key}/result`;
-                return (
-                  <QuizCard
-                    key={quiz.key}
-                    quizKey={quiz.key}
-                    title={quiz.title}
-                    description={quiz.description}
-                    emoji={quiz.emoji}
-                    to={isDone ? donePath : takePath}
-                    completed={isDone}
-                    onBeforeNavigate={() =>
-                      track('quiz_card_clicked', { quiz: quiz.key, from: 'dashboard' }, user?.id ?? null)
-                    }
-                  />
-                );
-              })}
+        {/* ── Your results shelf ── */}
+        {completedTiles.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15 }}>
+            <div className="flex items-end justify-between mb-1">
+              <h2 className="text-xl md:text-2xl font-extrabold text-gray-900">Your Results</h2>
+              <button
+                onClick={() => navigate('/')}
+                className="text-xs font-bold text-coral-500 hover:text-coral-600 flex items-center gap-1"
+              >
+                Browse all tests <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+            <p className="text-gray-500 mb-5">Everything you&apos;ve unlocked so far — tap to revisit.</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-12">
+              {completedTiles.map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => {
+                    track('quiz_card_clicked', { quiz: t.key, from: 'dashboard_results' }, user?.id ?? null);
+                    navigate(t.to);
+                  }}
+                  className="text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-coral-300 transition-all"
+                >
+                  <span className="text-2xl block mb-1.5">{t.resultEmoji}</span>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{t.title}</p>
+                  <p className="text-sm font-extrabold text-gray-800 truncate">{t.resultName || 'View result'}</p>
+                </button>
+              ))}
             </div>
           </motion.div>
-        ))}
+        )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.35 }}
-          className="mt-10"
-        >
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
-              <Layers className="w-4 h-4 text-amber-600" />
-            </div>
-            <h2 className="text-xl md:text-2xl font-extrabold text-gray-900">Go Deeper</h2>
-          </div>
-          <p className="text-gray-500 mb-5">
-            Extended assessments for a more nuanced personality profile.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { label: 'Big 5 Deep (IPIP-50)', desc: '50 items for a more precise OCEAN profile', path: '/quiz/big5-deep', accent: 'text-teal-600' },
-              { label: 'MBTI Deep (OEJTS)', desc: 'Scientific forced-choice for sharper typing', path: '/quiz/mbti-deep', accent: 'text-coral-600' },
-              { label: 'Enneagram Deep (36-item)', desc: 'Core fears & desires weighted inventory', path: '/quiz/enneagram-deep', accent: 'text-violet-600' },
-            ].map((dq) => (
-              <button
-                key={dq.path}
-                onClick={() => { track('quiz_card_clicked', { quiz: dq.path, from: 'dashboard' }, user?.id ?? null); navigate(dq.path); }}
-                className="text-left p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all group"
-              >
-                <p className="text-sm font-bold text-gray-800 mb-1">{dq.label}</p>
-                <p className="text-xs text-gray-500 leading-relaxed mb-2">{dq.desc}</p>
-                <span className={`text-xs font-bold ${dq.accent} flex items-center gap-1`}>
-                  Take Quiz <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                </span>
-              </button>
-            ))}
-          </div>
-        </motion.div>
+        {/* ── One clear next step ── */}
+        <NextQuizBanner currentQuizKey="big5" />
+
+        <div className="mb-12">
+          <FeedbackWidget quizKey="big5" delay={0.2} />
+        </div>
       </main>
     </div>
   );
