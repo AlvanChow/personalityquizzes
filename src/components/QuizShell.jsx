@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, X, List, ChevronRight } from 'lucide-react';
 import { track } from '../utils/analytics';
+import { safeJsonParse } from '../utils/security';
 
 const slideVariants = {
   enter: (dir) => ({ opacity: 0, x: dir > 0 ? 24 : -24 }),
@@ -10,10 +11,55 @@ const slideVariants = {
   exit: (dir) => ({ opacity: 0, x: dir > 0 ? -24 : 24 }),
 };
 
-function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, renderOptions, questionsPerPage, exitPath }) {
+// ─── In-progress answer persistence ─────────────────────────────────────────
+// Answers live in sessionStorage while a quiz is underway so an accidental
+// refresh doesn't discard everything. Cleared on submit.
+
+function progressKey(quizKey) {
+  return quizKey ? `pq_progress_${quizKey}` : null;
+}
+
+function readProgress(quizKey, questions) {
+  const key = progressKey(quizKey);
+  if (!key) return null;
+  try {
+    const parsed = safeJsonParse(sessionStorage.getItem(key), null);
+    if (!parsed || typeof parsed !== 'object') return null;
+    // Only restore answers whose question ids still exist.
+    const validIds = new Set(questions.map((q) => String(q.id)));
+    const answers = {};
+    for (const [id, a] of Object.entries(parsed.answers ?? {})) {
+      if (validIds.has(String(id)) && a && typeof a === 'object') answers[id] = a;
+    }
+    const index = Number.isInteger(parsed.index) ? Math.max(0, parsed.index) : 0;
+    return { answers, index };
+  } catch {
+    return null;
+  }
+}
+
+function writeProgress(quizKey, answers, index) {
+  const key = progressKey(quizKey);
+  if (!key) return;
+  try {
+    sessionStorage.setItem(key, JSON.stringify({ answers, index }));
+  } catch { /* storage full/unavailable — persistence is best-effort */ }
+}
+
+function clearProgress(quizKey) {
+  const key = progressKey(quizKey);
+  if (!key) return;
+  try { sessionStorage.removeItem(key); } catch { /* ignore */ }
+}
+
+function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, renderOptions, questionsPerPage, exitPath, quizKey }) {
   const navigate = useNavigate();
-  const [localAnswers, setLocalAnswers] = useState({ ...initialAnswers });
-  const [page, setPage] = useState(0);
+  const [restored] = useState(() => readProgress(quizKey, questions));
+  const [localAnswers, setLocalAnswers] = useState(() => ({ ...initialAnswers, ...(restored?.answers ?? {}) }));
+  const [page, setPage] = useState(() => {
+    const totalPagesInit = Math.ceil(questions.length / questionsPerPage);
+    return Math.min(restored?.index ?? 0, Math.max(0, totalPagesInit - 1));
+  });
   const [shakeId, setShakeId] = useState(null);
   const totalPages = Math.ceil(questions.length / questionsPerPage);
   const pageQuestions = questions.slice(page * questionsPerPage, (page + 1) * questionsPerPage);
@@ -24,6 +70,10 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
   useEffect(() => {
     return () => clearTimeout(shakeTimerRef.current);
   }, []);
+
+  useEffect(() => {
+    writeProgress(quizKey, localAnswers, page);
+  }, [quizKey, localAnswers, page]);
 
   const handleAnswer = useCallback((question, value) => {
     setLocalAnswers(prev => ({
@@ -40,6 +90,7 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
   const handleNext = useCallback(() => {
     if (pageAnswered) {
       if (isLastPage) {
+        clearProgress(quizKey);
         onComplete(localAnswers);
       } else {
         setPage(prev => prev + 1);
@@ -57,7 +108,7 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
       clearTimeout(shakeTimerRef.current);
       shakeTimerRef.current = setTimeout(() => setShakeId(null), 800);
     }
-  }, [pageAnswered, isLastPage, onComplete, localAnswers, pageQuestions]);
+  }, [pageAnswered, isLastPage, onComplete, localAnswers, pageQuestions, quizKey]);
 
   const handleBack = useCallback(() => {
     if (page === 0) {
@@ -153,8 +204,12 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
   );
 }
 
-function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions }) {
+function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions, quizKey }) {
   const [localAnswers, setLocalAnswers] = useState({ ...answers });
+
+  useEffect(() => {
+    writeProgress(quizKey, localAnswers, 0);
+  }, [quizKey, localAnswers]);
 
   const handleAnswer = useCallback((question, value) => {
     setLocalAnswers(prev => ({
@@ -162,6 +217,11 @@ function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions }) {
       [question.id]: { trait: question.trait, value },
     }));
   }, []);
+
+  const handleSubmit = useCallback(() => {
+    clearProgress(quizKey);
+    onAnswerAll(localAnswers);
+  }, [quizKey, onAnswerAll, localAnswers]);
 
   const answered = Object.keys(localAnswers).length;
   const total = questions.length;
@@ -176,7 +236,7 @@ function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions }) {
           </p>
           {allAnswered && (
             <button
-              onClick={() => onAnswerAll(localAnswers)}
+              onClick={handleSubmit}
               className="bg-sky-500 hover:bg-sky-600 text-white font-bold px-5 py-2 rounded-lg text-sm transition-all"
             >
               Submit All
@@ -202,7 +262,7 @@ function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions }) {
       {allAnswered && (
         <div className="fixed bottom-6 inset-x-0 flex justify-center px-6 z-20">
           <button
-            onClick={() => onAnswerAll(localAnswers)}
+            onClick={handleSubmit}
             className="bg-sky-500 hover:bg-sky-600 text-white font-bold px-8 py-4 rounded-lg text-base transition-all shadow-md flex items-center gap-2"
           >
             Submit All Answers
@@ -216,8 +276,10 @@ function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions }) {
 
 export default function QuizShell({ questions, onComplete, renderOptions, quizKey, userId = null, exitPath = '/', allowViewAll = false, questionsPerPage = null }) {
   const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [restored] = useState(() => (questionsPerPage ? null : readProgress(quizKey, questions)));
+  const [currentIndex, setCurrentIndex] = useState(() =>
+    Math.min(restored?.index ?? 0, Math.max(0, questions.length - 1)));
+  const [answers, setAnswers] = useState(() => restored?.answers ?? {});
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState(1);
   const [viewAll, setViewAll] = useState(false);
@@ -231,6 +293,13 @@ export default function QuizShell({ questions, onComplete, renderOptions, quizKe
     track('quiz_started', { quiz: quizKey }, userId);
   }, [quizKey, userId]);
 
+  // Keep in-progress answers across accidental refreshes (paged view
+  // persists its own local state).
+  useEffect(() => {
+    if (questionsPerPage) return;
+    writeProgress(quizKey, answers, currentIndex);
+  }, [questionsPerPage, quizKey, answers, currentIndex]);
+
   const question = questions[currentIndex];
 
   const handleAnswer = useCallback((value) => {
@@ -238,15 +307,20 @@ export default function QuizShell({ questions, onComplete, renderOptions, quizKe
 
     const newAnswers = { ...answers, [question.id]: { trait: question.trait, value } };
     setAnswers(newAnswers);
-    setIsAnimating(true);
-    setDirection(1);
 
     if (currentIndex < questions.length - 1) {
+      // Only lock input while a card transition is actually running. On the
+      // final question no transition fires (the motion key doesn't change), so
+      // setting isAnimating there would leave the quiz permanently locked if
+      // onComplete fails to navigate (e.g. a failed save).
+      setIsAnimating(true);
+      setDirection(1);
       setCurrentIndex(prev => prev + 1);
     } else {
+      clearProgress(quizKey);
       onComplete(newAnswers);
     }
-  }, [isAnimating, answers, question, currentIndex, questions.length, onComplete]);
+  }, [isAnimating, answers, question, currentIndex, questions.length, onComplete, quizKey]);
 
   const handleBack = useCallback(() => {
     if (isAnimating) return;
@@ -268,6 +342,7 @@ export default function QuizShell({ questions, onComplete, renderOptions, quizKe
         renderOptions={renderOptions}
         questionsPerPage={questionsPerPage}
         exitPath={exitPath}
+        quizKey={quizKey}
       />
     );
   }

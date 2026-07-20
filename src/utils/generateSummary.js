@@ -189,13 +189,15 @@ function getBig5WatchOut(scores) {
  *
  * @param {object}  scores        Big Five scores { O, C, E, A, N } (0–100)
  * @param {boolean} hasCompleted  Whether the Big Five baseline is done
- * @param {object}  quizResults   { mbti?, enneagram?, cake? }
+ * @param {object}  quizResults   { mbti?, mbti_deep?, enneagram?, enneagram_deep?, cake? }
  * @returns {{ body, strengths, watchOut, sourceCount } | null}
  *   Returns null if fewer than 2 data sources are available.
  */
 export function generateProfileSummary({ scores, hasCompleted, quizResults }) {
-  const mbtiResult      = quizResults?.mbti;
-  const enneagramResult = quizResults?.enneagram;
+  // Deep-quiz results are stored under *_deep keys but describe the same
+  // framework — prefer the deep result when both exist.
+  const mbtiResult      = quizResults?.mbti_deep ?? quizResults?.mbti;
+  const enneagramResult = quizResults?.enneagram_deep ?? quizResults?.enneagram;
   const cakeResult      = quizResults?.cake;
 
   const sourceCount = [hasCompleted, !!mbtiResult, !!enneagramResult, !!cakeResult].filter(Boolean).length;

@@ -14,9 +14,11 @@ function readLocal() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return defaultScores;
     const parsed = safeJsonParse(stored, null);
-    // Validate the shape: must be a plain object with expected keys
+    // Validate the shape: must be a plain object with expected keys.
     if (!isPlainObject(parsed)) return defaultScores;
-    return parsed;
+    // Normalize: guarantee all five O/C/E/A/N keys exist as finite 0–100
+    // numbers, so partial/legacy data never produces NaN bars downstream.
+    return clampScores(parsed);
   } catch {
     return defaultScores;
   }
@@ -96,6 +98,16 @@ async function syncGuestQuizResults(userId, remoteResults) {
     }));
   }
 
+  const houseData = readLocalJson('personalens_house');
+  if (houseData?.result?.key && !remoteResults.house) {
+    const r = houseData.result;
+    tasks.push(supabase.rpc('upsert_quiz_result', {
+      p_user_id: userId,
+      p_quiz_key: 'house',
+      p_result: { resultKey: r.key, name: r.name, emoji: r.emoji, trait: r.tagline ?? '', quizName: 'Wizarding House' },
+    }));
+  }
+
   if (tasks.length > 0) {
     const results = await Promise.allSettled(tasks);
     results.forEach((outcome) => {
@@ -108,6 +120,18 @@ async function syncGuestQuizResults(userId, remoteResults) {
   }
 }
 
+// localStorage keys holding personal quiz data, cleared on sign-out so the
+// next person on a shared device can't see the previous user's results.
+const PERSONAL_KEYS = [
+  STORAGE_KEY,
+  `${STORAGE_KEY}_completed`,
+  'personalens_cake',
+  'personalens_mbti',
+  'personalens_enneagram',
+  'personalens_house',
+  'personalens_hottakes',
+];
+
 export function BigFiveProvider({ children }) {
   const { user } = useAuth();
   const [scores, setScores] = useState(readLocal);
@@ -116,6 +140,25 @@ export function BigFiveProvider({ children }) {
   const hasCompletedRef = useRef(hasCompleted);
   // Tracks the live scores value so callbacks don't close over stale state.
   const scoresRef = useRef(scores);
+  // Tracks the previous user so we can detect a sign-out transition.
+  const prevUserIdRef = useRef(null);
+
+  // On sign-out (user → null after being signed in), wipe locally cached
+  // personality data. Guest sessions (never signed in) are untouched.
+  useEffect(() => {
+    if (user) {
+      prevUserIdRef.current = user.id;
+      return;
+    }
+    if (prevUserIdRef.current) {
+      prevUserIdRef.current = null;
+      try {
+        PERSONAL_KEYS.forEach((key) => localStorage.removeItem(key));
+      } catch { /* storage unavailable */ }
+      setScores(defaultScores);
+      setHasCompleted(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     scoresRef.current = scores;
@@ -167,7 +210,9 @@ export function BigFiveProvider({ children }) {
         }
 
         if (data && data.baseline_completed) {
-          setScores(data.big5_scores);
+          // clampScores tolerates null/partial DB values and always returns a
+          // complete, in-range O/C/E/A/N object.
+          setScores(clampScores(data.big5_scores));
           setHasCompleted(true);
         } else {
           const localScores = readLocal();

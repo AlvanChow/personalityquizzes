@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Activity, Brain, CircleDashed, Cake, BookOpen, FlaskConical, Star, ArrowRight } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const frameworks = [
   {
@@ -151,6 +152,7 @@ function Section({ icon: Icon, title, children }) {
 }
 
 export default function Frameworks() {
+  usePageTitle('How It Works — My Personality Quizzes');
   const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-cream-50">

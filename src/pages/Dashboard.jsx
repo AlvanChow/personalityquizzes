@@ -7,9 +7,10 @@ import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
 import QuizCard from '../components/QuizCard';
 import NextQuizBanner from '../components/NextQuizBanner';
+import FeedbackWidget from '../components/FeedbackWidget';
 import { track } from '../utils/analytics';
 import lifeAnalysis from '../data/lifeAnalysis';
-import { getCompletedCount } from '../utils/quizProgression';
+import { getCompletedCount, QUIZ_ORDER } from '../utils/quizProgression';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 
@@ -220,12 +221,19 @@ export default function Dashboard() {
   }
 
   const analyses = useMemo(
-    () => lifeAnalysis.map((category) => ({
-      ...category,
-      analysis: category.getAnalysis(scores),
-    })),
+    () => lifeAnalysis
+      .map((category) => ({
+        ...category,
+        analysis: category.getAnalysis(scores),
+      }))
+      // A missing profile key should skip that card, not crash the page.
+      .filter((entry) => entry.analysis?.summary && Array.isArray(entry.analysis.items)),
     [scores],
   );
+
+  useEffect(() => {
+    document.title = 'Dashboard — My Personality Quizzes';
+  }, []);
 
   useEffect(() => {
     if (!loading && !hasCompleted) navigate('/');
@@ -291,9 +299,9 @@ export default function Dashboard() {
                 Your Personality Profile
               </h1>
               <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full mt-1.5 ${
-                completedCount === 4 ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                completedCount === QUIZ_ORDER.length ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
               }`}>
-                {completedCount === 4 ? '✓ All quizzes completed' : `${completedCount}/4 quizzes completed`}
+                {completedCount === QUIZ_ORDER.length ? '✓ All quizzes completed' : `${completedCount}/${QUIZ_ORDER.length} quizzes completed`}
               </span>
             </div>
             <motion.button
@@ -362,7 +370,7 @@ export default function Dashboard() {
             })}
           </div>
 
-          <div className="flex justify-end mb-12">
+          <div className="flex justify-end mb-6">
             <button
               onClick={() => {
                 track('quiz_retaken', { quiz: 'big5' }, user?.id ?? null);
@@ -373,6 +381,10 @@ export default function Dashboard() {
               <RotateCcw className="w-3 h-3" />
               Retake Assessment
             </button>
+          </div>
+
+          <div className="mb-12">
+            <FeedbackWidget quizKey="big5" delay={0.3} />
           </div>
         </motion.div>
 

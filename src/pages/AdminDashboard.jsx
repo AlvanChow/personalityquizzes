@@ -7,7 +7,7 @@ import { allowAdminFetch } from '../utils/rateLimiter';
 import UserMenu from '../components/UserMenu';
 import {
   Users, Activity, BarChart2, CheckCircle,
-  RefreshCw, ChevronLeft, Shield,
+  RefreshCw, ChevronLeft, Shield, Star, Share2, Eye,
 } from 'lucide-react';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -83,6 +83,8 @@ export default function AdminDashboard() {
   const [events, setEvents] = useState([]);
   const [users, setUsers] = useState([]);
   const [eventCounts, setEventCounts] = useState([]);
+  const [feedback, setFeedback] = useState([]);
+  const [shares, setShares] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastRefresh, setLastRefresh] = useState(null);
@@ -107,13 +109,19 @@ export default function AdminDashboard() {
         eventsTodayRes,
         recentEventsRes,
         recentUsersRes,
+        feedbackRes,
+        sharesRes,
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', todayStr),
         supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('baseline_completed', true),
         supabase.from('analytics_events').select('*', { count: 'exact', head: true }).gte('created_at', todayStr),
-        supabase.from('analytics_events').select('id, session_id, user_id, event, properties, created_at').order('created_at', { ascending: false }).limit(200),
-        supabase.from('profiles').select('id, display_name, avatar_url, baseline_completed, quiz_results, created_at').order('created_at', { ascending: false }).limit(30),
+        supabase.from('analytics_events').select('id, session_id, user_id, event, properties, created_at').order('created_at', { ascending: false }).limit(1000),
+        supabase.from('profiles').select('id, display_name, avatar_url, baseline_completed, quiz_results, created_at').order('created_at', { ascending: false }).limit(100),
+        // These two tables arrive with the launch migrations — tolerate errors
+        // so the dashboard still renders if a migration hasn't been applied.
+        supabase.from('quiz_feedback').select('quiz_key, rating, created_at').order('created_at', { ascending: false }).limit(2000),
+        supabase.from('shared_results').select('id, quiz_type, result_key, result_name, view_count, created_at').order('created_at', { ascending: false }).limit(1000),
       ]);
 
       // Compute active users today from recent events
@@ -139,12 +147,18 @@ export default function AdminDashboard() {
       setEvents(recentEventsRes.data ?? []);
       setUsers(recentUsersRes.data ?? []);
       setEventCounts(sortedCounts);
+      setFeedback(feedbackRes.data ?? []);
+      setShares(sharesRes.data ?? []);
       setLastRefresh(new Date());
     } catch (err) {
       setError(err.message ?? 'Failed to load dashboard data.');
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    document.title = 'Admin — My Personality Quizzes';
   }, []);
 
   useEffect(() => {
@@ -318,7 +332,7 @@ export default function AdminDashboard() {
             <section>
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
                 Event Breakdown
-                <span className="ml-1 font-normal normal-case text-gray-400">(last 200)</span>
+                <span className="ml-1 font-normal normal-case text-gray-400">(last 1000)</span>
               </h2>
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-2.5">
                 {loading && eventCounts.length === 0 ? (
@@ -387,6 +401,98 @@ export default function AdminDashboard() {
           </aside>
         </div>
 
+        {/* Quiz accuracy feedback + sharing stats */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <section>
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
+              Quiz Accuracy Ratings
+              <span className="ml-1 font-normal normal-case text-gray-400">(user feedback, 1–5)</span>
+            </h2>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-3">
+              {feedback.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">No feedback yet.</p>
+              ) : (
+                (() => {
+                  const byQuiz = {};
+                  for (const f of feedback) {
+                    (byQuiz[f.quiz_key] ??= []).push(f.rating);
+                  }
+                  return Object.entries(byQuiz)
+                    .map(([quiz, ratings]) => ({
+                      quiz,
+                      count: ratings.length,
+                      avg: ratings.reduce((a, b) => a + b, 0) / ratings.length,
+                    }))
+                    .sort((a, b) => b.count - a.count)
+                    .map(({ quiz, count, avg }) => (
+                      <div key={quiz}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-gray-600">{quiz.replace(/_/g, ' ')}</span>
+                          <span className="font-semibold text-gray-800 flex items-center gap-1">
+                            <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                            {avg.toFixed(2)}
+                            <span className="font-normal text-gray-400 ml-1">({count})</span>
+                          </span>
+                        </div>
+                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-amber-400 rounded-full"
+                            style={{ width: `${(avg / 5) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ));
+                })()
+              )}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
+              Sharing &amp; Virality
+            </h2>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <StatCard
+                icon={Share2}
+                label="Share Links"
+                value={shares.length >= 1000 ? '1000+' : shares.length}
+                sub={`+${shares.filter(s => s.created_at >= startOfToday()).length} today`}
+                color="bg-sky-50 text-sky-500"
+              />
+              <StatCard
+                icon={Eye}
+                label="Share Views"
+                value={shares.reduce((a, s) => a + (s.view_count ?? 0), 0)}
+                sub="across all links"
+                color="bg-rose-50 text-rose-500"
+              />
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Most-viewed shares</p>
+              {shares.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">No shares yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {[...shares]
+                    .sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0))
+                    .slice(0, 6)
+                    .map((s) => (
+                      <div key={s.id} className="flex items-center justify-between text-xs">
+                        <span className="text-gray-600 truncate">
+                          <span className="font-semibold text-gray-800">{s.result_name}</span>
+                          <span className="text-gray-400 ml-1.5">{s.quiz_type}</span>
+                        </span>
+                        <span className="font-semibold text-gray-700 flex items-center gap-1 shrink-0 ml-2">
+                          <Eye className="w-3 h-3 text-gray-400" /> {s.view_count ?? 0}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+
         {/* Recent users */}
         <section>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Recent Users</h2>
@@ -401,18 +507,19 @@ export default function AdminDashboard() {
                     <th className="px-4 py-3 text-center">MBTI</th>
                     <th className="px-4 py-3 text-center">Enneagram</th>
                     <th className="px-4 py-3 text-center">Cake</th>
+                    <th className="px-4 py-3 text-center">House</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {loading && users.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-10 text-center">
+                      <td colSpan={7} className="py-10 text-center">
                         <div className="inline-block w-6 h-6 border-4 border-sky-200 border-t-sky-400 rounded-full animate-spin" />
                       </td>
                     </tr>
                   ) : users.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-gray-400">No users yet.</td>
+                      <td colSpan={7} className="py-8 text-center text-gray-400">No users yet.</td>
                     </tr>
                   ) : (
                     users.map((u) => (
@@ -440,9 +547,10 @@ export default function AdminDashboard() {
                           {fmtTime(u.created_at)}
                         </td>
                         <Dot done={u.baseline_completed} />
-                        <Dot done={quizCompletedCount(u.quiz_results, 'mbti')} />
-                        <Dot done={quizCompletedCount(u.quiz_results, 'enneagram')} />
+                        <Dot done={quizCompletedCount(u.quiz_results, 'mbti') || quizCompletedCount(u.quiz_results, 'mbti_deep')} />
+                        <Dot done={quizCompletedCount(u.quiz_results, 'enneagram') || quizCompletedCount(u.quiz_results, 'enneagram_deep')} />
                         <Dot done={quizCompletedCount(u.quiz_results, 'cake')} />
+                        <Dot done={quizCompletedCount(u.quiz_results, 'house')} />
                       </tr>
                     ))
                   )}

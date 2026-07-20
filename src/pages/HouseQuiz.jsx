@@ -2,16 +2,16 @@ import { useCallback, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
-import { cakeQuestions } from '../data/cakeQuestions';
-import { getCakeResult } from '../data/cakeResults';
+import { houseQuestions } from '../data/houseQuestions';
+import { getHouseResult } from '../data/houseResults';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
 import { usePageTitle } from '../hooks/usePageTitle';
 
-export default function CakeQuiz() {
-  usePageTitle('Cake Quiz — My Personality Quizzes');
+export default function HouseQuiz() {
+  usePageTitle('House Quiz — My Personality Quizzes');
   const navigate = useNavigate();
   const { user } = useAuth();
   const [saveError, setSaveError] = useState(null);
@@ -28,33 +28,33 @@ export default function CakeQuiz() {
     if (submittingRef.current) return;
     submittingRef.current = true;
 
-    // Direct accumulation: sum option values per competency key
-    const scores = {};
-    Object.values(answers).forEach(({ trait, value }) => {
-      scores[trait] = (scores[trait] || 0) + value;
+    // Each answer's value is a house letter — one point per pick.
+    const scores = { g: 0, h: 0, r: 0, s: 0 };
+    Object.values(answers).forEach(({ value }) => {
+      if (value in scores) scores[value] += 1;
     });
 
-    const { key: resultKey, result } = getCakeResult(scores);
+    const result = getHouseResult(scores);
 
-    // Store scores alongside result so CakeResult can render the competency breakdown
-    localStorage.setItem('personalens_cake', JSON.stringify({ result, resultKey, scores }));
+    // Store scores alongside result so HouseResult can render the house breakdown
+    localStorage.setItem('personalens_house', JSON.stringify({ result, resultKey: result.key, scores }));
 
     if (user && supabase && allowQuizSave()) {
       try {
         const { error } = await supabase.rpc('upsert_quiz_result', {
           p_user_id: user.id,
-          p_quiz_key: 'cake',
+          p_quiz_key: 'house',
           p_result: {
-            resultKey,
+            resultKey: result.key,
             name: result.name,
             emoji: result.emoji,
-            trait: result.trait,
-            quizName: 'What Cake Are You?',
+            trait: result.tagline,
+            quizName: 'Wizarding House',
           },
         });
         if (error) throw error;
       } catch (err) {
-        console.error('Failed to save cake quiz result:', err);
+        console.error('Failed to save house quiz result:', err);
         setSaveError('Could not save your result. Please check your connection and try again.');
         submittingRef.current = false;
         return;
@@ -62,9 +62,9 @@ export default function CakeQuiz() {
     }
 
     const duration_ms = startTimeRef.current ? Date.now() - startTimeRef.current : null;
-    track('quiz_completed', { quiz: 'cake', result_key: resultKey, duration_ms }, user?.id ?? null);
+    track('quiz_completed', { quiz: 'house', result_key: result.key, duration_ms }, user?.id ?? null);
 
-    navigate('/quiz/cake/result', { replace: true });
+    navigate('/quiz/house/result', { replace: true });
   }, [navigate, user]);
 
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {
@@ -92,13 +92,13 @@ export default function CakeQuiz() {
         </p>
       )}
       <QuizShell
-        questions={cakeQuestions}
+        questions={houseQuestions}
         onComplete={handleComplete}
         renderOptions={renderOptions}
-        quizKey="cake"
+        quizKey="house"
         userId={user?.id ?? null}
-        exitPath="/dashboard"
-        questionsPerPage={6}
+        exitPath="/"
+        questionsPerPage={5}
       />
     </>
   );

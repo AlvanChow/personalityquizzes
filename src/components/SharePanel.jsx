@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, Link, Check, X } from 'lucide-react';
+import { Share2, Link, Check, X, ImageDown, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import {
@@ -9,6 +9,7 @@ import {
   openTwitterShare,
   openWhatsAppShare,
 } from '../utils/sharing';
+import { shareResultStory } from '../utils/storyCard';
 
 // Twitter/X SVG icon (lucide doesn't have one post-rebrand)
 function XIcon({ className }) {
@@ -34,16 +35,19 @@ function WhatsAppIcon({ className }) {
  * Props:
  *   quizType  — 'mbti' | 'enneagram' | 'cake' | 'big5'
  *   result    — the result object from localStorage (must have .name, .emoji, etc.)
+ *   scores    — optional raw quiz scores, rendered as bars on the story image
  *   className — optional extra classes for the trigger button
  *   btnColor  — Tailwind gradient classes for the trigger button (defaults to coral)
  */
-export default function SharePanel({ quizType, result, className = '', btnColor = 'from-coral-400 to-coral-500' }) {
+export default function SharePanel({ quizType, result, scores = null, className = '', btnColor = 'from-coral-400 to-coral-500' }) {
   const { user } = useAuth();
   const [isOpen, setIsOpen]       = useState(false);
   const [shareUrl, setShareUrl]   = useState(null);
   const [isCreating, setCreating] = useState(false);
   const [copied, setCopied]       = useState(false);
   const [error, setError]         = useState(null);
+  const [storyBusy, setStoryBusy] = useState(false);
+  const [storyNote, setStoryNote] = useState(null);
 
   async function openPanel() {
     setIsOpen(true);
@@ -52,7 +56,7 @@ export default function SharePanel({ quizType, result, className = '', btnColor 
     setCreating(true);
     setError(null);
     try {
-      const url = await createShareableLink(quizType, result);
+      const url = await createShareableLink(quizType, result, scores);
       if (url) {
         setShareUrl(url);
         track('share_link_created', { quiz: quizType }, user?.id ?? null);
@@ -68,6 +72,26 @@ export default function SharePanel({ quizType, result, className = '', btnColor 
   }
 
   function close() { setIsOpen(false); }
+
+  async function handleStory() {
+    if (storyBusy) return;
+    setStoryBusy(true);
+    setStoryNote(null);
+    try {
+      const outcome = await shareResultStory(quizType, result, scores, shareUrl);
+      if (outcome === 'downloaded') {
+        setStoryNote('Image saved! Add it to your story 📲');
+      }
+      if (outcome !== 'cancelled') {
+        track('share_button_clicked', { quiz: quizType, platform: 'story', outcome }, user?.id ?? null);
+      }
+    } catch (err) {
+      console.error('[SharePanel] story share failed:', err);
+      setStoryNote('Could not create the image on this device.');
+    } finally {
+      setStoryBusy(false);
+    }
+  }
 
   async function handleCopy() {
     if (!shareUrl) return;
@@ -175,6 +199,30 @@ export default function SharePanel({ quizType, result, className = '', btnColor 
                 ) : error ? (
                   <p className="text-xs text-red-500 mb-5 text-center">{error}</p>
                 ) : null}
+
+                {/* Primary: 1-tap Instagram-story image */}
+                <motion.button
+                  onClick={handleStory}
+                  disabled={storyBusy}
+                  whileTap={{ scale: 0.98 }}
+                  className={`w-full mb-3 py-4 rounded-xl bg-gradient-to-r ${btnColor} text-white font-extrabold shadow-md flex items-center justify-center gap-2 disabled:opacity-60`}
+                >
+                  {storyBusy ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      Creating your story…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      Share as Story
+                      <ImageDown className="w-4 h-4 opacity-70" />
+                    </>
+                  )}
+                </motion.button>
+                {storyNote && (
+                  <p className="text-xs text-center text-gray-500 mb-3" role="status">{storyNote}</p>
+                )}
 
                 {/* Action buttons */}
                 <div className="grid grid-cols-3 gap-3">
