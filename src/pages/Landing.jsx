@@ -92,7 +92,48 @@ export default function Landing() {
 
       <main className="flex-1 flex flex-col items-center px-6 pb-24">
 
-        <div className="text-center max-w-3xl mx-auto mt-10 md:mt-14 mb-10">
+        <div className="relative text-center max-w-3xl mx-auto mt-10 md:mt-14 mb-10">
+          {/* Ambient aura + orbiting quiz glyphs — the quiz-world energy, both themes. */}
+          <div aria-hidden="true" className="hero-aura hero-aura-a" />
+          <div aria-hidden="true" className="hero-aura hero-aura-b" />
+          <div aria-hidden="true" className="hero-orbit hidden lg:block">
+            <span className="orb" style={{ transform: 'translate(0px, -250px)', animationDelay: '-3.6s' }}>
+              <QuizGlyph quizKey="big5" size={30} />
+            </span>
+            <span className="orb" style={{ transform: 'translate(176px, -232px)', animationDelay: '-4.5s' }}>
+              <QuizGlyph quizKey="mbti" size={30} />
+            </span>
+            <span className="orb" style={{ transform: 'translate(332px, -177px)', animationDelay: '-0.0s' }}>
+              <QuizGlyph quizKey="enneagram" size={30} />
+            </span>
+            <span className="orb" style={{ transform: 'translate(436px, -94px)', animationDelay: '-1.8s' }}>
+              <QuizGlyph quizKey="house" size={30} />
+            </span>
+            <span className="orb" style={{ transform: 'translate(436px, 94px)', animationDelay: '-0.9s' }}>
+              <QuizGlyph quizKey="cake" size={30} />
+            </span>
+            <span className="orb" style={{ transform: 'translate(415px, 117px)', animationDelay: '-2.7s' }}>
+              <QuizGlyph quizKey="naruto" size={30} />
+            </span>
+            <span className="orb" style={{ transform: 'translate(-415px, 117px)', animationDelay: '-1.8s' }}>
+              <QuizGlyph quizKey="nba" size={30} />
+            </span>
+            <span className="orb" style={{ transform: 'translate(-436px, 94px)', animationDelay: '-3.6s' }}>
+              <QuizGlyph quizKey="pokemon" size={30} />
+            </span>
+            <span className="orb" style={{ transform: 'translate(-436px, -94px)', animationDelay: '-5.4s' }}>
+              <QuizGlyph quizKey="starwars" size={30} />
+            </span>
+            <span className="orb" style={{ transform: 'translate(-332px, -177px)', animationDelay: '-0.9s' }}>
+              <QuizGlyph quizKey="love_language" size={30} />
+            </span>
+            <span className="orb" style={{ transform: 'translate(-176px, -232px)', animationDelay: '-2.7s' }}>
+              <QuizGlyph quizKey="ikigai" size={30} />
+            </span>
+            <span className="orb" style={{ transform: 'translate(470px, 0px)', animationDelay: '-0.0s' }}>
+              <QuizGlyph quizKey="eq" size={30} />
+            </span>
+          </div>
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -180,7 +221,7 @@ export default function Landing() {
                     <button
                       key={t.key}
                       onClick={t.action ?? (() => trackAndNavigate(t.key, t.to))}
-                      className="text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-coral-300 transition-all group flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
+                      className="text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm transition-all duration-200 group flex flex-col hover:-translate-y-0.5 hover:border-coral-300 hover:shadow-[0_10px_32px_-14px_rgba(240,104,48,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
                     >
                       <div>
                         {/* Fixed icon+title row (min-height = two title lines so a
@@ -188,7 +229,7 @@ export default function Landing() {
                             the description always spans the full card width —
                             identical geometry in every card, no float wrapping. */}
                         <div className="flex items-start gap-2.5 min-h-[40px]">
-                          <span className="shrink-0 mt-0.5">
+                          <span className="shrink-0 mt-0.5 transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-3">
                             <QuizGlyph quizKey={t.key} emoji={t.emoji} size={30} />
                           </span>
                           <h3 className="text-sm font-extrabold text-gray-900 leading-snug line-clamp-2">{t.title}</h3>

@@ -306,3 +306,31 @@ body {
 .dark .to-yellow-100{--tw-gradient-to:color-mix(in srgb, #facc15 19%, #1c1a27) var(--tw-gradient-to-position);}
 .dark .to-yellow-50{--tw-gradient-to:color-mix(in srgb, #facc15 13%, #1c1a27) var(--tw-gradient-to-position);}
 .dark .to-zinc-50{--tw-gradient-to:color-mix(in srgb, #a1a1aa 13%, #1c1a27) var(--tw-gradient-to-position);}
+
+
+/* ─── Landing hero: ambient auras + orbiting quiz glyphs ─── */
+.hero-aura {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  filter: blur(60px); z-index: -1;
+}
+.hero-aura-a { width: 420px; height: 420px; top: -120px; left: -140px;
+  background: radial-gradient(circle, rgba(240,104,48,.16), transparent 65%); }
+.hero-aura-b { width: 380px; height: 380px; bottom: -140px; right: -120px;
+  background: radial-gradient(circle, rgba(59,154,229,.14), transparent 65%); }
+.dark .hero-aura-a { background: radial-gradient(circle, rgba(255,138,92,.14), transparent 65%); }
+.dark .hero-aura-b { background: radial-gradient(circle, rgba(59,154,229,.12), transparent 65%); }
+
+.hero-orbit {
+  position: absolute; left: 50%; top: 50%; width: 0; height: 0;
+  pointer-events: none;
+}
+.hero-orbit .orb {
+  position: absolute; left: -15px; top: -15px;
+  opacity: .55;
+  animation: orbFloat 7s ease-in-out infinite alternate;
+}
+.dark .hero-orbit .orb { opacity: .5; }
+@keyframes orbFloat { from { margin-top: -7px; } to { margin-top: 7px; } }
+@media (prefers-reduced-motion: reduce) {
+  .hero-orbit .orb { animation: none; }
+}
