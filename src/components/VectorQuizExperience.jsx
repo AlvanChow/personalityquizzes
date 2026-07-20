@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import SharePanel from '../components/SharePanel';
-import FeedbackWidget from '../components/FeedbackWidget';
-import { CHARS, Q, AXMAX, SPECTRA, emblem } from '../data/vectorQuizzes/naruto';
+import SharePanel from './SharePanel';
+import FeedbackWidget from './FeedbackWidget';
+import { emblem } from '../data/vectorQuizzes/glyphs';
 import { lighten, userVector, ranked, matchPct } from '../utils/vectorQuiz';
 import { storageKeyFor } from '../data/quizzes';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,34 +10,14 @@ import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
 import { safeLocalStorageRead } from '../utils/security';
+import '../pages/narutoQuiz.css';
 
-import './narutoQuiz.css';
+// The shared five-screen vector-quiz experience: seal intro → auto-advancing
+// Likert dots → aura-themed result (emblem, tier badge, match %, spectra,
+// kindred/foil, clickable close matches) → full roster gallery → per-result
+// profiles. Every vector quiz renders through this component with its own
+// data module (see src/data/vectorQuizzes/) driving copy, theme, and roster.
 
-// CJK display fonts are loaded from Google Fonts at runtime, only on this
-// page — self-hosting them would ship hundreds of subset @font-face rules
-// (~415 KB gzipped CSS) for glyphs almost no visitor needs. The design
-// degrades gracefully to Georgia/system stacks while they load.
-const FONTS_ID = 'nq-fonts';
-const FONTS_HREF = 'https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Yuji+Syuku&display=swap';
-function ensureFonts() {
-  if (document.getElementById(FONTS_ID)) return;
-  for (const [rel, href, cross] of [
-    ['preconnect', 'https://fonts.googleapis.com', false],
-    ['preconnect', 'https://fonts.gstatic.com', true],
-  ]) {
-    const l = document.createElement('link');
-    l.rel = rel; l.href = href;
-    if (cross) l.crossOrigin = 'anonymous';
-    document.head.appendChild(l);
-  }
-  const link = document.createElement('link');
-  link.id = FONTS_ID;
-  link.rel = 'stylesheet';
-  link.href = FONTS_HREF;
-  document.head.appendChild(link);
-}
-
-const QUIZ_KEY = 'naruto';
 const LIKERT = [
   { v: -1, size: 'lg', side: 'l', label: 'Strongly disagree' },
   { v: -0.5, size: 'md', side: 'l', label: 'Disagree' },
@@ -47,6 +27,25 @@ const LIKERT = [
 ];
 const REDUCE = typeof window !== 'undefined'
   && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+// Optional per-quiz display fonts (naruto's CJK set), injected once.
+function ensureFonts(id, href) {
+  if (!href || document.getElementById(id)) return;
+  for (const [rel, h, cross] of [
+    ['preconnect', 'https://fonts.googleapis.com', false],
+    ['preconnect', 'https://fonts.gstatic.com', true],
+  ]) {
+    const l = document.createElement('link');
+    l.rel = rel; l.href = h;
+    if (cross) l.crossOrigin = 'anonymous';
+    document.head.appendChild(l);
+  }
+  const link = document.createElement('link');
+  link.id = id;
+  link.rel = 'stylesheet';
+  link.href = href;
+  document.head.appendChild(link);
+}
 
 // Emblem SVG comes from our own static data — no user input reaches it.
 function Emblem({ ch, size, noSpin = false, reveal = false }) {
@@ -60,14 +59,15 @@ function Emblem({ ch, size, noSpin = false, reveal = false }) {
   );
 }
 
-function TierBadge({ tier, className = '' }) {
+function TierBadge({ tier, labels, className = '' }) {
   return tier === 'cut'
-    ? <span className={`badge badge-cut ${className}`}>Deep Cut</span>
-    : <span className={`badge badge-front ${className}`}>Front Line</span>;
+    ? <span className={`badge badge-cut ${className}`}>{labels.cut}</span>
+    : <span className={`badge badge-front ${className}`}>{labels.front}</span>;
 }
 
-function RelBlock({ charKey, label }) {
-  const c = CHARS[charKey];
+function RelBlock({ chars, charKey, label }) {
+  const c = chars[charKey];
+  if (!c) return null;
   return (
     <div className="rel">
       <span className="rdot" style={{ background: c.aura }} />
@@ -80,7 +80,7 @@ function RelBlock({ charKey, label }) {
 }
 
 // Spectrum bars; marks slide from center to position after mount.
-function Spectra({ vector, heading }) {
+function Spectra({ spectra, vector, heading }) {
   const [placed, setPlaced] = useState(false);
   useEffect(() => {
     const raf = requestAnimationFrame(() => requestAnimationFrame(() => setPlaced(true)));
@@ -89,7 +89,7 @@ function Spectra({ vector, heading }) {
   return (
     <div className="spectra">
       <h3>{heading}</h3>
-      {SPECTRA.map((sp, ax) => {
+      {spectra.map((sp, ax) => {
         const pos = ((vector[ax] + 1) / 2) * 100;
         return (
           <div className="spec" key={sp.l}>
@@ -107,7 +107,9 @@ function Spectra({ vector, heading }) {
   );
 }
 
-export default function NarutoQuiz() {
+export default function VectorQuizExperience({ def }) {
+  const { key: QUIZ_KEY, CHARS, Q, AXMAX, SPECTRA } = def;
+  const tierLabels = def.tierLabels ?? { front: 'Front Line', cut: 'Deep Cut' };
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -116,7 +118,7 @@ export default function NarutoQuiz() {
   const stored = useMemo(
     () => safeLocalStorageRead(storageKeyFor(QUIZ_KEY), null),
     // Re-read whenever we land on the result route.
-    [onResultRoute], // eslint-disable-line react-hooks/exhaustive-deps
+    [QUIZ_KEY, onResultRoute], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const [screen, setScreen] = useState(onResultRoute ? 'result' : 'intro');
@@ -129,26 +131,29 @@ export default function NarutoQuiz() {
   const viewedRef = useRef(false);
   const submittingRef = useRef(false);
 
+  const nChars = Object.keys(CHARS).length;
+  const nFront = Object.values(CHARS).filter((c) => c.tier === 'front').length;
+
   // The user vector driving the result screen: fresh answers if we just
   // finished, otherwise the stored one from a previous run.
   const uv = useMemo(() => {
     if (answers.some((a) => a !== null)) return userVector(answers, Q, AXMAX);
-    if (Array.isArray(stored?.uv) && stored.uv.length === 4) return stored.uv;
+    if (Array.isArray(stored?.uv) && stored.uv.length === AXMAX.length) return stored.uv;
     return null;
-  }, [answers, stored]);
-  const list = useMemo(() => (uv ? ranked(uv, CHARS) : null), [uv]);
+  }, [answers, stored, Q, AXMAX]);
+  const list = useMemo(() => (uv ? ranked(uv, CHARS) : null), [uv, CHARS]);
 
   useEffect(() => {
-    ensureFonts();
-    document.title = 'Which Naruto Character Are You? · My Personality Quizzes';
+    ensureFonts(`vq-fonts-${QUIZ_KEY}`, def.fontsHref);
+    document.title = `${def.title.pre}${def.title.em}${def.title.post} · My Personality Quizzes`.replace(/\s+/g, ' ');
     return () => { document.title = 'My Personality Quizzes'; };
-  }, []);
+  }, [QUIZ_KEY, def]);
 
   // Route → screen sync (supports back/forward + deep links).
   useEffect(() => {
     if (onResultRoute) {
       if (!stored?.resultKey && !list) {
-        navigate('/quiz/naruto', { replace: true });
+        navigate(`/quiz/${QUIZ_KEY}`, { replace: true });
         return;
       }
       setFocusKey((k) => k ?? stored?.resultKey ?? list?.[0]?.k ?? null);
@@ -162,7 +167,7 @@ export default function NarutoQuiz() {
     if (screen !== 'result' || viewedRef.current) return;
     viewedRef.current = true;
     track('quiz_result_viewed', { quiz: QUIZ_KEY }, user?.id ?? null);
-  }, [screen, user?.id]);
+  }, [screen, user?.id, QUIZ_KEY]);
 
   const begin = useCallback(() => {
     startRef.current = Date.now();
@@ -170,7 +175,7 @@ export default function NarutoQuiz() {
     setIdx(0);
     setScreen('quiz');
     track('quiz_started', { quiz: QUIZ_KEY }, user?.id ?? null);
-  }, [user?.id]);
+  }, [user?.id, QUIZ_KEY, Q.length]);
 
   const finish = useCallback(async (finalAnswers) => {
     if (submittingRef.current) return;
@@ -179,17 +184,21 @@ export default function NarutoQuiz() {
     const vec = userVector(finalAnswers, Q, AXMAX);
     const rankedList = ranked(vec, CHARS);
     const top = rankedList[0];
+    const emoji = top.c.emoji ?? def.shareEmoji;
 
     const result = {
+      key: top.k,
       name: top.c.name,
-      emoji: '🍥',
+      emoji,
       tagline: top.c.tag,
       description: top.c.desc,
       strengths: top.c.traits,
+      // Compat contracts (e.g. cake's trait letter) ride along per-character.
+      ...(top.c.store ?? {}),
     };
     // Short-keyed integer scores so the share snapshot keeps them
     // (keys must match ^[A-Za-z0-9]{1,4}$, values finite).
-    const scores = { lg: Math.round(vec[0] * 100), so: Math.round(vec[1] * 100), dr: Math.round(vec[2] * 100), ex: Math.round(vec[3] * 100) };
+    const scores = Object.fromEntries(vec.map((v, i) => [`a${i}`, Math.round(v * 100)]));
     localStorage.setItem(storageKeyFor(QUIZ_KEY), JSON.stringify({
       quizKey: QUIZ_KEY,
       resultKey: top.k,
@@ -205,11 +214,11 @@ export default function NarutoQuiz() {
         const { error } = await supabase.rpc('upsert_quiz_result', {
           p_user_id: user.id,
           p_quiz_key: QUIZ_KEY,
-          p_result: { resultKey: top.k, name: top.c.name, emoji: '🍥', tagline: top.c.tag, quizName: 'Naruto Character Quiz' },
+          p_result: { resultKey: top.k, name: top.c.name, emoji, tagline: top.c.tag, quizName: def.quizName },
         });
         if (error) throw error;
       } catch (err) {
-        console.error('Failed to save naruto quiz result:', err);
+        console.error(`Failed to save ${QUIZ_KEY} quiz result:`, err);
       }
     }
 
@@ -218,35 +227,39 @@ export default function NarutoQuiz() {
 
     setFocusKey(top.k);
     submittingRef.current = false;
-    navigate('/quiz/naruto/result', { replace: true });
-  }, [user, navigate]);
+    navigate(`/quiz/${QUIZ_KEY}/result`, { replace: true });
+  }, [user, navigate, QUIZ_KEY, Q, AXMAX, CHARS, def]);
 
   const pick = useCallback((val) => {
     setAnswers((prev) => {
       const next = [...prev];
       next[idx] = val;
-      // Advance (or finish) after the pulse beat, like the original.
       setTimeout(() => {
         if (idx < Q.length - 1) setIdx(idx + 1);
         else finish(next);
       }, REDUCE ? 60 : 340);
       return next;
     });
-  }, [idx, finish]);
+  }, [idx, finish, Q.length]);
 
   // ── aura follows the focused screen ──
   const focusChar = focusKey ? CHARS[focusKey] : null;
   const detailChar = detailKey ? CHARS[detailKey] : null;
+  const baseAura = def.theme?.baseAura ?? '#cba24a';
   const aura = screen === 'result' && focusChar ? focusChar.aura
     : screen === 'detail' && detailChar ? detailChar.aura
-    : '#cba24a';
-  const auraVars = { '--aura': aura, '--aura-l': lighten(aura, 0.4) };
+    : baseAura;
+  const rootVars = {
+    ...(def.theme?.vars ?? {}),
+    '--aura': aura,
+    '--aura-l': lighten(aura, 0.4),
+  };
 
   const galleryOrder = useMemo(() =>
     Object.keys(CHARS).slice().sort((a, b) => {
       if (CHARS[a].tier !== CHARS[b].tier) return CHARS[a].tier === 'front' ? -1 : 1;
       return 0;
-    }), []);
+    }), [CHARS]);
 
   const scrollTop = () => window.scrollTo({ top: 0, behavior: REDUCE ? 'auto' : 'smooth' });
 
@@ -256,14 +269,14 @@ export default function NarutoQuiz() {
   if (screen === 'intro') {
     body = (
       <section className="intro">
-        <div className="seal-mark"><span className="ring" /><span className="ring r2" /><span className="kanji">忍</span></div>
-        <p className="eyebrow solo">Shinobi Alignment Test</p>
-        <h1>Which <span className="em">Naruto</span><br />Character Are You?</h1>
-        <p className="lede">Ten statements, one honest read of your ninja way. Answer for the version of you that shows up when it counts.</p>
+        <div className="seal-mark"><span className="ring" /><span className="ring r2" /><span className="kanji">{def.seal.char}</span></div>
+        <p className="eyebrow solo">{def.eyebrow}</p>
+        <h1>{def.title.pre}<span className="em">{def.title.em}</span>{def.title.post}</h1>
+        <p className="lede">{def.lede}</p>
         <div className="cta">
-          <button className="btn btn-primary" onClick={begin}>Begin the trial</button>
-          <button className="btn btn-ghost" onClick={() => setScreen('gallery')}>Meet all 23 characters</button>
-          <p className="fine"><b>23</b> possible results <span className="dot" /> 17 front-line <span className="dot" /> 6 deep cuts</p>
+          <button className="btn btn-primary" onClick={begin}>{def.beginLabel ?? 'Begin'}</button>
+          <button className="btn btn-ghost" onClick={() => setScreen('gallery')}>Meet all {nChars} {def.rosterNoun}</button>
+          <p className="fine"><b>{nChars}</b> possible results <span className="dot" /> {nFront} {tierLabels.front.toLowerCase()} <span className="dot" /> {nChars - nFront} {tierLabels.cut.toLowerCase()}s</p>
         </div>
         <button className="linkbtn" onClick={() => navigate('/')}>← All quizzes</button>
       </section>
@@ -315,10 +328,13 @@ export default function NarutoQuiz() {
     const match = matchPct(entry.sim);
     const others = list.filter((r) => r.k !== entry.k).slice(0, 6);
     const shareResult = {
-      name: top.name, emoji: '🍥', tagline: top.tag,
+      key: entry.k,
+      name: top.name,
+      emoji: top.emoji ?? def.shareEmoji,
+      tagline: top.tag,
       description: top.desc,
     };
-    const shareScores = uv ? { lg: Math.round(uv[0] * 100), so: Math.round(uv[1] * 100), dr: Math.round(uv[2] * 100), ex: Math.round(uv[3] * 100) } : null;
+    const shareScores = uv ? Object.fromEntries(uv.map((v, i) => [`a${i}`, Math.round(v * 100)])) : null;
 
     body = (
       <section className="result">
@@ -330,25 +346,25 @@ export default function NarutoQuiz() {
             <h2 className="res-name">{top.name}</h2>
           </div>
           <div className="res-meta">
-            <TierBadge tier={top.tier} />
+            <TierBadge tier={top.tier} labels={tierLabels} />
             <span className="match"><b>{match}%</b> alignment</span>
           </div>
           <div className="res-card">
             <p className="res-desc">{top.desc}</p>
             <div className="traits">{top.traits.map((t) => <span className="chip" key={t}>{t}</span>)}</div>
             <div className="relations">
-              <RelBlock charKey={top.kindred} label="Kindred spirit" />
-              <RelBlock charKey={top.rival} label="Your foil" />
+              <RelBlock chars={CHARS} charKey={top.kindred} label="Kindred spirit" />
+              <RelBlock chars={CHARS} charKey={top.rival} label="Your foil" />
             </div>
           </div>
-          {uv && <Spectra vector={uv} heading="Where you landed" />}
+          {uv && <Spectra spectra={SPECTRA} vector={uv} heading="Where you landed" />}
           <div className="res-actions">
             <button
               className="btn btn-primary"
               onClick={() => {
                 track('quiz_retaken', { quiz: QUIZ_KEY }, user?.id ?? null);
                 viewedRef.current = false;
-                navigate('/quiz/naruto');
+                navigate(`/quiz/${QUIZ_KEY}`);
                 setScreen('intro');
               }}
             >
@@ -357,7 +373,7 @@ export default function NarutoQuiz() {
             <button
               className="btn btn-ghost"
               onClick={() => {
-                const txt = `I got ${top.name} — "${top.tag}" (${match}% match) on the Which Naruto Character Are You? test. mypersonalityquizzes.com/quiz/naruto`;
+                const txt = def.copyLine(top.name, top.tag, match);
                 const done = () => { setCopied(true); setTimeout(() => setCopied(false), 1800); };
                 if (navigator.clipboard?.writeText) navigator.clipboard.writeText(txt).then(done).catch(done);
                 else done();
@@ -365,7 +381,7 @@ export default function NarutoQuiz() {
             >
               {copied ? 'Copied ✓' : 'Copy my result'}
             </button>
-            <SharePanel quizType={QUIZ_KEY} result={shareResult} scores={shareScores} btnColor="from-orange-400 to-red-500" />
+            <SharePanel quizType={QUIZ_KEY} result={shareResult} scores={shareScores} btnColor={def.shareGradient} />
           </div>
           <div className="also">
             <h3 className="also-title">Other close matches</h3>
@@ -387,14 +403,14 @@ export default function NarutoQuiz() {
                 </div>
               ))}
             </div>
-            <button className="linkbtn" onClick={() => { setScreen('gallery'); scrollTop(); }}>Browse all 23 characters →</button>
+            <button className="linkbtn" onClick={() => { setScreen('gallery'); scrollTop(); }}>Browse all {nChars} {def.rosterNoun} →</button>
           </div>
           <div style={{ marginTop: 28, textAlign: 'left' }}>
             <FeedbackWidget quizKey={QUIZ_KEY} />
           </div>
           <button className="linkbtn" onClick={() => navigate('/dashboard')}>← Back to my results</button>
         </div>
-        <p className="footer">Original emblems generated for this quiz. Naruto and its characters are © Masashi Kishimoto / Shueisha — this is an unofficial fan-made personality test.</p>
+        <p className="footer">{def.disclaimer}</p>
       </section>
     );
   }
@@ -404,7 +420,7 @@ export default function NarutoQuiz() {
       <section className="gallery">
         <div className="gallery-head">
           <p className="eyebrow solo">The Roster</p>
-          <h2 className="gtitle">All 23 Characters</h2>
+          <h2 className="gtitle">All {nChars} {def.rosterNoun.charAt(0).toUpperCase() + def.rosterNoun.slice(1)}</h2>
           <p className="gsub">Tap anyone to read their profile and see where they land on each spectrum.</p>
         </div>
         <div className="ggrid">
@@ -420,7 +436,7 @@ export default function NarutoQuiz() {
                 <Emblem ch={c} size={92} noSpin />
                 <div className="gname">{c.name}</div>
                 <div className="gtag">{c.tag}</div>
-                <TierBadge tier={c.tier} className="gbadge" />
+                <TierBadge tier={c.tier} labels={tierLabels} className="gbadge" />
               </button>
             );
           })}
@@ -438,25 +454,25 @@ export default function NarutoQuiz() {
     const c = detailChar;
     body = (
       <section className="result">
-        <p className="eyebrow">Character Profile</p>
+        <p className="eyebrow">Profile</p>
         <div className="emblem-stage"><Emblem ch={c} size={210} reveal /></div>
         <div className="res-head stagger">
           <div>
             <div className="res-tag">{c.tag}</div>
             <h2 className="res-name">{c.name}</h2>
           </div>
-          <div className="res-meta"><TierBadge tier={c.tier} /></div>
+          <div className="res-meta"><TierBadge tier={c.tier} labels={tierLabels} /></div>
           <div className="res-card">
             <p className="res-desc">{c.desc}</p>
             <div className="traits">{c.traits.map((t) => <span className="chip" key={t}>{t}</span>)}</div>
             <div className="relations">
-              <RelBlock charKey={c.kindred} label="Kindred spirit" />
-              <RelBlock charKey={c.rival} label="Their foil" />
+              <RelBlock chars={CHARS} charKey={c.kindred} label="Kindred spirit" />
+              <RelBlock chars={CHARS} charKey={c.rival} label="Their foil" />
             </div>
           </div>
-          <Spectra vector={c.v} heading="Where they land" key={detailKey} />
+          <Spectra spectra={SPECTRA} vector={c.v} heading="Where they land" key={detailKey} />
           <div className="res-actions">
-            <button className="btn btn-primary" onClick={() => { setScreen('gallery'); scrollTop(); }}>← All characters</button>
+            <button className="btn btn-primary" onClick={() => { setScreen('gallery'); scrollTop(); }}>← All {def.rosterNoun}</button>
             <button className="btn btn-ghost" onClick={begin}>Take the quiz</button>
           </div>
         </div>
@@ -465,7 +481,7 @@ export default function NarutoQuiz() {
   }
 
   return (
-    <div className="nq" style={auraVars}>
+    <div className="nq" style={rootVars}>
       <div className="bg" aria-hidden="true">
         <div className="glow g1" />
         <div className="glow g2" />

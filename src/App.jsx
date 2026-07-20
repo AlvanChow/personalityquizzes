@@ -1,11 +1,12 @@
 import { useEffect, useRef, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { BigFiveProvider } from './contexts/BigFiveContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import SiteHeader from './components/SiteHeader';
 import { useAuth } from './contexts/AuthContext';
 import { track } from './utils/analytics';
+import { isVectorQuiz } from './data/vectorQuizzes/registry';
 
 // Landing is loaded eagerly since it's the entry point for most users.
 import Landing from './pages/Landing';
@@ -28,7 +29,7 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const SharedResult = lazy(() => import('./pages/SharedResult'));
 const Circle = lazy(() => import('./pages/Circle'));
 const HouseQuiz = lazy(() => import('./pages/HouseQuiz'));
-const NarutoQuiz = lazy(() => import('./pages/NarutoQuiz'));
+const VectorQuizPage = lazy(() => import('./pages/VectorQuizPage'));
 const HouseResult = lazy(() => import('./pages/HouseResult'));
 const HotTakes = lazy(() => import('./pages/HotTakes'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -54,6 +55,14 @@ function RouteTracker() {
 }
 
 // Shows a spinner while auth session is being resolved so pages never flash blank.
+// Route dispatcher: vector-format quizzes render the immersive experience,
+// everything else uses the generic catalog runner/result.
+function QuizDispatch({ kind }) {
+  const { quizKey } = useParams();
+  if (isVectorQuiz(quizKey)) return <VectorQuizPage />;
+  return kind === 'quiz' ? <CatalogQuiz /> : <CatalogResult />;
+}
+
 function AppRoutes() {
   const { loading } = useAuth();
 
@@ -91,12 +100,12 @@ function AppRoutes() {
           <Route path="/quiz/enneagram-deep" element={<EnneagramDeepQuiz />} />
           <Route path="/quiz/house" element={<HouseQuiz />} />
           <Route path="/quiz/house/result" element={<HouseResult />} />
-          <Route path="/quiz/naruto" element={<NarutoQuiz />} />
-          <Route path="/quiz/naruto/result" element={<NarutoQuiz />} />
           <Route path="/hot-takes" element={<HotTakes />} />
-          {/* Generic catalog quizzes — static routes above always win over :quizKey. */}
-          <Route path="/quiz/:quizKey" element={<CatalogQuiz />} />
-          <Route path="/quiz/:quizKey/result" element={<CatalogResult />} />
+          {/* Generic quizzes — static routes above always win over :quizKey.
+              Vector-format quizzes (registry) get the immersive experience;
+              everything else falls through to the catalog runner. */}
+          <Route path="/quiz/:quizKey" element={<QuizDispatch kind="quiz" />} />
+          <Route path="/quiz/:quizKey/result" element={<QuizDispatch kind="result" />} />
           <Route path="/exercise/flower-petal" element={<FlowerPetal />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/how-it-works" element={<Frameworks />} />
