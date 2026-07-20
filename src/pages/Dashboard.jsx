@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Cake, Brain, CircleDashed, Share2, Check, Layers, ArrowRight, RotateCcw, ChevronDown } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
-import UserMenu from '../components/UserMenu';
 import QuizCard from '../components/QuizCard';
 import NextQuizBanner from '../components/NextQuizBanner';
 import FeedbackWidget from '../components/FeedbackWidget';
@@ -287,23 +286,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-cream-50">
-      <header className="px-6 py-4 border-b border-gray-200 bg-white sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <button onClick={() => navigate('/')} className="text-lg font-extrabold tracking-tight text-gray-900">
-            My Personality <span className="text-coral-500">Quizzes</span>
-          </button>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/how-it-works')}
-              className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors hidden sm:block"
-            >
-              How It Works
-            </button>
-            <UserMenu />
-          </div>
-        </div>
-      </header>
-
       <main className="px-6 py-10 max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
