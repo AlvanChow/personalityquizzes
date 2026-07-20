@@ -7,6 +7,7 @@ import UserMenu from '../components/UserMenu';
 import { ArrowRight, Sparkles, ChevronDown, Compass, Popcorn, Flame, Layers, FlaskConical } from 'lucide-react';
 import { track } from '../utils/analytics';
 import { getQuizzesByCategory, getQuizPath } from '../data/quizzes';
+import QuizGlyph from '../components/QuizGlyph';
 
 // Normalize a catalog entry to the shared card shape.
 const fromCatalog = (meta) => ({
@@ -195,18 +196,22 @@ export default function Landing() {
                     <p className="text-xs md:text-sm text-gray-500 font-medium">{section.blurb}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {/* items-start keeps every card hugging its own content instead
+                    of stretching to the tallest card in the row. */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 items-start">
                   {section.tests.map((t) => (
                     <button
                       key={t.key}
                       onClick={t.action ?? (() => trackAndNavigate(t.key, t.to))}
-                      className="text-left p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-coral-300 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
+                      className="text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-coral-300 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
                     >
-                      {/* Icon floats so the title and description wrap around it — keeps cards compact. */}
-                      <span className="float-left text-2xl leading-none mr-2.5 mt-0.5">{t.emoji}</span>
+                      {/* Icon floats so the title and description wrap around it. */}
+                      <span className="float-left mr-2.5 mt-0.5">
+                        <QuizGlyph quizKey={t.key} emoji={t.emoji} size={30} />
+                      </span>
                       <h3 className="text-sm font-extrabold text-gray-900 leading-snug">{t.title}</h3>
                       <p className="text-xs text-gray-500 leading-relaxed mt-1">{t.description}</p>
-                      <span className="clear-left flex items-center gap-1 mt-2.5 text-xs font-bold text-coral-500">
+                      <span className="clear-left flex items-center gap-1 mt-2 text-xs font-bold text-coral-500">
                         {t.time}
                         <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </span>

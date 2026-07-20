@@ -538,6 +538,7 @@ export default function Dashboard() {
                 return (
                   <QuizCard
                     key={quiz.key}
+                    quizKey={quiz.key}
                     title={quiz.title}
                     description={quiz.description}
                     emoji={quiz.emoji}

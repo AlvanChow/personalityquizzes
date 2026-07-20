@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { getNextQuiz, getCompletedCount, QUIZ_ORDER } from '../utils/quizProgression';
+import QuizGlyph, { hasGlyph } from './QuizGlyph';
 
 export default function NextQuizBanner({ currentQuizKey }) {
   const navigate = useNavigate();
@@ -78,7 +79,9 @@ export default function NextQuizBanner({ currentQuizKey }) {
             <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
               {NextIcon
                 ? <NextIcon className="w-5 h-5 text-white" />
-                : <span className="text-xl leading-none">{next.emoji}</span>}
+                : hasGlyph(next.key)
+                  ? <span className="bg-white rounded-md p-0.5 flex"><QuizGlyph quizKey={next.key} size={24} /></span>
+                  : <span className="text-xl leading-none">{next.emoji}</span>}
             </div>
             <div className="text-left">
               <p className="text-[11px] font-extrabold text-white/70 uppercase tracking-wider">
