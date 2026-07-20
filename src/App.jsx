@@ -14,8 +14,6 @@ import Landing from './pages/Landing';
 // All other pages are lazy-loaded so the initial bundle stays small.
 const Assessment = lazy(() => import('./pages/Assessment'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const CakeQuiz = lazy(() => import('./pages/CakeQuiz'));
-const CakeResult = lazy(() => import('./pages/CakeResult'));
 const MBTIQuiz = lazy(() => import('./pages/MBTIQuiz'));
 const MBTIResult = lazy(() => import('./pages/MBTIResult'));
 const EnneagramQuiz = lazy(() => import('./pages/EnneagramQuiz'));
@@ -28,9 +26,7 @@ const Frameworks = lazy(() => import('./pages/Frameworks'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const SharedResult = lazy(() => import('./pages/SharedResult'));
 const Circle = lazy(() => import('./pages/Circle'));
-const HouseQuiz = lazy(() => import('./pages/HouseQuiz'));
 const VectorQuizPage = lazy(() => import('./pages/VectorQuizPage'));
-const HouseResult = lazy(() => import('./pages/HouseResult'));
 const HotTakes = lazy(() => import('./pages/HotTakes'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const CatalogQuiz = lazy(() => import('./pages/CatalogQuiz'));
@@ -89,8 +85,6 @@ function AppRoutes() {
           <Route path="/" element={<Landing />} />
           <Route path="/assessment" element={<Assessment />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/quiz/cake" element={<CakeQuiz />} />
-          <Route path="/quiz/cake/result" element={<CakeResult />} />
           <Route path="/quiz/mbti" element={<MBTIQuiz />} />
           <Route path="/quiz/mbti/result" element={<MBTIResult />} />
           <Route path="/quiz/enneagram" element={<EnneagramQuiz />} />
@@ -98,8 +92,6 @@ function AppRoutes() {
           <Route path="/quiz/big5-deep" element={<BigFiveDeepQuiz />} />
           <Route path="/quiz/mbti-deep" element={<MBTIDeepQuiz />} />
           <Route path="/quiz/enneagram-deep" element={<EnneagramDeepQuiz />} />
-          <Route path="/quiz/house" element={<HouseQuiz />} />
-          <Route path="/quiz/house/result" element={<HouseResult />} />
           <Route path="/hot-takes" element={<HotTakes />} />
           {/* Generic quizzes — static routes above always win over :quizKey.
               Vector-format quizzes (registry) get the immersive experience;

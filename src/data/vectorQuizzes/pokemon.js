@@ -19,6 +19,9 @@
 //   drive: -1 easy living  / +1 champion road
 //   wild:  -1 steady hand  / +1 wild card
 
+import { G, emblem } from './glyphs';
+export { G, emblem };
+
 /* ---------- roster: every Pokémon is a direction in 4-space ---------- */
 const CHARS = {
   pikachu:{name:"Pikachu", tag:"The Loyal Livewire", tier:"front", glyph:"lightning", aura:"#f7d02c", img:null, emoji:"⚡",

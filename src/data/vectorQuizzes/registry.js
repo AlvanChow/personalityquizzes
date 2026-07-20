@@ -14,6 +14,16 @@ export const VECTOR_QUIZ_LOADERS = {
   nba: () => import('./nba'),
   office: () => import('./office'),
   onepiece: () => import('./onepiece'),
+  pokemon: () => import('./pokemon'),
+  soccer: () => import('./soccer'),
+  starwars: () => import('./starwars'),
+  superhero: () => import('./superhero'),
+  attachment: () => import('./attachment'),
+  disc: () => import('./disc'),
+  love_language: () => import('./love_language'),
+  values: () => import('./values'),
+  house: () => import('./house'),
+  cake: () => import('./cake'),
 };
 
 export function isVectorQuiz(key) {
