@@ -28,12 +28,12 @@ const ALLOWED_EVENTS = new Set([
   // Feedback / engagement
   'quiz_feedback_given',
   'hot_take_voted',
-  // Crews
-  'crew_request_sent',
-  'crew_request_accepted',
-  'crew_request_declined',
-  'crew_viewed',
-  'crew_member_removed',
+  // Circles
+  'circle_request_sent',
+  'circle_request_accepted',
+  'circle_request_declined',
+  'circle_viewed',
+  'circle_member_removed',
 ]);
 
 // ─── Session ID ──────────────────────────────────────────────────────────────

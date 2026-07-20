@@ -82,8 +82,8 @@ function TypeBadges({ friendTypes }) {
   );
 }
 
-export default function Crew() {
-  usePageTitle('My Crew — My Personality Quizzes');
+export default function Circle() {
+  usePageTitle('My Circle — My Personality Quizzes');
   const navigate = useNavigate();
   const { user, loading: authLoading, signInWithGoogle } = useAuth();
   const [rows, setRows] = useState(null);   // null = loading
@@ -94,10 +94,10 @@ export default function Crew() {
 
   const load = useCallback(async () => {
     if (!supabase || !user) return;
-    const { data, error: err } = await supabase.rpc('list_crew');
+    const { data, error: err } = await supabase.rpc('list_circle');
     if (err) {
-      console.error('[crew] list failed:', err);
-      setError('Could not load your crew. Please try again.');
+      console.error('[circle] list failed:', err);
+      setError('Could not load your circle. Please try again.');
       setRows([]);
       return;
     }
@@ -112,7 +112,7 @@ export default function Crew() {
   useEffect(() => {
     if (viewedRef.current || !user) return;
     viewedRef.current = true;
-    track('crew_viewed', {}, user.id);
+    track('circle_viewed', {}, user.id);
   }, [user]);
 
   async function respond(row, accept) {
@@ -123,10 +123,10 @@ export default function Crew() {
         p_accept: accept,
       });
       if (err) throw err;
-      track(accept ? 'crew_request_accepted' : 'crew_request_declined', {}, user.id);
+      track(accept ? 'circle_request_accepted' : 'circle_request_declined', {}, user.id);
       await load();
     } catch (err) {
-      console.error('[crew] respond failed:', err);
+      console.error('[circle] respond failed:', err);
       setError('Something went wrong. Please try again.');
     } finally {
       setBusyId(null);
@@ -140,11 +140,11 @@ export default function Crew() {
         p_connection_id: row.connection_id,
       });
       if (err) throw err;
-      track('crew_member_removed', {}, user.id);
+      track('circle_member_removed', {}, user.id);
       setConfirmRemove(null);
       await load();
     } catch (err) {
-      console.error('[crew] remove failed:', err);
+      console.error('[circle] remove failed:', err);
       setError('Something went wrong. Please try again.');
     } finally {
       setBusyId(null);
@@ -158,12 +158,12 @@ export default function Crew() {
         <div className="w-14 h-14 rounded-xl bg-coral-50 border border-coral-200 flex items-center justify-center mb-4">
           <Users className="w-7 h-7 text-coral-400" />
         </div>
-        <h1 className="text-xl font-extrabold text-gray-800 mb-2">Your Crew</h1>
+        <h1 className="text-xl font-extrabold text-gray-800 mb-2">Your Circle</h1>
         <p className="text-sm text-gray-500 mb-6 max-w-xs">
           Sign in to keep your matches — see how you and your friends compare, all in one place.
         </p>
         <button
-          onClick={() => signInWithGoogle('/crew').catch((e) => setError(e?.message ?? 'Sign-in failed.'))}
+          onClick={() => signInWithGoogle('/circle').catch((e) => setError(e?.message ?? 'Sign-in failed.'))}
           className="px-6 py-3 rounded-xl bg-coral-500 hover:bg-coral-600 text-white font-bold shadow-md transition-colors"
         >
           Sign in with Google
@@ -186,7 +186,7 @@ export default function Crew() {
 
   const incoming = rows.filter((r) => r.status === 'pending' && r.direction === 'incoming');
   const outgoing = rows.filter((r) => r.status === 'pending' && r.direction === 'outgoing');
-  const crew = rows.filter((r) => r.status === 'accepted');
+  const circle = rows.filter((r) => r.status === 'accepted');
 
   return (
     <div className="min-h-screen bg-cream-50 px-6 py-8">
@@ -203,10 +203,10 @@ export default function Crew() {
           <div className="w-10 h-10 rounded-xl bg-coral-50 border border-coral-100 flex items-center justify-center">
             <Users className="w-5 h-5 text-coral-500" />
           </div>
-          <h1 className="text-2xl font-black text-gray-900">My Crew</h1>
+          <h1 className="text-2xl font-black text-gray-900">My Circle</h1>
         </div>
-        <p className="text-sm text-gray-500 mb-8">
-          Friends you&apos;ve matched with — and how your personalities line up.
+        <p className="font-serif italic text-[15px] text-gray-500 mb-8">
+          The people you&apos;ve matched with — and how your personalities line up.
         </p>
 
         {error && (
@@ -217,7 +217,7 @@ export default function Crew() {
         {incoming.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-7">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-              Wants to join your crew
+              Wants to join your circle
             </h2>
             <div className="space-y-3">
               {incoming.map((r) => (
@@ -252,14 +252,14 @@ export default function Crew() {
           </motion.div>
         )}
 
-        {/* ── The crew ── */}
-        {crew.length > 0 ? (
+        {/* ── The circle ── */}
+        {circle.length > 0 ? (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-7">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-              Crew · {crew.length}
+              Circle · {circle.length}
             </h2>
             <div className="space-y-3">
-              {crew.map((r) => (
+              {circle.map((r) => (
                 <div key={r.connection_id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
@@ -281,7 +281,7 @@ export default function Crew() {
                     ) : (
                       <button
                         onClick={() => setConfirmRemove(r.connection_id)}
-                        aria-label={`Remove ${r.friend_name} from crew`}
+                        aria-label={`Remove ${r.friend_name} from your circle`}
                         className="shrink-0 p-1.5 text-gray-200 hover:text-red-400 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -297,9 +297,9 @@ export default function Crew() {
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-xl border border-gray-200 p-8 text-center mb-7">
               <span className="text-4xl block mb-3">🫶</span>
-              <h2 className="text-base font-extrabold text-gray-800 mb-1.5">No crew yet</h2>
+              <h2 className="text-base font-extrabold text-gray-800 mb-1.5">No one in your circle yet</h2>
               <p className="text-sm text-gray-500 mb-5 max-w-xs mx-auto">
-                Share a quiz result with a friend — when they compare with you, they can ask to join your crew.
+                Share a quiz result with a friend — when they compare with you, they can ask to join your circle.
               </p>
               <button
                 onClick={() => navigate('/')}

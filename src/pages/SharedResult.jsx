@@ -222,13 +222,13 @@ function CompatibilityCard({ shared, quizMeta }) {
   );
 }
 
-// ─── Crew CTA ───────────────────────────────────────────────────────────────
+// ─── Circle CTA ───────────────────────────────────────────────────────────────
 // Shown when the share link belongs to a signed-in owner (has_owner comes from
 // the get_shared_result RPC; the direct-select fallback never sets it, so the
 // block simply doesn't render on older data paths). Never rendered for the
 // owner viewing their own link.
 
-function CrewCTA({ shared }) {
+function CircleCTA({ shared }) {
   const navigate = useNavigate();
   const { user, signInWithGoogle } = useAuth();
   // connection_status from the RPC reflects the viewer at fetch time; local
@@ -250,10 +250,10 @@ function CrewCTA({ shared }) {
       if (error) throw error;
       setStatus(data ?? 'pending_sent');
       if (data === 'pending_sent') {
-        track('crew_request_sent', { quiz: shared.quiz_type }, user.id);
+        track('circle_request_sent', { quiz: shared.quiz_type }, user.id);
       }
     } catch (err) {
-      console.error('[SharedResult] crew request failed:', err);
+      console.error('[SharedResult] circle request failed:', err);
       setNote(err?.message?.includes('Too many') ? 'Too many requests — try again in a minute.' : 'Could not send the request. Please try again.');
     } finally {
       setBusy(false);
@@ -288,11 +288,11 @@ function CrewCTA({ shared }) {
   } else if (status === 'accepted') {
     body = (
       <button
-        onClick={() => navigate('/crew')}
+        onClick={() => navigate('/circle')}
         className="w-full py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm font-bold text-emerald-600 flex items-center justify-center gap-2"
       >
         <Check className="w-4 h-4" />
-        In your crew — see your matches
+        In your circle — see your matches
       </button>
     );
   } else if (status === 'pending_sent') {
@@ -305,18 +305,18 @@ function CrewCTA({ shared }) {
   } else if (status === 'pending_received') {
     body = (
       <button
-        onClick={() => navigate('/crew')}
+        onClick={() => navigate('/circle')}
         className="w-full py-3 rounded-xl bg-coral-500 hover:bg-coral-600 text-white text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-colors"
       >
         <Users className="w-4 h-4" />
-        They asked to join your crew — respond
+        They asked to join your circle — respond
       </button>
     );
   } else {
     body = (
       <>
         <p className="text-xs text-gray-400 mb-3">
-          Add {friendName} to your crew to keep this match and compare on every quiz.
+          Add {friendName} to your circle to keep this match and compare on every quiz.
         </p>
         <button
           onClick={handleRequest}
@@ -328,7 +328,7 @@ function CrewCTA({ shared }) {
           ) : (
             <UserPlus className="w-4 h-4" />
           )}
-          Add to your crew
+          Add to your circle
         </button>
       </>
     );
@@ -343,7 +343,7 @@ function CrewCTA({ shared }) {
     >
       <div className="flex items-center gap-2 mb-1">
         <Users className="w-4 h-4 text-coral-400" />
-        <h2 className="text-sm font-extrabold text-gray-800">Crews</h2>
+        <h2 className="text-sm font-extrabold text-gray-800">Circles</h2>
       </div>
       {body}
       {note && (
@@ -514,8 +514,8 @@ export default function SharedResult() {
         </motion.div>
 
         {/* ── Social proof nudge ── */}
-        <p className="text-center text-xs text-gray-400 mb-6">
-          Someone shared this result — what&apos;s yours?
+        <p className="text-center font-serif italic text-sm text-gray-500 mb-6">
+          Their result. Your move.
         </p>
 
         {/* ── Compatibility: shown when the visitor has their own result ── */}
@@ -523,8 +523,8 @@ export default function SharedResult() {
           <CompatibilityCard shared={shared} quizMeta={quizMeta} />
         )}
 
-        {/* ── Crew: save the match when the sharer is a signed-in owner ── */}
-        <CrewCTA shared={shared} />
+        {/* ── Circle: save the match when the sharer is a signed-in owner ── */}
+        <CircleCTA shared={shared} />
 
         {/* ── Primary CTA ── */}
         <motion.div
