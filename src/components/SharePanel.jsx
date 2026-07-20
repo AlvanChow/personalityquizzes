@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, Link, Check, X, ImageDown, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -72,6 +72,16 @@ export default function SharePanel({ quizType, result, scores = null, className 
   }
 
   function close() { setIsOpen(false); }
+
+  // Close the sheet on Escape, like any modal.
+  useEffect(() => {
+    if (!isOpen) return;
+    function onKeyDown(e) {
+      if (e.key === 'Escape') setIsOpen(false);
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isOpen]);
 
   async function handleStory() {
     if (storyBusy) return;
