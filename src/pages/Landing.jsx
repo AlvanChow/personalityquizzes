@@ -97,20 +97,20 @@ export default function Landing() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.05 }}
-            className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-[1.08] tracking-tight mb-5"
+            className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 leading-[1.05] tracking-tight mb-4"
           >
-            Know your type.{' '}
-            <span className="font-serif italic font-semibold text-coral-500 block sm:inline">Find your people.</span>
+            Your personality is a{' '}
+            <span className="text-coral-500">superpower.</span>{' '}
+            Learn it.
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.12 }}
-            className="font-serif text-lg md:text-xl text-gray-600 max-w-xl mx-auto leading-relaxed mb-7"
+            className="text-base md:text-lg text-gray-600 max-w-xl mx-auto font-medium leading-relaxed mb-7"
           >
-            {totalTests} tests, from the Big Five to the hot-dog-sandwich question.
-            Map what makes you tick, then see how your circle matches.
+            {totalTests} tests — take one, discover your type in a few minutes, then share it and see how you match with your friends.
           </motion.p>
 
           <motion.div
@@ -124,16 +124,16 @@ export default function Landing() {
                 track('hero_cta_clicked', { from: 'landing' }, user?.id ?? null);
                 navigate(hasCompleted ? '/dashboard' : '/assessment');
               }}
-              className="group/cta w-full sm:w-auto bg-gray-900 hover:bg-black text-[#FAF9F5] font-bold text-lg px-9 md:px-11 py-3.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3"
+              className="group/cta w-full sm:w-auto bg-coral-500 hover:bg-coral-600 text-white font-extrabold text-lg px-9 md:px-11 py-3.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3"
             >
-              {hasCompleted ? 'See My Results' : loading ? 'Take the Big Five' : 'Start with the Big Five'}
+              {hasCompleted ? 'See My Results' : loading ? 'Take the Big 5' : 'Start with the Big 5'}
               <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1 transition-transform duration-200" />
             </button>
             <button
               onClick={() => document.getElementById('quizzes')?.scrollIntoView({ behavior: 'smooth' })}
-              className="w-full sm:w-auto text-gray-700 hover:text-gray-900 font-semibold text-base px-6 py-3.5 rounded-lg border border-gray-300 hover:border-gray-400 bg-white transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto text-gray-700 hover:text-gray-900 font-bold text-base px-6 py-3.5 rounded-lg border border-gray-300 hover:border-gray-400 bg-white transition-all duration-200 flex items-center justify-center gap-2"
             >
-              Browse all {totalTests} tests
+              See all {totalTests} tests
               <ChevronDown className="w-4 h-4" />
             </button>
           </motion.div>
@@ -144,7 +144,7 @@ export default function Landing() {
             transition={{ duration: 0.4, delay: 0.3 }}
             className="text-sm text-gray-500 font-medium"
           >
-            Free · No account to start ·{' '}
+            Free · No sign-up needed to start ·{' '}
             <button onClick={() => navigate('/how-it-works')} className="underline underline-offset-2 hover:text-gray-700 transition-colors">
               How it works
             </button>

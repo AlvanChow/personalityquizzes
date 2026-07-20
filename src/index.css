@@ -3,24 +3,12 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
-  background: #FAF9F5;
+  font-family: 'Nunito Variable', 'Nunito', sans-serif;
+  background: linear-gradient(135deg, #FFF8F5 0%, #FDF5F3 40%, #F9F0F8 100%);
   color: #1F2937;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/* Display type: Bricolage Grotesque for the biggest voices on the page. */
-@layer base {
-  h1, h2, h3 {
-    font-family: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
-    letter-spacing: -0.01em;
-  }
-  ::selection {
-    background: #E8CCBC; /* coral-200 (clay) */
-    color: #1F2937;
-  }
 }
 
 #root {
