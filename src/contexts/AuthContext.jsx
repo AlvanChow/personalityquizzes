@@ -35,14 +35,17 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = useCallback(async () => {
+  // redirectPath (e.g. '/s/abc123') brings the user back to where they were —
+  // essential for the "sign in to save this match" flow on share pages.
+  const signInWithGoogle = useCallback(async (redirectPath = '') => {
     if (!supabase) throw new Error('Authentication is not available right now.');
     if (!allowAuth()) throw new Error('Too many sign-in attempts. Please wait a moment.');
     track('auth_sign_in_started', {}, null);
+    const safePath = typeof redirectPath === 'string' && redirectPath.startsWith('/') ? redirectPath : '';
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: window.location.origin + safePath,
       },
     });
     if (error) throw error;

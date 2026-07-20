@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAdmin } from '../hooks/useAdmin';
-import { LogOut, User, UserCircle, Shield } from 'lucide-react';
+import { LogOut, User, UserCircle, Shield, Users } from 'lucide-react';
 
 function GoogleIcon() {
   return (
@@ -127,6 +127,17 @@ export default function UserMenu() {
           >
             <UserCircle className="w-4 h-4" />
             My Profile
+          </button>
+          <button
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              navigate('/crew');
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            <Users className="w-4 h-4" />
+            My Crew
           </button>
           {isAdmin && (
             <button

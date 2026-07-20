@@ -45,7 +45,7 @@ export function buildShareSnapshot(result, scores) {
 // ─── Create a persistent shareable link ────────────────────────────────────
 // Inserts a snapshot into shared_results and returns the full share URL.
 // Returns null if Supabase is unavailable.
-export async function createShareableLink(quizType, result, scores) {
+export async function createShareableLink(quizType, result, scores, ownerId = null) {
   if (!supabase) return null;
 
   // Rate limit: max 5 share links per 60 seconds.
@@ -63,6 +63,9 @@ export async function createShareableLink(quizType, result, scores) {
     result_name:  (result.name ?? '').slice(0, 100),
     result_emoji: (result.emoji ?? '').slice(0, 16),
     result_data:  buildShareSnapshot(result, scores),
+    // Signed-in sharers own their link, which lets viewers send them a crew
+    // request. Guest shares have no owner and can't receive requests.
+    owner_id:     ownerId,
   });
 
   if (error) {

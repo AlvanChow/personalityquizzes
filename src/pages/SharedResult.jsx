@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Brain, Sparkles, Cake, Star, Share2, Swords, Wand2 } from 'lucide-react';
+import { ArrowRight, Brain, Sparkles, Cake, Star, Share2, Swords, Wand2, UserPlus, Users, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import { allowViewIncrement } from '../utils/rateLimiter';
 import { isValidShareId, isPlainObject, sanitizeString } from '../utils/security';
@@ -221,6 +222,137 @@ function CompatibilityCard({ shared, quizMeta }) {
   );
 }
 
+// ─── Crew CTA ───────────────────────────────────────────────────────────────
+// Shown when the share link belongs to a signed-in owner (has_owner comes from
+// the get_shared_result RPC; the direct-select fallback never sets it, so the
+// block simply doesn't render on older data paths). Never rendered for the
+// owner viewing their own link.
+
+function CrewCTA({ shared }) {
+  const navigate = useNavigate();
+  const { user, signInWithGoogle } = useAuth();
+  // connection_status from the RPC reflects the viewer at fetch time; local
+  // state lets the button flip to "sent" without a refetch.
+  const [status, setStatus] = useState(shared.connection_status ?? null);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState(null);
+
+  if (!shared.has_owner || shared.owner_is_me) return null;
+
+  const friendName = sanitizeString(shared.result_name, 40) || 'your friend';
+
+  async function handleRequest() {
+    if (busy) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      const { data, error } = await supabase.rpc('request_connection', { p_share_id: shared.id });
+      if (error) throw error;
+      setStatus(data ?? 'pending_sent');
+      if (data === 'pending_sent') {
+        track('crew_request_sent', { quiz: shared.quiz_type }, user.id);
+      }
+    } catch (err) {
+      console.error('[SharedResult] crew request failed:', err);
+      setNote(err?.message?.includes('Too many') ? 'Too many requests — try again in a minute.' : 'Could not send the request. Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleSignIn() {
+    setNote(null);
+    try {
+      await signInWithGoogle(`/s/${shared.id}`);
+    } catch (err) {
+      setNote(err?.message ?? 'Sign-in failed. Please try again.');
+    }
+  }
+
+  let body;
+  if (!user) {
+    body = (
+      <>
+        <p className="text-xs text-gray-400 mb-3">
+          Sign in to save this match and see how you compare over time.
+        </p>
+        <button
+          onClick={handleSignIn}
+          className="w-full py-3 rounded-xl bg-white border border-gray-300 hover:border-gray-400 text-sm font-bold text-gray-700 shadow-sm flex items-center justify-center gap-2 transition-colors"
+        >
+          <UserPlus className="w-4 h-4" />
+          Sign in to save this match
+        </button>
+      </>
+    );
+  } else if (status === 'accepted') {
+    body = (
+      <button
+        onClick={() => navigate('/crew')}
+        className="w-full py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm font-bold text-emerald-600 flex items-center justify-center gap-2"
+      >
+        <Check className="w-4 h-4" />
+        In your crew — see your matches
+      </button>
+    );
+  } else if (status === 'pending_sent') {
+    body = (
+      <div className="w-full py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm font-bold text-gray-400 flex items-center justify-center gap-2">
+        <Check className="w-4 h-4" />
+        Request sent — waiting on them
+      </div>
+    );
+  } else if (status === 'pending_received') {
+    body = (
+      <button
+        onClick={() => navigate('/crew')}
+        className="w-full py-3 rounded-xl bg-coral-500 hover:bg-coral-600 text-white text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-colors"
+      >
+        <Users className="w-4 h-4" />
+        They asked to join your crew — respond
+      </button>
+    );
+  } else {
+    body = (
+      <>
+        <p className="text-xs text-gray-400 mb-3">
+          Add {friendName} to your crew to keep this match and compare on every quiz.
+        </p>
+        <button
+          onClick={handleRequest}
+          disabled={busy}
+          className="w-full py-3 rounded-xl bg-coral-500 hover:bg-coral-600 text-white text-sm font-bold shadow-md flex items-center justify-center gap-2 disabled:opacity-60 transition-colors"
+        >
+          {busy ? (
+            <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+          ) : (
+            <UserPlus className="w-4 h-4" />
+          )}
+          Add to your crew
+        </button>
+      </>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.2 }}
+      className="bg-white rounded-xl p-5 shadow-sm border border-gray-200 mb-5"
+    >
+      <div className="flex items-center gap-2 mb-1">
+        <Users className="w-4 h-4 text-coral-400" />
+        <h2 className="text-sm font-extrabold text-gray-800">Crews</h2>
+      </div>
+      {body}
+      {note && (
+        <p className="text-xs text-center text-red-500 mt-2" role="alert">{note}</p>
+      )}
+    </motion.div>
+  );
+}
+
 export default function SharedResult() {
   const { shareId } = useParams();
   const navigate    = useNavigate();
@@ -390,6 +522,9 @@ export default function SharedResult() {
         {isComparable && hasOwnResult && (
           <CompatibilityCard shared={shared} quizMeta={quizMeta} />
         )}
+
+        {/* ── Crew: save the match when the sharer is a signed-in owner ── */}
+        <CrewCTA shared={shared} />
 
         {/* ── Primary CTA ── */}
         <motion.div

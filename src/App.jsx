@@ -25,6 +25,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Frameworks = lazy(() => import('./pages/Frameworks'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const SharedResult = lazy(() => import('./pages/SharedResult'));
+const Crew = lazy(() => import('./pages/Crew'));
 const HouseQuiz = lazy(() => import('./pages/HouseQuiz'));
 const HouseResult = lazy(() => import('./pages/HouseResult'));
 const HotTakes = lazy(() => import('./pages/HotTakes'));
@@ -96,6 +97,7 @@ function AppRoutes() {
           <Route path="/how-it-works" element={<Frameworks />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/s/:shareId" element={<SharedResult />} />
+          <Route path="/crew" element={<Crew />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
