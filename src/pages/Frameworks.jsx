@@ -1,13 +1,11 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Activity, Brain, CircleDashed, Cake, BookOpen, FlaskConical, Star, ArrowRight } from 'lucide-react';
-import { usePageTitle } from '../hooks/usePageTitle';
+import { emblem } from '../data/vectorQuizzes/glyphs';
+import './narutoQuiz.css';
 
-const frameworks = [
+const FRAMEWORKS = [
   {
     id: 'big5',
-    icon: Activity,
-    iconBg: 'bg-teal-100 text-teal-600',
     name: 'The Big Five (OCEAN)',
     subtitle: 'The Gold Standard of Personality Science',
     color: 'from-teal-50 to-mint-50',
@@ -25,8 +23,6 @@ const frameworks = [
   },
   {
     id: 'mbti',
-    icon: Brain,
-    iconBg: 'bg-coral-100 text-coral-600',
     name: 'MBTI (Myers-Briggs Type Indicator)',
     subtitle: 'The World\'s Most Popular Personality Test',
     color: 'from-coral-50 to-peach-50',
@@ -44,8 +40,6 @@ const frameworks = [
   },
   {
     id: 'enneagram',
-    icon: CircleDashed,
-    iconBg: 'bg-mint-100 text-mint-600',
     name: 'The Enneagram',
     subtitle: 'Nine Archetypes of Human Motivation',
     color: 'from-mint-50 to-teal-50',
@@ -63,8 +57,6 @@ const frameworks = [
   },
   {
     id: 'cake',
-    icon: Cake,
-    iconBg: 'bg-rose-100 text-rose-500',
     name: 'Cake.me',
     subtitle: 'Personality Through the Lens of Confection',
     color: 'from-rose-50 to-peach-50',
@@ -82,108 +74,109 @@ const frameworks = [
   },
 ];
 
-function FrameworkCard({ fw, delay }) {
-  const Icon = fw.icon;
-  const navigate = useNavigate();
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
-      className={`bg-gradient-to-br ${fw.color} rounded-3xl border ${fw.border} p-7 md:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.06)]`}
-    >
-      <div className="flex items-start justify-between mb-5">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${fw.iconBg} shadow-sm`}>
-          <Icon className="w-6 h-6" />
-        </div>
-        <span className={`text-xs font-bold px-3 py-1 rounded-full ${fw.badgeColor}`}>{fw.badge}</span>
-      </div>
+// Presentation metadata layered onto the editorial content above.
+const META = [
+  { aura: '#35b58e', glyph: 'hex',     tierClass: 'badge-front', path: '/assessment' },
+  { aura: '#7fb2d9', glyph: 'ripple',  tierClass: 'badge-front', path: '/quiz/mbti' },
+  { aura: '#a983d6', glyph: 'rinne',   tierClass: 'badge-front', path: '/quiz/enneagram' },
+  { aura: '#e0b13a', glyph: 'blossom', tierClass: 'badge-cut',   path: '/quiz/cake' },
+];
 
-      <h2 className={`text-xl font-extrabold mb-0.5 ${fw.accent}`}>{fw.name}</h2>
-      <p className="text-sm font-semibold text-gray-500 mb-5">{fw.subtitle}</p>
+// The engine section is our own story — cited against our own test suite.
+const ENGINE = {
+  name: 'The Matching Engine',
+  subtitle: 'How the character quizzes actually work',
+  badge: 'Simulation-verified',
+  origin: 'Every character quiz on this site places its results as hand-tuned positions in a shared personality space — axes like strategy vs. instinct or lone wolf vs. bonds first — and measures you on the same axes with weighted, opposing-pair statements.',
+  howItWorks: 'Your answers become a vector; your match is the result whose direction is closest to yours (cosine similarity). Direction, not magnitude — so agreeing with everything cannot collapse you onto the blandest character. Which traits lead is what decides your match.',
+  validity: 'Every roster ships with a Monte-Carlo battery in our test suite: tens of thousands of simulated takers must reach every single result, the winner distribution must stay near its entropy ceiling, and changing half your answers must change the outcome about 80% of the time. If an edit breaks any of that, it cannot ship.',
+};
 
-      <div className="space-y-4">
-        <Section icon={BookOpen} title="Origins">
-          <p className="text-sm text-gray-600 leading-relaxed">{fw.origin}</p>
-        </Section>
-        <Section icon={FlaskConical} title="How It Works">
-          <p className="text-sm text-gray-600 leading-relaxed">{fw.howItWorks}</p>
-        </Section>
-        <Section icon={Star} title="Validity & Use">
-          <p className="text-sm text-gray-600 leading-relaxed">{fw.validity}</p>
-        </Section>
-        <div className="bg-white/50 rounded-2xl p-4">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Limitations</p>
-          <p className="text-sm text-gray-600 leading-relaxed">{fw.criticisms}</p>
-        </div>
-        <div className="bg-white/50 rounded-2xl p-4">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Key Sources</p>
-          <ul className="space-y-1">
-            {fw.sources.map((s) => (
-              <li key={s} className="text-xs text-gray-500 font-medium">· {s}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {fw.quizPath && (
-        <button
-          onClick={() => navigate(fw.quizPath)}
-          className={`mt-5 w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-white/70 hover:bg-white/90 transition-colors ${fw.accent}`}
-        >
-          {fw.quizLabel}
-          <ArrowRight className="w-4 h-4" />
-        </button>
-      )}
-    </motion.div>
-  );
+function Emblem({ aura, glyph, size }) {
+  const html = emblem({ name: '', aura, glyph, img: null }, size, true, true);
+  return <span style={{ display: 'inline-flex', flex: 'none' }} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-function Section({ icon: Icon, title, children }) {
+function Block({ label, children }) {
   return (
-    <div className="bg-white/50 rounded-2xl p-4">
-      <div className="flex items-center gap-1.5 mb-2">
-        <Icon className="w-3.5 h-3.5 text-gray-400" />
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{title}</p>
-      </div>
-      {children}
+    <div style={{ marginBottom: 18 }}>
+      <p className="rlabel" style={{ marginBottom: 6 }}>{label}</p>
+      <p style={{ fontSize: '.92rem', lineHeight: 1.7, margin: 0 }}>{children}</p>
     </div>
   );
 }
 
-export default function Frameworks() {
-  usePageTitle('How It Works — My Personality Quizzes');
-  const navigate = useNavigate();
+function FrameworkCard({ fw, meta, navigate }) {
   return (
-    <div className="min-h-screen bg-cream-50">
-      <header className="px-6 py-5 border-b border-gray-100 bg-white/70 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <button onClick={() => navigate(-1)}
-            className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </button>
-          <span className="text-lg font-extrabold text-gray-800">
-            How It <span className="text-sky-500">Works</span>
-          </span>
-          <div className="w-16" />
+    <section style={{ marginBottom: 'clamp(40px, 8vw, 64px)', '--aura': meta.aura, '--aura-l': meta.aura }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 14, flexWrap: 'wrap' }}>
+        <Emblem aura={meta.aura} glyph={meta.glyph} size={84} />
+        <div style={{ minWidth: 220, flex: 1 }}>
+          <span className={`badge ${meta.tierClass}`}>{fw.badge}</span>
+          <h2 style={{ fontFamily: 'var(--disp)', fontSize: 'clamp(1.4rem, 4vw, 1.9rem)', lineHeight: 1.15, margin: '8px 0 2px', color: 'var(--paper)' }}>{fw.name}</h2>
+          <p className="res-tag" style={{ color: meta.aura, margin: 0 }}>{fw.subtitle}</p>
         </div>
-      </header>
+      </div>
+      <div className="res-card" style={{ marginTop: 10 }}>
+        <Block label="Origins">{fw.origin}</Block>
+        <Block label="How it works">{fw.howItWorks}</Block>
+        <Block label="Validity &amp; use">{fw.validity}</Block>
+        {fw.criticisms && <Block label="Fair criticisms">{fw.criticisms}</Block>}
+        {fw.sources?.length > 0 && (
+          <div style={{ marginBottom: 18 }}>
+            <p className="rlabel" style={{ marginBottom: 6 }}>Key sources</p>
+            {fw.sources.map((src) => (
+              <p key={src} style={{ fontSize: '.8rem', lineHeight: 1.6, margin: '0 0 3px', opacity: 0.75, fontStyle: 'italic' }}>{src}</p>
+            ))}
+          </div>
+        )}
+        {(fw.quizPath ?? meta.path) && (
+          <button className="btn btn-primary" style={{ marginTop: 6 }} onClick={() => navigate(fw.quizPath ?? meta.path)}>
+            {fw.quizLabel ?? 'Take it'} →
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
 
-      <main className="px-6 py-10 max-w-3xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-          className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">
-            The science behind the quizzes
+export default function Frameworks() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    document.title = 'How It Works · My Personality Quizzes';
+    return () => { document.title = 'My Personality Quizzes'; };
+  }, []);
+
+  return (
+    <div className="nq no-seal" style={{ '--aura': '#cba24a', '--aura-l': '#e6cf92' }}>
+      <div className="bg" aria-hidden="true">
+        <div className="glow g1" /><div className="glow g2" /><div className="grain" /><div className="vignette" />
+      </div>
+      <main className="wrap" style={{ justifyContent: 'flex-start', maxWidth: 860 }}>
+        <section style={{ textAlign: 'center', margin: 'clamp(8px,3vw,28px) 0 clamp(36px,7vw,56px)' }}>
+          <p className="eyebrow solo" style={{ justifyContent: 'center' }}>The Methodology</p>
+          <h1 style={{ fontFamily: 'var(--disp)', fontWeight: 800, fontSize: 'clamp(2.1rem,6.5vw,3.3rem)', lineHeight: 1.05, letterSpacing: '-.01em', margin: '14px 0 0', color: 'var(--paper)' }}>
+            The science behind<br /><span style={{ color: 'var(--gold)' }}>the quizzes.</span>
           </h1>
-          <p className="text-gray-500 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-            Every quiz here is grounded in real personality psychology. Here's how each one works, where it comes from, and how seriously to take it.
+          <p className="lede" style={{ margin: '18px auto 0' }}>
+            Ordered by evidence — from the most replicated model in personality science
+            to the ones that are verified fun. Where each comes from, how it works, and
+            how seriously to take it.
           </p>
-        </motion.div>
+        </section>
 
-        <div className="space-y-8">
-          {frameworks.map((fw, i) => (
-            <FrameworkCard key={fw.id} fw={fw} delay={i * 0.1} />
-          ))}
+        {FRAMEWORKS.map((fw, i) => (
+          <FrameworkCard key={fw.name} fw={fw} meta={META[i]} navigate={navigate} />
+        ))}
+
+        <FrameworkCard
+          fw={ENGINE}
+          meta={{ aura: '#d93a2b', glyph: 'burst', tierClass: 'badge-cut', path: '/quiz/naruto' }}
+          navigate={navigate}
+        />
+
+        <div style={{ textAlign: 'center', paddingBottom: 40 }}>
+          <button className="btn btn-ghost" onClick={() => navigate('/')}>← All quizzes</button>
         </div>
       </main>
     </div>

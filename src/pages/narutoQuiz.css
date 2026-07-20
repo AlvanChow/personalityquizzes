@@ -185,3 +185,6 @@
 .nq .bg .glow{animation:none;}
 .nq .stagger>*{opacity:1;}
 }
+
+/* Non-quiz pages reuse the shell without the shinobi watermark. */
+.nq.no-seal .res-card::before{content:none;}
