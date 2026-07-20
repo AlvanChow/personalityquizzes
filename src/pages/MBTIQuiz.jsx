@@ -9,8 +9,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function MBTIQuiz() {
+  usePageTitle('MBTI Quiz — My Personality Quizzes');
   const navigate = useNavigate();
   const { user } = useAuth();
   const [saveError, setSaveError] = useState(null);
@@ -62,9 +64,8 @@ export default function MBTIQuiz() {
     navigate('/quiz/mbti/result', { replace: true });
   }, [navigate, user]);
 
-  const optionLetters = ['A', 'B', 'C', 'D'];
-
   const renderOptions = useCallback((question, onAnswer, selectedValue) => {
+    const optionLetters = ['A', 'B', 'C', 'D'];
     return question.options.map((opt, idx) => (
       <motion.button
         key={opt.value}

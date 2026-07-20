@@ -25,6 +25,9 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Frameworks = lazy(() => import('./pages/Frameworks'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const SharedResult = lazy(() => import('./pages/SharedResult'));
+const HouseQuiz = lazy(() => import('./pages/HouseQuiz'));
+const HouseResult = lazy(() => import('./pages/HouseResult'));
+const HotTakes = lazy(() => import('./pages/HotTakes'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const CatalogQuiz = lazy(() => import('./pages/CatalogQuiz'));
 const CatalogResult = lazy(() => import('./pages/CatalogResult'));
@@ -82,6 +85,9 @@ function AppRoutes() {
           <Route path="/quiz/big5-deep" element={<BigFiveDeepQuiz />} />
           <Route path="/quiz/mbti-deep" element={<MBTIDeepQuiz />} />
           <Route path="/quiz/enneagram-deep" element={<EnneagramDeepQuiz />} />
+          <Route path="/quiz/house" element={<HouseQuiz />} />
+          <Route path="/quiz/house/result" element={<HouseResult />} />
+          <Route path="/hot-takes" element={<HotTakes />} />
           {/* Generic catalog quizzes — static routes above always win over :quizKey. */}
           <Route path="/quiz/:quizKey" element={<CatalogQuiz />} />
           <Route path="/quiz/:quizKey/result" element={<CatalogResult />} />

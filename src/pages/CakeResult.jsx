@@ -9,6 +9,8 @@ import { track } from '../utils/analytics';
 import { safeLocalStorageRead } from '../utils/security';
 import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
+import CompareBanner from '../components/CompareBanner';
+import FeedbackWidget from '../components/FeedbackWidget';
 
 // MAX raw score per competency = 2 questions × 4 points = 8
 const MAX_COMPETENCY_SCORE = 8;
@@ -90,12 +92,18 @@ export default function CakeResult() {
   const { hasCompleted: hasBig5 } = useBigFive();
 
   const [storedData] = useState(() => {
-    return safeLocalStorageRead('personalens_cake', null);
+    const stored = safeLocalStorageRead('personalens_cake', null);
+    // Guard against partial/corrupt stored data, not just missing data.
+    return stored?.result?.trait ? stored : null;
   });
 
   useEffect(() => {
     if (!storedData) navigate('/');
   }, [storedData, navigate]);
+
+  useEffect(() => {
+    if (storedData) document.title = `${storedData.result.name} — My Personality Quizzes`;
+  }, [storedData]);
 
   const viewedRef = useRef(false);
   useEffect(() => {
@@ -242,6 +250,10 @@ export default function CakeResult() {
           </motion.div>
         )}
 
+        <FeedbackWidget quizKey="cake" />
+
+        <CompareBanner quizType="cake" />
+
         <NextQuizBanner currentQuizKey="cake" />
 
         <AuthNudgeBanner quiz="cake" />
@@ -266,7 +278,7 @@ export default function CakeResult() {
           >
             Dashboard
           </motion.button>
-          <SharePanel quizType="cake" result={result} btnColor="from-sky-400 to-sky-500" />
+          <SharePanel quizType="cake" result={result} scores={competencyScores} btnColor="from-sky-400 to-sky-500" />
         </div>
       </div>
     </div>

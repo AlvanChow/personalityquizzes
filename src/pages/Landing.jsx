@@ -1,98 +1,99 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
-import { Activity, Brain, CircleDashed, ArrowRight, Sparkles, Users, ChevronDown, Layers, Compass, Popcorn } from 'lucide-react';
+import { ArrowRight, Sparkles, ChevronDown, Compass, Popcorn, Flame, Layers, FlaskConical } from 'lucide-react';
 import { track } from '../utils/analytics';
 import { getQuizzesByCategory, getQuizPath } from '../data/quizzes';
 
-const catalogSections = [
-  {
-    key: 'know',
-    heading: 'Know Yourself',
-    blurb: 'Legendary introspective exercises — from the Flower Petal exercise to grit, ikigai, and attachment styles',
-    icon: Compass,
-    iconBg: 'bg-rose-100',
-    iconColor: 'text-rose-500',
-    quizzes: getQuizzesByCategory('know'),
-  },
-  {
-    key: 'pop',
-    heading: 'Pop Culture Zone',
-    blurb: 'Which NBA legend, anime hero, or sitcom character are you? Find your famous twin',
-    icon: Popcorn,
-    iconBg: 'bg-violet-100',
-    iconColor: 'text-violet-600',
-    quizzes: getQuizzesByCategory('pop'),
-  },
-];
+// Normalize a catalog entry to the shared card shape.
+const fromCatalog = (meta) => ({
+  key: meta.key,
+  emoji: meta.emoji,
+  title: meta.title,
+  description: meta.description,
+  time: meta.time,
+  to: getQuizPath(meta),
+});
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { hasCompleted } = useBigFive();
+  // `loading` covers the window where a signed-in user's completion only
+  // exists in Supabase — until it resolves, don't claim they haven't done it.
+  const { hasCompleted, loading } = useBigFive();
   const { user } = useAuth();
+
+  useEffect(() => {
+    document.title = 'My Personality Quizzes — Discover Who You Really Are';
+  }, []);
 
   function trackAndNavigate(quizId, destination) {
     track('quiz_card_clicked', { quiz: quizId, from: 'landing' }, user?.id ?? null);
     navigate(destination);
   }
 
-  const quizzes = [
+  // The full catalog, grouped into themed shelves but rendered with one
+  // consistent card style so every test is visible in a single scannable list.
+  const SECTIONS = [
     {
-      id: 'big5',
-      name: 'Big 5 Personality',
-      tagline: '#1 Most Accurate',
-      description: 'The scientifically-backed OCEAN model. Discover your core traits and how you navigate the world.',
-      meta: '25 questions · ~5 min',
-      icon: Activity,
-      cardGradient: 'from-teal-500 to-emerald-600',
-      iconBg: 'bg-white/20',
-      buttonBg: 'bg-white text-teal-700 hover:bg-white/90',
-      glowColor: 'shadow-teal-500/25',
-      buttonText: hasCompleted ? 'View Results' : 'Take the Big 5',
-      action: () => trackAndNavigate('big5', hasCompleted ? '/dashboard' : '/assessment'),
-      featured: true
+      key: 'core',
+      heading: 'Core Personality Tests',
+      blurb: 'Science-backed frameworks — new here? Start with the Big 5, it powers your dashboard',
+      icon: FlaskConical,
+      tests: [
+        { key: 'big5', emoji: '🧬', title: 'Big 5 Personality', description: 'The OCEAN model — your five core traits and how you navigate the world.', time: '~5 min', action: () => trackAndNavigate('big5', hasCompleted ? '/dashboard' : '/assessment') },
+        { key: 'mbti', emoji: '🧠', title: 'MBTI · 16 Types', description: 'Find your Myers-Briggs type and cognitive style — INTJ, ESFP and 14 more.', time: '~6 min', to: '/quiz/mbti' },
+        { key: 'enneagram', emoji: '✳️', title: 'Enneagram', description: 'Which of the 9 types drives your deepest motivations and fears.', time: '~5 min', to: '/quiz/enneagram' },
+      ],
     },
     {
-      id: 'mbti',
-      name: 'MBTI (16 Types)',
-      tagline: 'Most Popular',
-      description: 'Are you an INTJ or an ESFP? Find your Myers-Briggs type and understand your cognitive functions.',
-      meta: '28 questions · ~6 min',
-      icon: Brain,
-      cardGradient: 'from-coral-400 to-rose-500',
-      iconBg: 'bg-white/20',
-      buttonBg: 'bg-white text-coral-600 hover:bg-white/90',
-      glowColor: 'shadow-coral-400/25',
-      buttonText: 'Take the MBTI',
-      action: () => trackAndNavigate('mbti', '/quiz/mbti'),
-      featured: true
+      key: 'know',
+      heading: 'Know Yourself',
+      blurb: 'Legendary introspective exercises — from the Flower Petal to grit, ikigai, and attachment styles',
+      icon: Compass,
+      tests: getQuizzesByCategory('know').map(fromCatalog),
     },
     {
-      id: 'enneagram',
-      name: 'Enneagram',
-      tagline: 'Deep Insight',
-      description: 'Discover which of the 9 interconnected personality types drives your deepest motivations and fears.',
-      meta: '27 questions · ~5 min',
-      icon: CircleDashed,
-      cardGradient: 'from-violet-500 to-purple-600',
-      iconBg: 'bg-white/20',
-      buttonBg: 'bg-white text-violet-700 hover:bg-white/90',
-      glowColor: 'shadow-violet-500/25',
-      buttonText: 'Take the Enneagram',
-      action: () => trackAndNavigate('enneagram', '/quiz/enneagram'),
-      featured: true
+      key: 'fun',
+      heading: 'Just for Fun',
+      blurb: 'Quick hits to share with friends',
+      icon: Flame,
+      tests: [
+        { key: 'house', emoji: '🪄', title: 'Wizarding House', description: 'Gryffindor, Hufflepuff, Ravenclaw or Slytherin — where do you belong?', time: '~3 min', to: '/quiz/house' },
+        { key: 'hot_takes', emoji: '🌭', title: 'Hot Takes: Great Debates', description: 'Is the dress blue? Are tennis balls green? Is a hotdog a sandwich? Pick your side.', time: '8 debates · ~2 min', to: '/hot-takes' },
+        { key: 'cake', emoji: '🍰', title: 'What Cake Are You?', description: 'Your work superpower, served as dessert. Find your professional flavor.', time: '~2 min', to: '/quiz/cake' },
+      ],
+    },
+    {
+      key: 'pop',
+      heading: 'Pop Culture Zone',
+      blurb: 'Which NBA legend, anime hero, or sitcom character are you? Find your famous twin',
+      icon: Popcorn,
+      tests: getQuizzesByCategory('pop').map(fromCatalog),
+    },
+    {
+      key: 'deep',
+      heading: 'In-Depth Versions',
+      blurb: 'Longer, more precise takes on the core tests',
+      icon: Layers,
+      tests: [
+        { key: 'big5-deep', emoji: '📊', title: 'Big 5 Deep', description: 'A 50-item IPIP assessment for a more precise OCEAN profile.', time: '~10 min', to: '/quiz/big5-deep' },
+        { key: 'mbti-deep', emoji: '🔬', title: 'MBTI Deep', description: 'Open Extended Jungian Type Scales — forced-choice for sharper typing.', time: '~8 min', to: '/quiz/mbti-deep' },
+        { key: 'enneagram-deep', emoji: '🧿', title: 'Enneagram Deep', description: 'Core fears & desires inventory with weighted scoring.', time: '~7 min', to: '/quiz/enneagram-deep' },
+      ],
     },
   ];
+  const totalTests = SECTIONS.reduce((n, s) => n + s.tests.length, 0);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#FFF8F5] via-[#FDF5F3] to-[#F9F0F8] font-nunito">
+    <div className="min-h-screen flex flex-col bg-[#FBFAF9] font-nunito">
 
-      <header className="px-6 py-5 border-b border-rose-100/60 bg-white/70 backdrop-blur-sm">
+      <header className="px-6 py-5 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <span className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-coral-400" />
+            <Sparkles className="w-5 h-5 text-coral-500" />
             My Personality Quizzes
           </span>
           <div className="flex items-center gap-3">
@@ -117,239 +118,107 @@ export default function Landing() {
 
       <main className="flex-1 flex flex-col items-center px-6 pb-24">
 
-        <div className="text-center max-w-3xl mx-auto mt-14 md:mt-20 mb-14">
+        <div className="text-center max-w-3xl mx-auto mt-10 md:mt-14 mb-10">
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.05 }}
-            className="text-5xl sm:text-6xl md:text-7xl font-black text-gray-900 leading-[1.08] tracking-tight mb-6"
+            className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 leading-[1.05] tracking-tight mb-4"
           >
-            Your personality is a <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-coral-500 to-rose-500">
-              superpower. Learn it.
-            </span>
+            Your personality is a{' '}
+            <span className="text-coral-500">superpower.</span>{' '}
+            Learn it.
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.12 }}
-            className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto font-medium leading-relaxed mb-9"
+            className="text-base md:text-lg text-gray-600 max-w-xl mx-auto font-medium leading-relaxed mb-7"
           >
-            Most people go their whole lives without understanding why they think, feel, and act the way they do. Our research-backed assessments decode the patterns behind your personality in under 10 minutes.
+            {totalTests} tests — take one, discover your type in a few minutes, then share it and see how you match with your friends.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-7"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4"
           >
             <button
               onClick={() => {
                 track('hero_cta_clicked', { from: 'landing' }, user?.id ?? null);
                 navigate(hasCompleted ? '/dashboard' : '/assessment');
               }}
-              className="group/cta bg-coral-500 hover:bg-coral-600 text-white font-extrabold text-xl md:text-2xl px-12 md:px-14 py-4 md:py-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-3 hover:scale-[1.02] active:scale-[0.98]"
+              className="group/cta w-full sm:w-auto bg-coral-500 hover:bg-coral-600 text-white font-extrabold text-lg px-9 md:px-11 py-3.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3"
             >
-              {hasCompleted ? 'See My Results' : 'Start Your Deep Dive'}
+              {hasCompleted ? 'See My Results' : loading ? 'Take the Big 5' : 'Start with the Big 5'}
               <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1 transition-transform duration-200" />
             </button>
             <button
-              onClick={() => navigate('/how-it-works')}
-              className="text-gray-600 hover:text-gray-800 font-bold text-base px-5 py-3.5 rounded-lg hover:bg-white/60 transition-all duration-200 flex items-center gap-2"
+              onClick={() => document.getElementById('quizzes')?.scrollIntoView({ behavior: 'smooth' })}
+              className="w-full sm:w-auto text-gray-700 hover:text-gray-900 font-bold text-base px-6 py-3.5 rounded-lg border border-gray-300 hover:border-gray-400 bg-white transition-all duration-200 flex items-center justify-center gap-2"
             >
-              How it works
+              See all {totalTests} tests
               <ChevronDown className="w-4 h-4" />
             </button>
           </motion.div>
 
-          <motion.div
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.3 }}
-            className="flex items-center justify-center gap-2 text-sm text-gray-500 font-medium"
+            className="text-sm text-gray-500 font-medium"
           >
-            <Users className="w-4 h-4" />
-            <span>Taken by <strong className="text-gray-700">50,000+</strong> curious humans</span>
-          </motion.div>
+            Free · No sign-up needed to start
+          </motion.p>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {quizzes.map((quiz, index) => {
-            const Icon = quiz.icon;
+        {/* ── The full catalog ── */}
+        <div id="quizzes" className="w-full max-w-5xl scroll-mt-24">
+          {SECTIONS.map((section, si) => {
+            const SectionIcon = section.icon;
             return (
-              <motion.div
-                key={quiz.id}
-                role="button"
-                tabIndex={0}
-                onClick={quiz.action}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); quiz.action(); } }}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.25 + index * 0.08 }}
-                whileHover={{ y: -6, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`relative overflow-hidden rounded-2xl p-8 cursor-pointer shadow-lg ${quiz.glowColor} hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/50 transition-shadow duration-300 flex flex-col group bg-gradient-to-br ${quiz.cardGradient} ${index === 0 ? 'sm:col-span-2 lg:col-span-1' : ''}`}
-              >
-                {/* Decorative background circles */}
-                <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/10 rounded-full" />
-                <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-white/5 rounded-full" />
-
-                <div className="relative flex items-center gap-4 mb-2">
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${quiz.iconBg} backdrop-blur-sm shrink-0`}>
-                    <Icon className="w-7 h-7 text-white" />
-                  </div>
-                  <div>
-                    <span className="inline-block text-xs font-extrabold uppercase tracking-widest text-white/70 mb-1">{quiz.tagline}</span>
-                    <h3 className="text-2xl font-black text-white leading-snug">{quiz.name}</h3>
-                  </div>
-                </div>
-                <p className="relative text-white/80 font-semibold mb-3 leading-relaxed text-sm">
-                  {quiz.description}
-                </p>
-
-                <p className="relative text-white/50 text-xs font-semibold mb-6">
-                  {quiz.meta}
-                </p>
-
-                <div className="relative mt-auto pointer-events-none">
-                  <span className={`w-full font-extrabold text-base py-4 px-5 rounded-xl flex items-center justify-center gap-2.5 shadow-md ${quiz.buttonBg}`}>
-                    {quiz.buttonText}
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-                  </span>
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
-        {/* ── Catalog sections: Know Yourself + Pop Culture ── */}
-        {catalogSections.map((section) => {
-          const SectionIcon = section.icon;
-          return (
-            <motion.div
-              key={section.key}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.45 }}
-              className="w-full max-w-5xl mt-16"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className={`w-10 h-10 rounded-xl ${section.iconBg} flex items-center justify-center`}>
-                  <SectionIcon className={`w-5 h-5 ${section.iconColor}`} />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black text-gray-900">{section.heading}</h2>
-                  <p className="text-sm text-gray-600 font-medium">{section.blurb}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {section.quizzes.map((quiz, i) => (
-                  <motion.button
-                    key={quiz.key}
-                    onClick={() => trackAndNavigate(quiz.key, getQuizPath(quiz))}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.5 + i * 0.04 }}
-                    whileHover={{ y: -3, scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="text-left p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all group flex flex-col"
-                  >
-                    <span className="text-3xl mb-2">{quiz.emoji}</span>
-                    <h3 className="text-sm font-extrabold text-gray-900 leading-snug mb-1">{quiz.title}</h3>
-                    <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{quiz.description}</p>
-                    <span className="mt-auto text-xs font-bold text-coral-500 flex items-center gap-1">
-                      {quiz.time}
-                      <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                    </span>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          );
-        })}
-
-        {/* ── Go Deeper section ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.6 }}
-          className="w-full max-w-5xl mt-16"
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-              <Layers className="w-5 h-5 text-amber-600" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-gray-900">Go Deeper</h2>
-              <p className="text-sm text-gray-600 font-medium">Extended assessments for more nuanced results</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              {
-                id: 'big5-deep',
-                name: 'Big 5 Deep',
-                badge: 'IPIP-50',
-                description: '50-item assessment for a more precise OCEAN profile with double the questions.',
-                path: '/quiz/big5-deep',
-                border: 'border-teal-200',
-                badgeBg: 'bg-teal-100 text-teal-700',
-              },
-              {
-                id: 'mbti-deep',
-                name: 'MBTI Deep',
-                badge: 'OEJTS',
-                description: 'Open Extended Jungian Type Scales — a scientific forced-choice format for sharper typing.',
-                path: '/quiz/mbti-deep',
-                border: 'border-coral-200',
-                badgeBg: 'bg-coral-100 text-coral-700',
-              },
-              {
-                id: 'enneagram-deep',
-                name: 'Enneagram Deep',
-                badge: '36-Item',
-                description: 'Core fears & desires inventory with 4 questions per type and weighted scoring.',
-                path: '/quiz/enneagram-deep',
-                border: 'border-violet-200',
-                badgeBg: 'bg-violet-100 text-violet-700',
-              },
-            ].map((quiz, i) => (
-              <motion.button
-                key={quiz.id}
-                onClick={() => trackAndNavigate(quiz.id, quiz.path)}
+              <motion.section
+                key={section.key}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.65 + i * 0.08 }}
-                whileHover={{ y: -4, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`text-left p-6 rounded-xl bg-white border-2 ${quiz.border} shadow-sm hover:shadow-md transition-all group`}
+                transition={{ duration: 0.35, delay: 0.15 + si * 0.06 }}
+                className={si === 0 ? '' : 'mt-14'}
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`text-xs font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full ${quiz.badgeBg}`}>
-                    {quiz.badge}
-                  </span>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                    <SectionIcon className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-black text-gray-900">{section.heading}</h2>
+                    <p className="text-xs md:text-sm text-gray-500 font-medium">{section.blurb}</p>
+                  </div>
                 </div>
-                <h3 className="text-lg font-extrabold text-gray-900 mb-1">{quiz.name}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed mb-4">{quiz.description}</p>
-                <span className="text-sm font-bold text-coral-500 flex items-center gap-1.5">
-                  Take Quiz
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {section.tests.map((t) => (
+                    <button
+                      key={t.key}
+                      onClick={t.action ?? (() => trackAndNavigate(t.key, t.to))}
+                      className="text-left p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-coral-300 transition-all group flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
+                    >
+                      <span className="text-3xl mb-2">{t.emoji}</span>
+                      <h3 className="text-sm font-extrabold text-gray-900 leading-snug mb-1">{t.title}</h3>
+                      <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{t.description}</p>
+                      <span className="mt-auto text-xs font-bold text-coral-500 flex items-center gap-1">
+                        {t.time}
+                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </motion.section>
+            );
+          })}
+        </div>
       </main>
 
-      <footer className="border-t border-rose-100/60 bg-white/70 backdrop-blur-sm py-8 px-6 mt-4">
+      <footer className="border-t border-gray-200 bg-white py-8 px-6 mt-4">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-sm text-gray-500 font-medium">
             &copy; {new Date().getFullYear()} My Personality Quizzes. All rights reserved.

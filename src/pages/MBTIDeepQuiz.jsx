@@ -9,8 +9,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 export default function MBTIDeepQuiz() {
+  usePageTitle('MBTI Deep Quiz — My Personality Quizzes');
   const navigate = useNavigate();
   const { user } = useAuth();
   const [saveError, setSaveError] = useState(null);

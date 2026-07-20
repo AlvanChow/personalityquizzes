@@ -1,4 +1,4 @@
-import { Activity, Brain, CircleDashed, Cake } from 'lucide-react';
+import { Activity, Brain, CircleDashed, Cake, Wand2 } from 'lucide-react';
 import { QUIZ_CATALOG, getQuizPath, isQuizCompleted } from '../data/quizzes';
 
 // The guided journey starts with the core assessments, then the introspective
@@ -44,6 +44,16 @@ const CORE_QUIZZES = [
     icon: Cake,
     gradient: 'from-pink-400 to-rose-500',
     time: '~2 min',
+  },
+  {
+    key: 'house',
+    check: () => !!localStorage.getItem('personalens_house'),
+    label: 'Wizarding House',
+    description: 'Gryffindor, Hufflepuff, Ravenclaw, or Slytherin?',
+    path: '/quiz/house',
+    icon: Wand2,
+    gradient: 'from-amber-400 to-orange-500',
+    time: '~3 min',
   },
 ];
 

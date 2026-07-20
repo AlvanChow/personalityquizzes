@@ -8,25 +8,32 @@ import { useAuth } from '../contexts/AuthContext';
  */
 export function useAdmin() {
   const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const userId = user?.id ?? null;
+  // checkedFor records which user id the stored answer belongs to, so a user
+  // switch never briefly reuses the previous user's admin flag.
+  const [state, setState] = useState({ isAdmin: false, checkedFor: null });
 
   useEffect(() => {
-    if (!user || !supabase) {
-      setIsAdmin(false);
-      setLoading(false);
-      return;
-    }
+    if (!userId || !supabase) return;
 
-    setLoading(true);
+    let cancelled = false;
     supabase
       .from('admins')
       .select('user_id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle()
-      .then(({ data }) => setIsAdmin(!!data))
-      .finally(() => setLoading(false));
-  }, [user?.id]);
+      .then(({ data }) => {
+        if (!cancelled) setState({ isAdmin: !!data, checkedFor: userId });
+      })
+      .catch(() => {
+        if (!cancelled) setState({ isAdmin: false, checkedFor: userId });
+      });
+    return () => { cancelled = true; };
+  }, [userId]);
 
-  return { isAdmin, loading };
+  if (!userId || !supabase) return { isAdmin: false, loading: false };
+  return {
+    isAdmin: state.checkedFor === userId && state.isAdmin,
+    loading: state.checkedFor !== userId,
+  };
 }

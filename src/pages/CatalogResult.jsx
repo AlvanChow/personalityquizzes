@@ -5,6 +5,7 @@ import { ArrowLeft, RotateCcw, Sparkles, TrendingUp, Heart } from 'lucide-react'
 import SharePanel from '../components/SharePanel';
 import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
+import FeedbackWidget from '../components/FeedbackWidget';
 import { getQuizMeta, storageKeyFor } from '../data/quizzes';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
@@ -247,6 +248,8 @@ export default function CatalogResult() {
           </motion.div>
         )}
 
+        <FeedbackWidget quizKey={meta.key} />
+
         <NextQuizBanner currentQuizKey={meta.key} />
 
         <AuthNudgeBanner quiz={meta.key} />
@@ -271,7 +274,7 @@ export default function CatalogResult() {
           >
             Dashboard
           </motion.button>
-          <SharePanel quizType={meta.key} result={result} btnColor="from-coral-400 to-coral-500" />
+          <SharePanel quizType={meta.key} result={result} scores={scores} btnColor="from-coral-400 to-coral-500" />
         </div>
       </div>
     </div>

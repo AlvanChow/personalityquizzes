@@ -12,7 +12,7 @@ export default {
       emoji: '🍜',
       color: 'from-orange-100 to-amber-50',
       accent: 'text-orange-600',
-      tagline: '#NeverGiveUp #Believe It #ChaoticGood',
+      tagline: '#NeverGiveUp #BelieveIt #ChaoticGood',
       description:
         'You lead with heart, not calculation. When everyone else has written something off as impossible, you are the one still shouting that it can be done — and somehow, through sheer stubborn optimism, you prove it. People underestimate you at first, then find themselves fighting for your approval. Your superpower is turning enemies into friends and doubters into believers.',
       strengths: ['Relentless optimism', 'Wins people over', 'Never abandons anyone', 'Grows fastest under pressure'],
@@ -96,7 +96,7 @@ export default {
       emoji: '🥋',
       color: 'from-green-100 to-emerald-50',
       accent: 'text-green-600',
-      tagline: '#HardWorkBeatsTalent #Springtime OfYouth #NoShortcuts',
+      tagline: '#HardWorkBeatsTalent #SpringtimeOfYouth #NoShortcuts',
       description:
         'You were not handed the natural gifts others got — so you built your own with pure, joyful, terrifying work ethic. You do the extra reps, keep the promises you make to yourself, and celebrate other people\'s wins as loudly as your own. Your enthusiasm is not naivety; it is a decision you make every single morning, and it is contagious.',
       strengths: ['Unmatched work ethic', 'Zero self-pity', 'Genuine enthusiasm', 'Keeps promises to himself'],

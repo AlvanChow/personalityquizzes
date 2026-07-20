@@ -284,6 +284,9 @@ export default function FlowerPetal() {
   const [petals, setPetals] = useState(() => ({ ...emptyPetals(), ...(saved?.petals ?? {}) }));
   // -1 = intro, 0..6 = petal steps, 7 = summary
   const [step, setStep] = useState(() => (saved?.completedAt ? PETALS.length : -1));
+  // Live completion timestamp — `saved` is frozen at mount, so relying on it
+  // inside persist() would wipe completedAt when editing after finishing.
+  const completedAtRef = useRef(saved?.completedAt ?? null);
 
   const startedRef = useRef(false);
   useEffect(() => {
@@ -298,11 +301,16 @@ export default function FlowerPetal() {
   }, []);
 
   function persist(nextPetals, completed) {
+    if (completed) completedAtRef.current = new Date().toISOString();
     const payload = {
       petals: nextPetals,
-      completedAt: completed ? new Date().toISOString() : (saved?.completedAt ?? null),
+      completedAt: completedAtRef.current,
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      // Storage unavailable (quota/private mode) — keep the in-memory session going.
+    }
   }
 
   function updatePetal(key, updater) {

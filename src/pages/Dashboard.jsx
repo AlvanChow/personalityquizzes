@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
 import QuizCard from '../components/QuizCard';
 import NextQuizBanner from '../components/NextQuizBanner';
+import FeedbackWidget from '../components/FeedbackWidget';
 import { track } from '../utils/analytics';
 import lifeAnalysis from '../data/lifeAnalysis';
 import { getCompletedCount, QUIZ_ORDER } from '../utils/quizProgression';
@@ -237,12 +238,19 @@ export default function Dashboard() {
   }
 
   const analyses = useMemo(
-    () => lifeAnalysis.map((category) => ({
-      ...category,
-      analysis: category.getAnalysis(scores),
-    })),
+    () => lifeAnalysis
+      .map((category) => ({
+        ...category,
+        analysis: category.getAnalysis(scores),
+      }))
+      // A missing profile key should skip that card, not crash the page.
+      .filter((entry) => entry.analysis?.summary && Array.isArray(entry.analysis.items)),
     [scores],
   );
+
+  useEffect(() => {
+    document.title = 'Dashboard — My Personality Quizzes';
+  }, []);
 
   useEffect(() => {
     if (!loading && !hasCompleted) navigate('/');
@@ -379,7 +387,7 @@ export default function Dashboard() {
             })}
           </div>
 
-          <div className="flex justify-end mb-12">
+          <div className="flex justify-end mb-6">
             <button
               onClick={() => {
                 track('quiz_retaken', { quiz: 'big5' }, user?.id ?? null);
@@ -390,6 +398,10 @@ export default function Dashboard() {
               <RotateCcw className="w-3 h-3" />
               Retake Assessment
             </button>
+          </div>
+
+          <div className="mb-12">
+            <FeedbackWidget quizKey="big5" delay={0.3} />
           </div>
         </motion.div>
 

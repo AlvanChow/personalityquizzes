@@ -206,17 +206,9 @@ export const QUIZ_CATALOG = [
     gradient: 'from-red-500 to-rose-600',
     load: () => import('./onepiece.js'),
   },
-  {
-    key: 'wizard',
-    title: 'Which Wizarding House Fits You?',
-    quizName: 'Wizarding House Quiz',
-    emoji: '🧙',
-    category: 'pop',
-    description: 'Courage, loyalty, wit, or ambition — let the quiz sort you where you truly belong.',
-    time: '~3 min',
-    gradient: 'from-violet-500 to-indigo-600',
-    load: () => import('./wizard.js'),
-  },
+  // NOTE: the wizarding-house quiz lives at /quiz/house (its own page with
+  // share + friend-compatibility wired in), not in this catalog — see the
+  // "Just for Fun" group on Landing.
   {
     key: 'starwars',
     title: 'Which Star Wars Character Are You?',
@@ -317,7 +309,13 @@ export function storageKeyFor(quizKey) {
 
 export function isQuizCompleted(quizKey) {
   try {
-    return !!localStorage.getItem(storageKeyFor(quizKey));
+    const raw = localStorage.getItem(storageKeyFor(quizKey));
+    if (!raw) return false;
+    // Quizzes store a result on finish; the Flower Petal exercise persists
+    // partial progress with completedAt null until it's actually done — an
+    // in-progress save must not count as completed.
+    const parsed = JSON.parse(raw);
+    return !!(parsed && typeof parsed === 'object' && (parsed.result || parsed.completedAt));
   } catch {
     return false;
   }

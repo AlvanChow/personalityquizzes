@@ -10,12 +10,19 @@ import { enneagramInsights } from '../data/enneagramInsights';
 import { getWing, WING_ADJACENTS } from '../data/enneagramWings';
 import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
+import CompareBanner from '../components/CompareBanner';
+import FeedbackWidget from '../components/FeedbackWidget';
 import InsightCard from '../components/InsightCard';
 
-const MAX_SCORE_PER_TYPE = 12;
+// The standard quiz maxes at 12 per type (3 questions × 4). The deep quiz uses
+// weighted options (up to +4 × 4 questions = 16, and can go negative), so the
+// denominator depends on which quiz produced the stored scores.
+function maxScorePerType(quizKey) {
+  return quizKey === 'enneagram_deep' ? 16 : 12;
+}
 
-function TypeBar({ typeNum, score, label, delay, isTop }) {
-  const pct = Math.round((score / MAX_SCORE_PER_TYPE) * 100);
+function TypeBar({ typeNum, score, label, delay, isTop, maxScore }) {
+  const pct = Math.max(0, Math.min(100, Math.round((score / maxScore) * 100)));
   return (
     <div className="mb-3">
       <div className="flex justify-between text-xs font-semibold mb-1">
@@ -43,9 +50,18 @@ export default function EnneagramResult() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [data] = useState(() => {
-    return safeLocalStorageRead('personalens_enneagram', null);
+    const stored = safeLocalStorageRead('personalens_enneagram', null);
+    // Guard against partial/corrupt stored data: we need a resolvable type
+    // number and a non-empty scores object, or the page can't render.
+    if (!WING_ADJACENTS[stored?.result?.typeNumber]) return null;
+    if (!stored.scores || typeof stored.scores !== 'object' || Object.keys(stored.scores).length === 0) return null;
+    return stored;
   });
   useEffect(() => { if (!data) navigate('/'); }, [data, navigate]);
+
+  useEffect(() => {
+    if (data) document.title = `${data.result.name} — My Personality Quizzes`;
+  }, [data]);
 
   const viewedRef = useRef(false);
   useEffect(() => {
@@ -57,14 +73,16 @@ export default function EnneagramResult() {
   if (!data) return null;
 
   const { result, scores } = data;
+  const maxScore = maxScorePerType(data.quizKey);
   const insights = enneagramInsights[result.typeNumber];
-  const topScore = Math.max(...Object.values(scores));
   const sortedTypes = Object.entries(scores).sort(([, a], [, b]) => b - a);
   const { wingType, wingKey, wing } = getWing(result.typeNumber, scores);
   const [adj1, adj2] = WING_ADJACENTS[result.typeNumber];
+  // Wing scores can be negative in the deep quiz — clamp so the balance bar
+  // widths stay in [0, 100].
   const wingBalance = {
-    left: { type: adj1, name: TYPE_NAMES[adj1], score: scores[adj1] ?? 0 },
-    right: { type: adj2, name: TYPE_NAMES[adj2], score: scores[adj2] ?? 0 },
+    left: { type: adj1, name: TYPE_NAMES[adj1], score: Math.max(0, scores[adj1] ?? 0) },
+    right: { type: adj2, name: TYPE_NAMES[adj2], score: Math.max(0, scores[adj2] ?? 0) },
   };
 
   return (
@@ -105,7 +123,7 @@ export default function EnneagramResult() {
           <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-5">Your Type Scores</h3>
           {sortedTypes.map(([typeNum, score], i) => (
             <TypeBar key={typeNum} typeNum={typeNum} score={score} label={TYPE_NAMES[typeNum]}
-              delay={i * 0.08} isTop={score === topScore} />
+              delay={i * 0.08} isTop={typeNum === result.typeNumber} maxScore={maxScore} />
           ))}
         </motion.div>
 
@@ -258,6 +276,10 @@ export default function EnneagramResult() {
           </div>
         </motion.div>
 
+        <FeedbackWidget quizKey={data.quizKey || 'enneagram'} />
+
+        <CompareBanner quizType="enneagram" />
+
         <NextQuizBanner currentQuizKey="enneagram" />
 
         <AuthNudgeBanner quiz="enneagram" />
@@ -272,7 +294,7 @@ export default function EnneagramResult() {
             className="flex-1 py-3.5 rounded-lg bg-white border-2 border-gray-100 text-gray-700 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:border-gray-200 transition-colors">
             All Quizzes
           </motion.button>
-          <SharePanel quizType="enneagram" result={result} btnColor="from-mint-400 to-mint-500" />
+          <SharePanel quizType="enneagram" result={result} scores={scores} btnColor="from-mint-400 to-mint-500" />
         </div>
       </div>
     </div>
