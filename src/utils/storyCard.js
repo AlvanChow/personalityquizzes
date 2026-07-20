@@ -24,18 +24,18 @@ function theme(quizType) {
   return THEMES[quizType] ?? THEMES.mbti;
 }
 
-// Space Grotesk is loaded by the page; make sure the canvas can use it. Never throws.
+// Plus Jakarta Sans is loaded by the page; make sure the canvas can use it. Never throws.
 async function ensureFonts() {
   try {
     await Promise.all([
-      document.fonts.load("700 120px 'Space Grotesk Variable'"),
-      document.fonts.load("700 48px 'Space Grotesk Variable'"),
-      document.fonts.load("500 36px 'Space Grotesk Variable'"),
+      document.fonts.load("800 120px 'Plus Jakarta Sans Variable'"),
+      document.fonts.load("700 48px 'Plus Jakarta Sans Variable'"),
+      document.fonts.load("600 36px 'Plus Jakarta Sans Variable'"),
     ]);
   } catch { /* system font fallback below */ }
 }
 
-const FONT = (weight, size) => `${weight} ${size}px 'Space Grotesk Variable', system-ui, sans-serif`;
+const FONT = (weight, size) => `${weight} ${size}px 'Plus Jakarta Sans Variable', system-ui, sans-serif`;
 
 function roundRect(ctx, x, y, w, h, r) {
   if (typeof ctx.roundRect === 'function') {

@@ -97,10 +97,10 @@ export default function Landing() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.05 }}
-            className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-[1.05] tracking-tight mb-5"
+            className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-[1.08] tracking-tight mb-5"
           >
-            Figure yourself{' '}
-            <span className="font-serif italic font-semibold text-coral-500">out.</span>
+            Know your type.{' '}
+            <span className="font-serif italic font-semibold text-coral-500 block sm:inline">Find your people.</span>
           </motion.h1>
 
           <motion.p
@@ -110,7 +110,7 @@ export default function Landing() {
             className="font-serif text-lg md:text-xl text-gray-600 max-w-xl mx-auto leading-relaxed mb-7"
           >
             {totalTests} tests, from the Big Five to the hot-dog-sandwich question.
-            Map your patterns, then build your circle and see how your people match.
+            Map what makes you tick, then see how your circle matches.
           </motion.p>
 
           <motion.div
@@ -124,7 +124,7 @@ export default function Landing() {
                 track('hero_cta_clicked', { from: 'landing' }, user?.id ?? null);
                 navigate(hasCompleted ? '/dashboard' : '/assessment');
               }}
-              className="group/cta w-full sm:w-auto bg-coral-500 hover:bg-coral-600 text-white font-extrabold text-lg px-9 md:px-11 py-3.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3"
+              className="group/cta w-full sm:w-auto bg-gray-900 hover:bg-black text-[#FAF9F5] font-bold text-lg px-9 md:px-11 py-3.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3"
             >
               {hasCompleted ? 'See My Results' : loading ? 'Take the Big Five' : 'Start with the Big Five'}
               <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1 transition-transform duration-200" />
