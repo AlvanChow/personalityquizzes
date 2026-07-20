@@ -190,9 +190,12 @@ export const QUIZ_CATALOG = [
     quizName: 'Naruto Character Quiz',
     emoji: '🍥',
     category: 'pop',
-    description: 'Believe it — find out which Hidden Leaf (or Sand) ninja shares your soul.',
-    time: '~3 min',
+    description: 'A 23-character alignment test with a real matching engine — ten statements, one honest read of your ninja way.',
+    time: '~2 min',
     gradient: 'from-orange-400 to-red-500',
+    // The naruto quiz has its own dedicated experience (NarutoQuiz.jsx) —
+    // this loader only serves legacy /quiz/naruto/result deep-links if the
+    // dedicated route is ever removed.
     load: () => import('./naruto.js'),
   },
   {
