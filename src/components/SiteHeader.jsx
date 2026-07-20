@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Sparkles, Users } from 'lucide-react';
+import { Sparkles, Users, Moon, Sun } from 'lucide-react';
 import UserMenu from './UserMenu';
 
 const NAV = [
@@ -14,6 +15,28 @@ const NAV = [
 // Global top bar. Quiz-taking routes keep their own minimal chrome so the
 // question flow stays focused; everywhere else this is the site's spine.
 const HIDDEN_PREFIXES = ['/quiz/', '/assessment', '/admin'];
+
+// Light/dark toggle. The html.dark class is applied pre-paint by index.html;
+// this button flips it and persists the choice.
+function ThemeToggle() {
+  const [dark, setDark] = useState(() =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+  function toggle() {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle('dark', next);
+    try { localStorage.setItem('pq_theme', next ? 'dark' : 'light'); } catch { /* fine */ }
+  }
+  return (
+    <button
+      onClick={toggle}
+      aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+      className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-900/5 transition-colors"
+    >
+      {dark ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+    </button>
+  );
+}
 
 export default function SiteHeader() {
   const navigate = useNavigate();
@@ -57,7 +80,8 @@ export default function SiteHeader() {
           })}
         </nav>
 
-        <div className="shrink-0">
+        <div className="shrink-0 flex items-center gap-1.5 sm:gap-2">
+          <ThemeToggle />
           <UserMenu />
         </div>
       </div>
