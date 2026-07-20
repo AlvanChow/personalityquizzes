@@ -1,8 +1,9 @@
 import { useEffect, useRef, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { BigFiveProvider } from './contexts/BigFiveContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import SiteHeader from './components/SiteHeader';
 import { useAuth } from './contexts/AuthContext';
 import { track } from './utils/analytics';
 
@@ -25,7 +26,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Frameworks = lazy(() => import('./pages/Frameworks'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const SharedResult = lazy(() => import('./pages/SharedResult'));
-const Crew = lazy(() => import('./pages/Crew'));
+const Circle = lazy(() => import('./pages/Circle'));
 const HouseQuiz = lazy(() => import('./pages/HouseQuiz'));
 const HouseResult = lazy(() => import('./pages/HouseResult'));
 const HotTakes = lazy(() => import('./pages/HotTakes'));
@@ -72,6 +73,7 @@ function AppRoutes() {
   return (
     <>
       <RouteTracker />
+      <SiteHeader />
       <Suspense fallback={fallback}>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -97,7 +99,9 @@ function AppRoutes() {
           <Route path="/how-it-works" element={<Frameworks />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/s/:shareId" element={<SharedResult />} />
-          <Route path="/crew" element={<Crew />} />
+          <Route path="/circle" element={<Circle />} />
+          {/* Feature was briefly live as "Crew" — keep old links working. */}
+          <Route path="/crew" element={<Navigate to="/circle" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

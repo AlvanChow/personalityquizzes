@@ -7,7 +7,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        nunito: ['Nunito', 'sans-serif'],
+        sans: ['"Space Grotesk Variable"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        serif: ['"Source Serif 4"', 'Georgia', 'serif'],
+        // Legacy alias — a few older components still reference font-nunito.
+        nunito: ['"Space Grotesk Variable"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         shake: {

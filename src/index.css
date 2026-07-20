@@ -3,12 +3,23 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
   background: linear-gradient(135deg, #FFF8F5 0%, #FDF5F3 40%, #F9F0F8 100%);
   color: #1F2937;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Display type wants tighter tracking than Space Grotesk's default. */
+@layer base {
+  h1, h2 {
+    letter-spacing: -0.02em;
+  }
+  ::selection {
+    background: #FFD0BA; /* coral-200 */
+    color: #1F2937;
+  }
 }
 
 #root {

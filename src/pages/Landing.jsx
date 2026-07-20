@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
-import UserMenu from '../components/UserMenu';
-import { ArrowRight, Sparkles, ChevronDown, Compass, Popcorn, Flame, Layers, FlaskConical } from 'lucide-react';
+import { ArrowRight, ChevronDown, Compass, Popcorn, Flame, Layers, FlaskConical } from 'lucide-react';
 import { track } from '../utils/analytics';
 import { getQuizzesByCategory, getQuizPath } from '../data/quizzes';
 import QuizGlyph from '../components/QuizGlyph';
@@ -89,33 +88,7 @@ export default function Landing() {
   const totalTests = SECTIONS.reduce((n, s) => n + s.tests.length, 0);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FBFAF9] font-nunito">
-
-      <header className="px-6 py-5 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <span className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-coral-500" />
-            My Personality Quizzes
-          </span>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/how-it-works')}
-              className="text-sm font-bold text-gray-600 hover:text-gray-800 transition-colors hidden sm:block"
-            >
-              How It Works
-            </button>
-            {hasCompleted && (
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="text-sm font-bold text-gray-700 hover:text-gray-900 bg-white px-4 py-2 rounded-lg border border-gray-300 hover:border-gray-400 transition-all"
-              >
-                Back to Dashboard
-              </button>
-            )}
-            <UserMenu />
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col bg-[#FBFAF9]">
 
       <main className="flex-1 flex flex-col items-center px-6 pb-24">
 
@@ -124,20 +97,20 @@ export default function Landing() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.05 }}
-            className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 leading-[1.05] tracking-tight mb-4"
+            className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 leading-[1.05] tracking-tight mb-5"
           >
-            Your personality is a{' '}
-            <span className="text-coral-500">superpower.</span>{' '}
-            Learn it.
+            Figure yourself{' '}
+            <span className="font-serif italic font-semibold text-coral-500">out.</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.12 }}
-            className="text-base md:text-lg text-gray-600 max-w-xl mx-auto font-medium leading-relaxed mb-7"
+            className="font-serif text-lg md:text-xl text-gray-600 max-w-xl mx-auto leading-relaxed mb-7"
           >
-            {totalTests} tests — take one, discover your type in a few minutes, then share it and see how you match with your friends.
+            {totalTests} tests, from the Big Five to the hot-dog-sandwich question.
+            Map your patterns, then build your circle and see how your people match.
           </motion.p>
 
           <motion.div
@@ -153,14 +126,14 @@ export default function Landing() {
               }}
               className="group/cta w-full sm:w-auto bg-coral-500 hover:bg-coral-600 text-white font-extrabold text-lg px-9 md:px-11 py-3.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3"
             >
-              {hasCompleted ? 'See My Results' : loading ? 'Take the Big 5' : 'Start with the Big 5'}
+              {hasCompleted ? 'See My Results' : loading ? 'Take the Big Five' : 'Start with the Big Five'}
               <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1 transition-transform duration-200" />
             </button>
             <button
               onClick={() => document.getElementById('quizzes')?.scrollIntoView({ behavior: 'smooth' })}
-              className="w-full sm:w-auto text-gray-700 hover:text-gray-900 font-bold text-base px-6 py-3.5 rounded-lg border border-gray-300 hover:border-gray-400 bg-white transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto text-gray-700 hover:text-gray-900 font-semibold text-base px-6 py-3.5 rounded-lg border border-gray-300 hover:border-gray-400 bg-white transition-all duration-200 flex items-center justify-center gap-2"
             >
-              See all {totalTests} tests
+              Browse all {totalTests} tests
               <ChevronDown className="w-4 h-4" />
             </button>
           </motion.div>
@@ -171,7 +144,10 @@ export default function Landing() {
             transition={{ duration: 0.4, delay: 0.3 }}
             className="text-sm text-gray-500 font-medium"
           >
-            Free · No sign-up needed to start
+            Free · No account to start ·{' '}
+            <button onClick={() => navigate('/how-it-works')} className="underline underline-offset-2 hover:text-gray-700 transition-colors">
+              How it works
+            </button>
           </motion.p>
         </div>
 

@@ -63,8 +63,8 @@ export async function createShareableLink(quizType, result, scores, ownerId = nu
     result_name:  (result.name ?? '').slice(0, 100),
     result_emoji: (result.emoji ?? '').slice(0, 16),
     result_data:  buildShareSnapshot(result, scores),
-    // Signed-in sharers own their link, which lets viewers send them a crew
-    // request. Guest shares have no owner and can't receive requests.
+    // Signed-in sharers own their link, which lets viewers ask to join their
+    // circle. Guest shares have no owner and can't receive requests.
     owner_id:     ownerId,
   });
 

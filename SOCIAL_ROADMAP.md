@@ -26,15 +26,15 @@ What's missing: **persistence** (comparisons vanish after the session), a
 
 ## 1. Product pillars
 
-### Pillar A — Crews (persistent friend connections)
+### Pillar A — Circles (persistent friend connections)
 
 The one-off share link becomes a lasting connection.
 
 - **Capture at the moment of magic**: right after the compatibility reveal on
-  `/s/:id`, offer "Keep this match — add {name} to your crew." Both sides sign
+  `/s/:id`, offer "Keep this match — add {name} to your circle." Both sides sign
   in with Google (guests keep today's solo experience; identity is required
   the moment data flows between two people).
-- **Crew page** (`/crew`): every connection, their latest *shared* results per
+- **Circle page** (`/circle`): every connection, their latest *shared* results per
   framework, per-friend compatibility scores, and a "compare" deep-link.
 - **Asymmetric consent**: a connection is `pending` until the other side
   accepts. Nothing about either person is visible before acceptance.
@@ -50,13 +50,13 @@ Once connected, the data gets genuinely fun:
 - **What you have in common / where you differ**: computed commonalities
   surfaced as shareable one-liners ("Both INTJ. Both Ravenclaw. Both think a
   hotdog is a sandwich.").
-- **Crew matrix**: the whole-group view — type grid of your crew, "the crew's
+- **Circle matrix**: the whole-group view — type grid of your circle, "the circle's
   average Big 5," "you're the only introvert," compatibility heat-map.
-- **Crew story card**: one tap renders the group's types as a story image —
+- **Circle story card**: one tap renders the group's types as a story image —
   the same canvas pipeline as today's cards. This is the strongest viral
   artifact we can build.
 - **Per-framework visibility controls**: `share_settings` on the profile —
-  each result is `private | crew | public` (default: crew after acceptance,
+  each result is `private | circle | public` (default: circle after acceptance,
   Big-5 numbers default private with an explicit opt-in).
 
 ### Pillar C — Discovery (opt-in "find people like me")
@@ -84,7 +84,7 @@ Once connected, the data gets genuinely fun:
   aggregates): "1,204 comparisons this week," "You'd be with the 4% club."
 - **Community stats on every result**: "23% of takers got INTJ too" — one
   aggregate RPC, cached.
-- **Crew unlock nudge**: "Invite 2 friends to unlock your Crew Report."
+- **Circle unlock nudge**: "Invite 2 friends to unlock your Circle Report."
 
 ---
 
@@ -107,7 +107,7 @@ RPC surface (SECURITY DEFINER, pinned search_path, per-user rate limits — the
 same pattern as tonight's hardening):
 
 - `request_connection(share_id)` / `respond_connection(id, accept)`
-- `list_crew()` → connections + only share-approved result fields
+- `list_circle()` → connections + only share-approved result fields
 - `get_comparison(connection_id)` → both sides' approved results
 - `find_similar()` → capped, randomized, k-anonymous candidate list keyed by
   opaque discovery ids (never raw user ids)
@@ -121,7 +121,7 @@ Hard rules carried over from the launch audit:
    immediately (checks are at read time, not copy time).
 3. Blocks enforced inside every RPC, both directions.
 4. Admin dashboard gets a reports queue + discovery-pool health.
-5. New analytics events (connection_requested, crew_viewed, wave_sent, …) go
+5. New analytics events (connection_requested, circle_viewed, wave_sent, …) go
    into the DB allowlist migration *with* the client change, in one PR.
 
 Open privacy question to settle before Pillar C ships: audience age — there's
@@ -134,24 +134,24 @@ checkbox at toggle-on. Decide before building.
 
 | Phase | Scope | Effort* | Depends on |
 | --- | --- | --- | --- |
-| **1 — Crews MVP** | connections table + accept flow from share pages, `/crew` page with per-friend compatibility (reuses the existing engine) | 1 evening | — |
+| **1 — Circles MVP** | connections table + accept flow from share pages, `/circle` page with per-friend compatibility (reuses the existing engine) | 1 evening | — |
 | **2 — You × Friends** | 1:1 deep-compare page (radar overlay, deltas, Hot-Takes agreement), share_settings, compare story card | 1–2 evenings | 1 |
-| **3 — Crew matrix** | group view + crew story card + "only introvert" insights | 1 evening | 2 |
+| **3 — Circle matrix** | group view + circle story card + "only introvert" insights | 1 evening | 2 |
 | **4 — Discovery** | discoverable toggle, find_similar RPC, waves, block/report, k-anonymity, admin reports queue | 2 evenings | 1 (not 2/3) |
-| **5 — Social surfaces** | homepage social proof, community % on results, crew-unlock nudges | ½ evening | any |
-| **6 — Retention** | weekly "debate of the week," crew digest (needs email decision) | later | 4 |
+| **5 — Social surfaces** | homepage social proof, community % on results, circle-unlock nudges | ½ evening | any |
+| **6 — Retention** | weekly "debate of the week," circle digest (needs email decision) | later | 4 |
 
 \* "Evening" = one focused session like tonight, including tests, migration,
 deploy, and live verification.
 
 Recommended order: **1 → 2 → 5 → 3 → 4 → 6.** Discovery (4) is the most
-sensitive and benefits from real crew usage data first.
+sensitive and benefits from real circle usage data first.
 
 ## 4. Success metrics (all measurable with existing analytics)
 
 - % of shares that convert to a completed comparison (today's funnel)
 - % of comparisons that convert to a connection request (new)
-- K-factor: invites sent per new user; crew size distribution
+- K-factor: invites sent per new user; circle size distribution
 - % of users with discoverable ON; waves → connections conversion
 - Retention: D7 return rate of users with ≥1 connection vs 0
 

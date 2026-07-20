@@ -68,10 +68,11 @@ export default function UserMenu() {
               errorTimerRef.current = setTimeout(() => setSignInError(null), 8000);
             }
           }}
-          className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200 text-sm font-semibold text-gray-700"
+          className="flex items-center gap-2.5 px-3 sm:px-4 py-2.5 rounded-lg bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200 text-sm font-semibold text-gray-700 whitespace-nowrap"
         >
           <GoogleIcon />
-          Sign in with Google
+          <span className="hidden sm:inline">Sign in with Google</span>
+          <span className="sm:hidden">Sign in</span>
         </button>
         {signInError && (
           <p className="absolute right-0 top-full mt-1 text-xs text-red-500 font-medium bg-white px-2 py-1 rounded shadow-sm border border-red-100 whitespace-nowrap z-50">
@@ -132,12 +133,12 @@ export default function UserMenu() {
             role="menuitem"
             onClick={() => {
               setOpen(false);
-              navigate('/crew');
+              navigate('/circle');
             }}
             className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <Users className="w-4 h-4" />
-            My Crew
+            My Circle
           </button>
           {isAdmin && (
             <button
