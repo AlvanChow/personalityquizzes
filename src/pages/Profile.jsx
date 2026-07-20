@@ -11,6 +11,7 @@ import { enneagramResults } from '../data/enneagramResults';
 import { houseResults } from '../data/houseResults';
 import ScoreBar from '../components/ScoreBar';
 import { generateProfileSummary } from '../utils/generateSummary';
+import { getQuizMeta } from '../data/quizzes';
 
 // For each quiz type: the result lookup table, the result-page route, a function
 // to extract the lookup key from the stored result object, and whether the result
@@ -91,17 +92,15 @@ export default function Profile() {
   const avatarUrl = typeof rawAvatar === 'string' && /^https:\/\/(lh3\.googleusercontent\.com|avatars\.githubusercontent\.com|platform-lookaside\.fbsbx\.com)\//.test(rawAvatar) ? rawAvatar : null;
   const displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email;
 
+  // Deep variants share their base quiz's localStorage key; everything else
+  // (legacy and catalog quizzes) stores under personalens_<key>.
   const quizLocalKeys = {
-    cake: 'personalens_cake',
-    mbti: 'personalens_mbti',
-    enneagram: 'personalens_enneagram',
     mbti_deep: 'personalens_mbti',
     enneagram_deep: 'personalens_enneagram',
-    house: 'personalens_house',
   };
 
   async function handleQuizReset(quizKey) {
-    if (quizLocalKeys[quizKey]) localStorage.removeItem(quizLocalKeys[quizKey]);
+    localStorage.removeItem(quizLocalKeys[quizKey] ?? `personalens_${quizKey}`);
     const newResults = { ...quizResults };
     delete newResults[quizKey];
     if (supabase) {
@@ -292,8 +291,12 @@ export default function Profile() {
             <div className="grid gap-3">
               {completedQuizzes.map(([quizKey, result]) => {
                 const quizMap = quizResultMaps[quizKey];
+                // Catalog quizzes aren't in quizResultMaps — resolve their
+                // result route from the catalog instead.
+                const catalogMeta = quizMap ? null : getQuizMeta(quizKey);
+                const route = quizMap?.route ?? (catalogMeta ? `/quiz/${catalogMeta.key}/result` : null);
                 const fullData = quizMap ? quizMap.results[quizMap.getResultKey(result)] : null;
-                const isClickable = !!(quizMap?.route && (!quizMap.requiresBaseline || hasCompleted));
+                const isClickable = !!(route && (!quizMap?.requiresBaseline || hasCompleted));
                 const isConfirming = confirmReset === quizKey;
                 return (
                   <div
@@ -302,14 +305,14 @@ export default function Profile() {
                   >
                     {/* Clickable navigation area */}
                     <button
-                      onClick={() => { if (isClickable) navigate(quizMap.route); }}
+                      onClick={() => { if (isClickable) navigate(route); }}
                       disabled={!isClickable}
                       className={`flex items-center gap-4 flex-1 min-w-0 text-left ${isClickable ? 'cursor-pointer' : 'opacity-60 cursor-default'}`}
                     >
                       <span className="text-3xl flex-shrink-0">{fullData?.emoji || result.emoji}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-gray-800 truncate">{result.name}</p>
-                        <p className="text-xs text-gray-400">{result.quizName} &middot; {result.trait}</p>
+                        <p className="text-xs text-gray-400">{result.quizName}{(result.trait || result.tagline) ? <> &middot; {result.trait || result.tagline}</> : null}</p>
                       </div>
                       {isClickable && !isConfirming && <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />}
                     </button>

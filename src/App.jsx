@@ -29,6 +29,9 @@ const HouseQuiz = lazy(() => import('./pages/HouseQuiz'));
 const HouseResult = lazy(() => import('./pages/HouseResult'));
 const HotTakes = lazy(() => import('./pages/HotTakes'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const CatalogQuiz = lazy(() => import('./pages/CatalogQuiz'));
+const CatalogResult = lazy(() => import('./pages/CatalogResult'));
+const FlowerPetal = lazy(() => import('./pages/FlowerPetal'));
 
 // Tracks page_view on every route change. Must live inside BrowserRouter and
 // AuthProvider so it can access both useLocation and useAuth.
@@ -85,6 +88,10 @@ function AppRoutes() {
           <Route path="/quiz/house" element={<HouseQuiz />} />
           <Route path="/quiz/house/result" element={<HouseResult />} />
           <Route path="/hot-takes" element={<HotTakes />} />
+          {/* Generic catalog quizzes — static routes above always win over :quizKey. */}
+          <Route path="/quiz/:quizKey" element={<CatalogQuiz />} />
+          <Route path="/quiz/:quizKey/result" element={<CatalogResult />} />
+          <Route path="/exercise/flower-petal" element={<FlowerPetal />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/how-it-works" element={<Frameworks />} />
           <Route path="/admin" element={<AdminDashboard />} />

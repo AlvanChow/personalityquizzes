@@ -4,12 +4,25 @@ import { motion } from 'framer-motion';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import UserMenu from '../components/UserMenu';
-import { Activity, Brain, CircleDashed, ArrowRight, Sparkles, ChevronDown, Wand2, Flame, Cake } from 'lucide-react';
+import { ArrowRight, Sparkles, ChevronDown, Compass, Popcorn, Flame, Layers, FlaskConical } from 'lucide-react';
 import { track } from '../utils/analytics';
+import { getQuizzesByCategory, getQuizPath } from '../data/quizzes';
+
+// Normalize a catalog entry to the shared card shape.
+const fromCatalog = (meta) => ({
+  key: meta.key,
+  emoji: meta.emoji,
+  title: meta.title,
+  description: meta.description,
+  time: meta.time,
+  to: getQuizPath(meta),
+});
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { hasCompleted } = useBigFive();
+  // `loading` covers the window where a signed-in user's completion only
+  // exists in Supabase — until it resolves, don't claim they haven't done it.
+  const { hasCompleted, loading } = useBigFive();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -21,38 +34,58 @@ export default function Landing() {
     navigate(destination);
   }
 
-  // The full catalog, grouped but rendered with one consistent card style so
-  // every test is visible in a single scannable list.
-  const TEST_GROUPS = [
+  // The full catalog, grouped into themed shelves but rendered with one
+  // consistent card style so every test is visible in a single scannable list.
+  const SECTIONS = [
     {
-      label: 'Core personality tests',
-      hint: 'Science-backed frameworks',
+      key: 'core',
+      heading: 'Core Personality Tests',
+      blurb: 'Science-backed frameworks — new here? Start with the Big 5, it powers your dashboard',
+      icon: FlaskConical,
       tests: [
-        { id: 'big5', name: 'Big 5 Personality', description: 'The OCEAN model — your five core traits and how you navigate the world.', meta: '25 questions · ~5 min', icon: Activity, action: () => trackAndNavigate('big5', hasCompleted ? '/dashboard' : '/assessment') },
-        { id: 'mbti', name: 'MBTI · 16 Types', description: 'Find your Myers-Briggs type and cognitive style — INTJ, ESFP and 14 more.', meta: '28 questions · ~6 min', icon: Brain, to: '/quiz/mbti' },
-        { id: 'enneagram', name: 'Enneagram', description: 'Which of the 9 types drives your deepest motivations and fears.', meta: '27 questions · ~5 min', icon: CircleDashed, to: '/quiz/enneagram' },
+        { key: 'big5', emoji: '🧬', title: 'Big 5 Personality', description: 'The OCEAN model — your five core traits and how you navigate the world.', time: '~5 min', action: () => trackAndNavigate('big5', hasCompleted ? '/dashboard' : '/assessment') },
+        { key: 'mbti', emoji: '🧠', title: 'MBTI · 16 Types', description: 'Find your Myers-Briggs type and cognitive style — INTJ, ESFP and 14 more.', time: '~6 min', to: '/quiz/mbti' },
+        { key: 'enneagram', emoji: '✳️', title: 'Enneagram', description: 'Which of the 9 types drives your deepest motivations and fears.', time: '~5 min', to: '/quiz/enneagram' },
       ],
     },
     {
-      label: 'Just for fun',
-      hint: 'Quick & shareable',
+      key: 'know',
+      heading: 'Know Yourself',
+      blurb: 'Legendary introspective exercises — from the Flower Petal to grit, ikigai, and attachment styles',
+      icon: Compass,
+      tests: getQuizzesByCategory('know').map(fromCatalog),
+    },
+    {
+      key: 'fun',
+      heading: 'Just for Fun',
+      blurb: 'Quick hits to share with friends',
+      icon: Flame,
       tests: [
-        { id: 'house', name: 'Wizarding House', description: 'Gryffindor, Hufflepuff, Ravenclaw or Slytherin — where do you belong?', meta: '10 questions · ~3 min', icon: Wand2, to: '/quiz/house' },
-        { id: 'hot_takes', name: 'Hot Takes', description: 'The dress, tennis balls, hotdogs — pick a side and see how people voted.', meta: '8 debates · ~2 min', icon: Flame, to: '/hot-takes' },
-        { id: 'cake', name: 'What Cake Are You?', description: 'Your work superpower, served as dessert. Find your professional flavor.', meta: '12 questions · ~2 min', icon: Cake, to: '/quiz/cake' },
+        { key: 'house', emoji: '🪄', title: 'Wizarding House', description: 'Gryffindor, Hufflepuff, Ravenclaw or Slytherin — where do you belong?', time: '~3 min', to: '/quiz/house' },
+        { key: 'hot_takes', emoji: '🌭', title: 'Hot Takes: Great Debates', description: 'Is the dress blue? Are tennis balls green? Is a hotdog a sandwich? Pick your side.', time: '8 debates · ~2 min', to: '/hot-takes' },
+        { key: 'cake', emoji: '🍰', title: 'What Cake Are You?', description: 'Your work superpower, served as dessert. Find your professional flavor.', time: '~2 min', to: '/quiz/cake' },
       ],
     },
     {
-      label: 'In-depth versions',
-      hint: 'Longer & more precise',
+      key: 'pop',
+      heading: 'Pop Culture Zone',
+      blurb: 'Which NBA legend, anime hero, or sitcom character are you? Find your famous twin',
+      icon: Popcorn,
+      tests: getQuizzesByCategory('pop').map(fromCatalog),
+    },
+    {
+      key: 'deep',
+      heading: 'In-Depth Versions',
+      blurb: 'Longer, more precise takes on the core tests',
+      icon: Layers,
       tests: [
-        { id: 'big5-deep', name: 'Big 5 Deep', description: 'A 50-item IPIP assessment for a more precise OCEAN profile.', meta: '50 questions · ~10 min', icon: Activity, to: '/quiz/big5-deep' },
-        { id: 'mbti-deep', name: 'MBTI Deep', description: 'Open Extended Jungian Type Scales — forced-choice for sharper typing.', meta: 'OEJTS · ~8 min', icon: Brain, to: '/quiz/mbti-deep' },
-        { id: 'enneagram-deep', name: 'Enneagram Deep', description: 'Core fears & desires inventory with weighted scoring.', meta: '36 questions · ~7 min', icon: CircleDashed, to: '/quiz/enneagram-deep' },
+        { key: 'big5-deep', emoji: '📊', title: 'Big 5 Deep', description: 'A 50-item IPIP assessment for a more precise OCEAN profile.', time: '~10 min', to: '/quiz/big5-deep' },
+        { key: 'mbti-deep', emoji: '🔬', title: 'MBTI Deep', description: 'Open Extended Jungian Type Scales — forced-choice for sharper typing.', time: '~8 min', to: '/quiz/mbti-deep' },
+        { key: 'enneagram-deep', emoji: '🧿', title: 'Enneagram Deep', description: 'Core fears & desires inventory with weighted scoring.', time: '~7 min', to: '/quiz/enneagram-deep' },
       ],
     },
   ];
-  const totalTests = TEST_GROUPS.reduce((n, g) => n + g.tests.length, 0);
+  const totalTests = SECTIONS.reduce((n, s) => n + s.tests.length, 0);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FBFAF9] font-nunito">
@@ -103,7 +136,7 @@ export default function Landing() {
             transition={{ duration: 0.4, delay: 0.12 }}
             className="text-base md:text-lg text-gray-600 max-w-xl mx-auto font-medium leading-relaxed mb-7"
           >
-            Take a test, discover your type in a few minutes, then share it and see how you match with your friends.
+            {totalTests} tests — take one, discover your type in a few minutes, then share it and see how you match with your friends.
           </motion.p>
 
           <motion.div
@@ -119,7 +152,7 @@ export default function Landing() {
               }}
               className="group/cta w-full sm:w-auto bg-coral-500 hover:bg-coral-600 text-white font-extrabold text-lg px-9 md:px-11 py-3.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3"
             >
-              {hasCompleted ? 'See My Results' : 'Start with the Big 5'}
+              {hasCompleted ? 'See My Results' : loading ? 'Take the Big 5' : 'Start with the Big 5'}
               <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1 transition-transform duration-200" />
             </button>
             <button
@@ -141,52 +174,47 @@ export default function Landing() {
           </motion.p>
         </div>
 
+        {/* ── The full catalog ── */}
         <div id="quizzes" className="w-full max-w-5xl scroll-mt-24">
-          <div className="mb-6">
-            <h2 className="text-2xl md:text-3xl font-black text-gray-900">All {totalTests} tests</h2>
-            <p className="text-sm md:text-base text-gray-500 font-medium mt-1">
-              Free to take, no sign-up needed. New here? Start with the Big 5 — it powers your dashboard.
-            </p>
-          </div>
-
-          {TEST_GROUPS.map((group, gi) => (
-            <motion.section
-              key={group.label}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: 0.15 + gi * 0.08 }}
-              className={gi === 0 ? '' : 'mt-9'}
-            >
-              <div className="flex items-baseline justify-between mb-3 px-0.5">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">{group.label}</h3>
-                <span className="text-xs text-gray-400 font-medium hidden sm:block">{group.hint}</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {group.tests.map((t) => {
-                  const TIcon = t.icon;
-                  return (
+          {SECTIONS.map((section, si) => {
+            const SectionIcon = section.icon;
+            return (
+              <motion.section
+                key={section.key}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.15 + si * 0.06 }}
+                className={si === 0 ? '' : 'mt-14'}
+              >
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                    <SectionIcon className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-black text-gray-900">{section.heading}</h2>
+                    <p className="text-xs md:text-sm text-gray-500 font-medium">{section.blurb}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {section.tests.map((t) => (
                     <button
-                      key={t.id}
-                      onClick={t.action ?? (() => trackAndNavigate(t.id, t.to))}
-                      className="text-left flex items-start gap-3.5 p-4 rounded-xl bg-white border border-gray-200 hover:border-coral-300 hover:shadow-sm transition-all duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
+                      key={t.key}
+                      onClick={t.action ?? (() => trackAndNavigate(t.key, t.to))}
+                      className="text-left p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-coral-300 transition-all group flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 group-hover:bg-coral-50 flex items-center justify-center shrink-0 transition-colors">
-                        <TIcon className="w-5 h-5 text-gray-500 group-hover:text-coral-500 transition-colors" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <h4 className="text-sm font-extrabold text-gray-900 truncate">{t.name}</h4>
-                          <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-coral-500 group-hover:translate-x-0.5 transition-all shrink-0" />
-                        </div>
-                        <p className="text-xs text-gray-500 leading-snug mt-0.5 mb-1.5 line-clamp-2">{t.description}</p>
-                        <p className="text-[11px] font-semibold text-gray-400">{t.meta}</p>
-                      </div>
+                      <span className="text-3xl mb-2">{t.emoji}</span>
+                      <h3 className="text-sm font-extrabold text-gray-900 leading-snug mb-1">{t.title}</h3>
+                      <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{t.description}</p>
+                      <span className="mt-auto text-xs font-bold text-coral-500 flex items-center gap-1">
+                        {t.time}
+                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      </span>
                     </button>
-                  );
-                })}
-              </div>
-            </motion.section>
-          ))}
+                  ))}
+                </div>
+              </motion.section>
+            );
+          })}
         </div>
       </main>
 

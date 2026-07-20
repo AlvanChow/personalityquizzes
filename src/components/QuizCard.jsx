@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Lock, CheckCircle2 } from 'lucide-react';
 
-export default function QuizCard({ title, description, icon: Icon, to, locked = false, completed = false, onBeforeNavigate }) {
+export default function QuizCard({ title, description, icon: Icon, emoji, to, locked = false, completed = false, onBeforeNavigate }) {
   const navigate = useNavigate();
 
   return (
@@ -31,7 +31,9 @@ export default function QuizCard({ title, description, icon: Icon, to, locked = 
       )}
       <div className="flex items-center gap-3 mb-3">
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${completed ? 'bg-emerald-50' : 'bg-gray-100'}`}>
-          <Icon className={`w-5 h-5 ${completed ? 'text-emerald-500' : 'text-coral-400'}`} />
+          {Icon
+            ? <Icon className={`w-5 h-5 ${completed ? 'text-emerald-500' : 'text-coral-400'}`} />
+            : <span className="text-xl leading-none">{emoji}</span>}
         </div>
         <h3 className="text-base font-bold text-gray-800 leading-snug pr-6">{title}</h3>
       </div>

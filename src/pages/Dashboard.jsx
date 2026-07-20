@@ -11,6 +11,7 @@ import FeedbackWidget from '../components/FeedbackWidget';
 import { track } from '../utils/analytics';
 import lifeAnalysis from '../data/lifeAnalysis';
 import { getCompletedCount, QUIZ_ORDER } from '../utils/quizProgression';
+import { getQuizzesByCategory, getQuizPath, isQuizCompleted } from '../data/quizzes';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 
@@ -190,6 +191,22 @@ const quizzes = [
 ];
 
 const resultRoutes = { cake: '/quiz/cake/result', mbti: '/quiz/mbti/result', enneagram: '/quiz/enneagram/result' };
+
+// Catalog-driven sections: introspective assessments and pop-culture matches.
+const catalogSections = [
+  {
+    key: 'know',
+    heading: 'Know Yourself',
+    blurb: 'Famous introspective exercises and assessments — deeper self-knowledge, one quiz at a time.',
+    quizzes: getQuizzesByCategory('know'),
+  },
+  {
+    key: 'pop',
+    heading: 'Pop Culture Matches',
+    blurb: 'Find your fictional (and legendary) twins across sports, anime, film, and TV.',
+    quizzes: getQuizzesByCategory('pop'),
+  },
+];
 
 function getRange(data, score) {
   return data.ranges.find((r) => score <= r.max) ?? data.ranges[data.ranges.length - 1];
@@ -500,6 +517,41 @@ export default function Dashboard() {
             })}
           </div>
         </motion.div>
+
+        {catalogSections.map((section) => (
+          <motion.div
+            key={section.key}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.3 }}
+            className="mt-10"
+          >
+            <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">
+              {section.heading}
+            </h2>
+            <p className="text-gray-500 mb-5">{section.blurb}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {section.quizzes.map((quiz) => {
+                const isDone = isQuizCompleted(quiz.key);
+                const takePath = getQuizPath(quiz);
+                const donePath = quiz.custom ? takePath : `/quiz/${quiz.key}/result`;
+                return (
+                  <QuizCard
+                    key={quiz.key}
+                    title={quiz.title}
+                    description={quiz.description}
+                    emoji={quiz.emoji}
+                    to={isDone ? donePath : takePath}
+                    completed={isDone}
+                    onBeforeNavigate={() =>
+                      track('quiz_card_clicked', { quiz: quiz.key, from: 'dashboard' }, user?.id ?? null)
+                    }
+                  />
+                );
+              })}
+            </div>
+          </motion.div>
+        ))}
 
         <motion.div
           initial={{ opacity: 0, y: 12 }}

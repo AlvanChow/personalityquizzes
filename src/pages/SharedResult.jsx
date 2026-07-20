@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowViewIncrement } from '../utils/rateLimiter';
 import { isValidShareId, isPlainObject, sanitizeString } from '../utils/security';
+import { getQuizMeta, getQuizPath } from '../data/quizzes';
 import {
   getMyResultFor,
   getSharedType,
@@ -298,9 +299,21 @@ export default function SharedResult() {
     );
   }
 
-  const result   = isPlainObject(shared.result_data) ? shared.result_data : {};
-  const quizMeta = QUIZ_META[shared.quiz_type] ?? QUIZ_META.mbti;
-  const QuizIcon = quizMeta.icon;
+  const result      = isPlainObject(shared.result_data) ? shared.result_data : {};
+  // quiz_type comes from the DB but only ever selects from our own trusted
+  // metadata maps — unknown types fall back to the MBTI meta.
+  const catalogMeta = getQuizMeta(shared.quiz_type);
+  const quizMeta    = QUIZ_META[shared.quiz_type]
+    ?? (catalogMeta && {
+      label:       catalogMeta.quizName,
+      description: catalogMeta.description,
+      path:        getQuizPath(catalogMeta),
+      cta:         'Take the Quiz',
+      gradient:    catalogMeta.gradient,
+      emoji:       catalogMeta.emoji,
+    })
+    ?? QUIZ_META.mbti;
+  const QuizIcon = quizMeta.icon ?? null;
 
   const resultName  = sanitizeString(shared.result_name, 100);
   const resultEmoji = sanitizeString(shared.result_emoji, 16);
@@ -414,7 +427,9 @@ export default function SharedResult() {
             <>
               <div className="flex items-center gap-3 mb-4">
                 <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${quizMeta.gradient} flex items-center justify-center shrink-0`}>
-                  <QuizIcon className="w-5 h-5 text-white" />
+                  {QuizIcon
+                    ? <QuizIcon className="w-5 h-5 text-white" />
+                    : <span className="text-xl leading-none">{quizMeta.emoji}</span>}
                 </div>
                 <div>
                   <h2 className="text-sm font-extrabold text-gray-800">

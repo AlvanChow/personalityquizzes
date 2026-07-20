@@ -1,6 +1,10 @@
 import { Activity, Brain, CircleDashed, Cake, Wand2 } from 'lucide-react';
+import { QUIZ_CATALOG, getQuizPath, isQuizCompleted } from '../data/quizzes';
 
-const QUIZ_ORDER = [
+// The guided journey starts with the core assessments, then the introspective
+// catalog, then the pop-culture quizzes. Entries carry either a lucide `icon`
+// or an `emoji` — NextQuizBanner renders whichever is present.
+const CORE_QUIZZES = [
   {
     key: 'big5',
     check: () => localStorage.getItem('personalens_bigfive_completed') === 'true',
@@ -51,6 +55,23 @@ const QUIZ_ORDER = [
     gradient: 'from-amber-400 to-orange-500',
     time: '~3 min',
   },
+];
+
+const catalogEntry = (meta) => ({
+  key: meta.key,
+  check: () => isQuizCompleted(meta.key),
+  label: meta.title,
+  description: meta.description,
+  path: getQuizPath(meta),
+  emoji: meta.emoji,
+  gradient: meta.gradient,
+  time: meta.time,
+});
+
+const QUIZ_ORDER = [
+  ...CORE_QUIZZES,
+  ...QUIZ_CATALOG.filter((q) => q.category === 'know').map(catalogEntry),
+  ...QUIZ_CATALOG.filter((q) => q.category === 'pop').map(catalogEntry),
 ];
 
 export function getNextQuiz(currentKey) {

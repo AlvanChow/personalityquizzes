@@ -4,6 +4,7 @@ import { useAuth } from './AuthContext';
 import { track } from '../utils/analytics';
 import { allowProfileSync } from '../utils/rateLimiter';
 import { safeJsonParse, isPlainObject } from '../utils/security';
+import { QUIZ_CATALOG } from '../data/quizzes';
 
 const STORAGE_KEY = 'personalens_bigfive';
 const defaultScores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
@@ -122,6 +123,7 @@ async function syncGuestQuizResults(userId, remoteResults) {
 
 // localStorage keys holding personal quiz data, cleared on sign-out so the
 // next person on a shared device can't see the previous user's results.
+// Catalog quizzes all store under personalens_<key> (see storageKeyFor).
 const PERSONAL_KEYS = [
   STORAGE_KEY,
   `${STORAGE_KEY}_completed`,
@@ -130,6 +132,8 @@ const PERSONAL_KEYS = [
   'personalens_enneagram',
   'personalens_house',
   'personalens_hottakes',
+  'personalens_flower_petal',
+  ...QUIZ_CATALOG.map((q) => `personalens_${q.key}`),
 ];
 
 export function BigFiveProvider({ children }) {
