@@ -8,6 +8,12 @@
 
 export const VECTOR_QUIZ_LOADERS = {
   naruto: () => import('./naruto'),
+  disney: () => import('./disney'),
+  eras: () => import('./eras'),
+  friends: () => import('./friends'),
+  nba: () => import('./nba'),
+  office: () => import('./office'),
+  onepiece: () => import('./onepiece'),
 };
 
 export function isVectorQuiz(key) {

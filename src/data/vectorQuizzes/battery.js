@@ -5,7 +5,6 @@
 // matching engine itself. Import registerBattery(def, options) from a quiz's
 // test file — every roster or question edit re-runs the full battery in CI.
 
-/* eslint-disable no-undef -- vitest globals are injected by the test runner */
 import { describe, it, expect } from 'vitest';
 import { G, emblem } from './glyphs';
 import { userVector, magOf, ranked } from '../../utils/vectorQuiz';
