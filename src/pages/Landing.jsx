@@ -196,22 +196,24 @@ export default function Landing() {
                     <p className="text-xs md:text-sm text-gray-500 font-medium">{section.blurb}</p>
                   </div>
                 </div>
-                {/* items-start keeps every card hugging its own content instead
-                    of stretching to the tallest card in the row. */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 items-start">
+                {/* Cards stretch to uniform row height; clamped copy plus a
+                    bottom-pinned meta row keeps that height tight and aligned. */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {section.tests.map((t) => (
                     <button
                       key={t.key}
                       onClick={t.action ?? (() => trackAndNavigate(t.key, t.to))}
-                      className="text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-coral-300 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
+                      className="text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-coral-300 transition-all group flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
                     >
-                      {/* Icon floats so the title and description wrap around it. */}
-                      <span className="float-left mr-2.5 mt-0.5">
-                        <QuizGlyph quizKey={t.key} emoji={t.emoji} size={30} />
-                      </span>
-                      <h3 className="text-sm font-extrabold text-gray-900 leading-snug">{t.title}</h3>
-                      <p className="text-xs text-gray-500 leading-relaxed mt-1">{t.description}</p>
-                      <span className="clear-left flex items-center gap-1 mt-2 text-xs font-bold text-coral-500">
+                      <div>
+                        {/* Icon floats so the title and description wrap around it. */}
+                        <span className="float-left mr-2.5 mt-0.5">
+                          <QuizGlyph quizKey={t.key} emoji={t.emoji} size={30} />
+                        </span>
+                        <h3 className="text-sm font-extrabold text-gray-900 leading-snug line-clamp-2">{t.title}</h3>
+                        <p className="text-xs text-gray-500 leading-relaxed mt-1 line-clamp-3">{t.description}</p>
+                      </div>
+                      <span className="clear-left flex items-center gap-1 mt-auto pt-2 text-xs font-bold text-coral-500">
                         {t.time}
                         <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                       </span>
