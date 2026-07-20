@@ -164,7 +164,7 @@ export default function Circle() {
         </p>
         <button
           onClick={() => signInWithGoogle('/circle').catch((e) => setError(e?.message ?? 'Sign-in failed.'))}
-          className="px-6 py-3 rounded-xl bg-gray-900 hover:bg-black text-[#FAF9F5] font-bold shadow-md transition-colors"
+          className="px-6 py-3 rounded-xl bg-coral-500 hover:bg-coral-600 text-white font-bold shadow-md transition-colors"
         >
           Sign in with Google
         </button>
@@ -205,7 +205,7 @@ export default function Circle() {
           </div>
           <h1 className="text-2xl font-black text-gray-900">My Circle</h1>
         </div>
-        <p className="font-serif italic text-[15px] text-gray-500 mb-8">
+        <p className="text-sm text-gray-500 mb-8">
           The people you&apos;ve matched with — and how your personalities line up.
         </p>
 
@@ -303,7 +303,7 @@ export default function Circle() {
               </p>
               <button
                 onClick={() => navigate('/')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 hover:bg-black text-[#FAF9F5] text-sm font-bold shadow-sm transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-coral-500 hover:bg-coral-600 text-white text-sm font-bold shadow-sm transition-colors"
               >
                 <Share2 className="w-4 h-4" />
                 Take a quiz to share

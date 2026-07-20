@@ -306,7 +306,7 @@ function CircleCTA({ shared }) {
     body = (
       <button
         onClick={() => navigate('/circle')}
-        className="w-full py-3 rounded-xl bg-gray-900 hover:bg-black text-[#FAF9F5] text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-colors"
+        className="w-full py-3 rounded-xl bg-coral-500 hover:bg-coral-600 text-white text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-colors"
       >
         <Users className="w-4 h-4" />
         They asked to join your circle — respond
@@ -321,7 +321,7 @@ function CircleCTA({ shared }) {
         <button
           onClick={handleRequest}
           disabled={busy}
-          className="w-full py-3 rounded-xl bg-gray-900 hover:bg-black text-[#FAF9F5] text-sm font-bold shadow-md flex items-center justify-center gap-2 disabled:opacity-60 transition-colors"
+          className="w-full py-3 rounded-xl bg-coral-500 hover:bg-coral-600 text-white text-sm font-bold shadow-md flex items-center justify-center gap-2 disabled:opacity-60 transition-colors"
         >
           {busy ? (
             <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -514,8 +514,8 @@ export default function SharedResult() {
         </motion.div>
 
         {/* ── Social proof nudge ── */}
-        <p className="text-center font-serif italic text-sm text-gray-500 mb-6">
-          Their result. Your move.
+        <p className="text-center text-xs text-gray-400 mb-6">
+          Someone shared this result — what&apos;s yours?
         </p>
 
         {/* ── Compatibility: shown when the visitor has their own result ── */}

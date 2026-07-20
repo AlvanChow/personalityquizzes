@@ -1,12 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-// Self-hosted fonts: Bricolage Grotesque (display) + Plus Jakarta Sans (UI)
-// + Source Serif 4 (editorial accents).
-import '@fontsource-variable/bricolage-grotesque';
-import '@fontsource-variable/plus-jakarta-sans';
-import '@fontsource/source-serif-4/400.css';
-import '@fontsource/source-serif-4/400-italic.css';
-import '@fontsource/source-serif-4/600.css';
+// Self-hosted Nunito (the site's original face), 400–900 via variable font.
+import '@fontsource-variable/nunito';
 import './index.css'
 import App from './App.jsx'
 
