@@ -56,7 +56,7 @@ export default function SharePanel({ quizType, result, scores = null, className 
     setCreating(true);
     setError(null);
     try {
-      const url = await createShareableLink(quizType, result, scores);
+      const url = await createShareableLink(quizType, result, scores, user?.id ?? null);
       if (url) {
         setShareUrl(url);
         track('share_link_created', { quiz: quizType }, user?.id ?? null);
