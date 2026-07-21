@@ -10,6 +10,7 @@ import { allowQuizSave } from '../utils/rateLimiter';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { safeJsonParse } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
+import { getQuizFactsLine } from '../data/quizInfo';
 import './narutoQuiz.css';
 
 // Presentation-only rebuild: the OEJTS forced-choice instrument now renders
@@ -202,6 +203,7 @@ export default function MBTIDeepQuiz() {
           <button className="btn btn-primary" onClick={() => setScreen('quiz')}>
             {resuming ? 'Continue' : 'Begin'}
           </button>
+          <p className="fine">{getQuizFactsLine('mbti-deep')}</p>
           <p className="fine">
             <b>20</b> choices <span className="dot" /> <b>16</b> types <span className="dot" /> ~8 minutes
           </p>

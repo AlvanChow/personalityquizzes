@@ -10,6 +10,7 @@ import { allowQuizSave } from '../utils/rateLimiter';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { safeJsonParse } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
+import { getQuizFactsLine } from '../data/quizInfo';
 import './narutoQuiz.css';
 
 // Presentation-only rebuild: the MBTI instrument now renders through the
@@ -201,6 +202,7 @@ export default function MBTIQuiz() {
           <button className="btn btn-primary" onClick={() => setScreen('quiz')}>
             {resuming ? 'Continue' : 'Begin'}
           </button>
+          <p className="fine">{getQuizFactsLine('mbti')}</p>
           <p className="fine">
             <b>28</b> questions <span className="dot" /> <b>16</b> types <span className="dot" /> ~6 minutes
           </p>

@@ -9,6 +9,7 @@ import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { lighten } from '../utils/vectorQuiz';
+import { getQuizFactsLine } from '../data/quizInfo';
 import { safeJsonParse } from '../utils/security';
 import './narutoQuiz.css';
 
@@ -193,6 +194,7 @@ export default function EnneagramQuiz() {
         </p>
         <div className="cta">
           <button className="btn btn-primary" onClick={() => setScreen('quiz')}>Begin</button>
+          <p className="fine">{getQuizFactsLine('enneagram')}</p>
           <p className="fine"><b>27</b> questions <span className="dot" /> about 3 minutes <span className="dot" /> <b>9</b> types</p>
         </div>
         <button className="linkbtn" onClick={() => navigate('/')}>← All quizzes</button>

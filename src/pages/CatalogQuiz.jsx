@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
+import QuizInfoPanel from '../components/QuizInfoPanel';
 import { getQuizMeta, storageKeyFor } from '../data/quizzes';
 import { computeQuizResult, LIKERT_OPTIONS } from '../utils/quizEngine';
 import { useAuth } from '../contexts/AuthContext';
@@ -166,6 +167,8 @@ export default function CatalogQuiz() {
       userId={user?.id ?? null}
       exitPath="/dashboard"
       questionsPerPage={isLikert ? 6 : null}
+      title={meta.title}
+      intro={<QuizInfoPanel quizKey={quiz.key} measures={meta.description} questions={quiz.questions.length} time={meta.time} />}
     />
   );
 }

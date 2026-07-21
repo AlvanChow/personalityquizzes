@@ -10,6 +10,7 @@ import { allowQuizSave } from '../utils/rateLimiter';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { safeJsonParse } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
+import { getQuizFactsLine } from '../data/quizInfo';
 import './narutoQuiz.css';
 
 // Presentation-only restyle: the 36-item inventory now renders through the
@@ -182,6 +183,7 @@ export default function EnneagramDeepQuiz() {
           <button className="btn btn-primary" onClick={() => setScreen('quiz')}>
             {started ? 'Resume' : 'Begin'}
           </button>
+          <p className="fine">{getQuizFactsLine('enneagram-deep')}</p>
           <p className="fine">
             <b>36</b> statements <span className="dot" /> <b>9</b> core types <span className="dot" /> about 5 minutes
           </p>
