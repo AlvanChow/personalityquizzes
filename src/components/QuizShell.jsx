@@ -274,7 +274,7 @@ function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions, quiz
   );
 }
 
-export default function QuizShell({ questions, onComplete, renderOptions, quizKey, userId = null, exitPath = '/', allowViewAll = false, questionsPerPage = null }) {
+export default function QuizShell({ questions, onComplete, renderOptions, quizKey, userId = null, exitPath = '/', allowViewAll = false, questionsPerPage = null, intro = null, title = null }) {
   const navigate = useNavigate();
   const [restored] = useState(() => (questionsPerPage ? null : readProgress(quizKey, questions)));
   const [currentIndex, setCurrentIndex] = useState(() =>
@@ -283,15 +283,23 @@ export default function QuizShell({ questions, onComplete, renderOptions, quizKe
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState(1);
   const [viewAll, setViewAll] = useState(false);
+  // Optional pre-quiz intro/info screen. Only shown when an `intro` node is
+  // passed (catalog quizzes route through here); bespoke quizzes keep their
+  // own intros. Skipped when the user has in-progress answers to resume.
+  const [started, setStarted] = useState(() => {
+    if (!intro) return true;
+    const saved = readProgress(quizKey, questions);
+    return !!(saved && Object.keys(saved.answers).length > 0);
+  });
 
-  // Fire quiz_started once on mount. startedRef guards against React
-  // StrictMode's double-invocation of effects in development.
+  // Fire quiz_started once the quiz actually begins. startedRef guards against
+  // React StrictMode's double-invocation of effects in development.
   const startedRef = useRef(false);
   useEffect(() => {
-    if (!quizKey || startedRef.current) return;
+    if (!quizKey || !started || startedRef.current) return;
     startedRef.current = true;
     track('quiz_started', { quiz: quizKey }, userId);
-  }, [quizKey, userId]);
+  }, [quizKey, userId, started]);
 
   // Keep in-progress answers across accidental refreshes (paged view
   // persists its own local state).
@@ -332,6 +340,40 @@ export default function QuizShell({ questions, onComplete, renderOptions, quizKe
     setIsAnimating(true);
     setCurrentIndex(prev => prev - 1);
   }, [isAnimating, currentIndex, navigate, exitPath]);
+
+  if (intro && !started) {
+    return (
+      <div className="min-h-screen flex flex-col bg-cream-50">
+        <div className="flex items-center justify-between px-6 pt-6 pb-2">
+          <button
+            onClick={() => navigate(exitPath)}
+            aria-label="Exit quiz"
+            className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Exit
+          </button>
+        </div>
+        <div className="flex-1 flex items-center justify-center px-6 py-8">
+          <div className="w-full max-w-lg">
+            {title && (
+              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 text-center mb-5 leading-tight">
+                {title}
+              </h1>
+            )}
+            {intro}
+            <button
+              onClick={() => setStarted(true)}
+              className="mt-6 w-full py-3.5 rounded-lg bg-coral-500 hover:bg-coral-600 text-white font-extrabold text-base transition-all flex items-center justify-center gap-2 shadow-sm"
+            >
+              Start quiz
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (questionsPerPage) {
     return (

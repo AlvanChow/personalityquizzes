@@ -8,6 +8,7 @@ import { track } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { safeJsonParse } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
+import { getQuizFactsLine } from '../data/quizInfo';
 import './narutoQuiz.css';
 
 // The 50-item IPIP deep assessment, dressed in the ink-scroll (.nq) shell the
@@ -163,6 +164,7 @@ export default function BigFiveDeepQuiz() {
           <button className="btn btn-primary" onClick={() => setScreen('quiz')}>
             {answeredCount > 0 ? 'Continue' : 'Begin'}
           </button>
+          <p className="fine">{getQuizFactsLine('big5-deep')}</p>
           <p className="fine">
             <b>{total}</b> statements <span className="dot" /> <b>{PART_COUNT}</b> parts <span className="dot" /> about 10 minutes
           </p>

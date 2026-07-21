@@ -5,6 +5,7 @@ import FeedbackWidget from './FeedbackWidget';
 import NextQuizBanner from './NextQuizBanner';
 import { emblem } from '../data/vectorQuizzes/glyphs';
 import { lighten, userVector, ranked, matchPct } from '../utils/vectorQuiz';
+import { getQuizFactsLine } from '../data/quizInfo';
 import { storageKeyFor } from '../data/quizzes';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -277,6 +278,7 @@ export default function VectorQuizExperience({ def }) {
         <div className="cta">
           <button className="btn btn-primary" onClick={begin}>{def.beginLabel ?? 'Begin'}</button>
           <button className="btn btn-ghost" onClick={() => setScreen('gallery')}>Meet all {nChars} {def.rosterNoun}</button>
+          <p className="fine">{getQuizFactsLine(QUIZ_KEY)}</p>
           <p className="fine"><b>{nChars}</b> possible results <span className="dot" /> {nFront} {tierLabels.front.toLowerCase()} <span className="dot" /> {nChars - nFront} {tierLabels.cut.toLowerCase()}s</p>
         </div>
         <button className="linkbtn" onClick={() => navigate('/')}>← All quizzes</button>

@@ -8,6 +8,7 @@ import { track } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { safeJsonParse } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
+import { getQuizFactsLine } from '../data/quizInfo';
 import './narutoQuiz.css';
 
 // The baseline Big Five assessment, dressed in the ink-scroll (.nq) shell the
@@ -156,6 +157,7 @@ export default function Assessment() {
           <button className="btn btn-primary" onClick={() => setScreen('quiz')}>
             {answeredCount > 0 ? 'Continue' : 'Begin'}
           </button>
+          <p className="fine">{getQuizFactsLine('big5')}</p>
           <p className="fine">
             <b>5</b> traits <span className="dot" /> <b>{total}</b> statements <span className="dot" /> about 3 minutes
           </p>
