@@ -33,8 +33,14 @@
       // Apply saved/system theme before first paint to avoid a flash.
       (function () {
         try {
-          // Dark is the default; an explicit 'light' choice opts out.
-          if (localStorage.getItem('pq_theme') !== 'light') {
+          // Dark is the default. Only a light choice saved under the CURRENT
+          // preference scheme opts out — any older/stale preference (e.g. a
+          // light flip from before dark became the default) is ignored so
+          // every returning visitor re-lands in dark, as intended.
+          var THEME_SCHEME = '2';
+          var scheme = localStorage.getItem('pq_theme_v');
+          var pref = localStorage.getItem('pq_theme');
+          if (!(scheme === THEME_SCHEME && pref === 'light')) {
             document.documentElement.classList.add('dark');
           }
         } catch (e) { /* storage unavailable */ }
