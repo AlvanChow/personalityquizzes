@@ -371,7 +371,7 @@ export default function AdminDashboard() {
                   { label: 'Big Five (baseline)', key: 'baseline', isBaseline: true },
                   { label: 'MBTI', key: 'mbti' },
                   { label: 'Enneagram', key: 'enneagram' },
-                  { label: 'Cake.me', key: 'cake' },
+                  { label: 'Cake', key: 'cake' },
                 ].map(({ label, key, isBaseline }) => {
                   const completed = isBaseline
                     ? stats?.baselineCompleted ?? 0

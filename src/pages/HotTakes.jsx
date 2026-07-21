@@ -268,7 +268,7 @@ export default function HotTakes() {
             >
               <p className="text-4xl mb-3">🔥</p>
               <h2 className="text-lg font-extrabold text-gray-800 mb-1">You&rsquo;ve picked every side 🔥</h2>
-              <p className="text-sm text-gray-500 mb-5">8 debates. 8 opinions. Zero regrets.</p>
+              <p className="text-sm text-gray-500 mb-5">{hotTakes.length} debates. {hotTakes.length} opinions. Zero regrets.</p>
               <div className="flex gap-3">
                 <motion.button
                   onClick={handleShare}

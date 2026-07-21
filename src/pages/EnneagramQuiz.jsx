@@ -10,6 +10,7 @@ import { allowQuizSave } from '../utils/rateLimiter';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { lighten } from '../utils/vectorQuiz';
 import { getQuizFactsLine } from '../data/quizInfo';
+import CoreIntroBreakdown from '../components/CoreIntroBreakdown';
 import { safeJsonParse } from '../utils/security';
 import './narutoQuiz.css';
 
@@ -192,6 +193,7 @@ export default function EnneagramQuiz() {
           Nine core types, nine different engines running under the surface.
           Twenty-seven honest reflections reveal which one is quietly steering yours.
         </p>
+        <CoreIntroBreakdown quizKey="enneagram" />
         <div className="cta">
           <button className="btn btn-primary" onClick={() => setScreen('quiz')}>Begin</button>
           <p className="fine">{getQuizFactsLine('enneagram')}</p>

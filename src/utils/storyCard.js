@@ -17,7 +17,7 @@ const SITE = 'mypersonalityquizzes.com';
 const THEMES = {
   mbti:      { bg: ['#ff9a8b', '#ff5e7e'], accent: '#f43f5e', label: 'MBTI' },
   enneagram: { bg: ['#34d399', '#0d9488'], accent: '#10b981', label: 'Enneagram' },
-  cake:      { bg: ['#38bdf8', '#2563eb'], accent: '#0ea5e9', label: 'CAKE Workplace' },
+  cake:      { bg: ['#38bdf8', '#2563eb'], accent: '#0ea5e9', label: 'Cake' },
   big5:      { bg: ['#a78bfa', '#7c3aed'], accent: '#8b5cf6', label: 'Big Five' },
   house:     { bg: ['#fbbf24', '#b45309'], accent: '#d97706', label: 'Wizarding House' },
 };

@@ -86,7 +86,7 @@ export function getShareText(platform, result, shareUrl, quizType) {
   const quizNames = {
     mbti:       'MBTI',
     enneagram:  'Enneagram',
-    cake:       'CAKE Workplace',
+    cake:       'Cake',
     big5:       'Big Five',
     house:      'Wizarding House',
   };

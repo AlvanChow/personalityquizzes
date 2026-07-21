@@ -34,10 +34,10 @@ const QUIZ_META = {
     icon:        Sparkles,
   },
   cake: {
-    label:       'CAKE Workplace',
+    label:       'Cake',
     description: 'Find your top workplace competency and what kind of professional you are.',
     path:        '/quiz/cake',
-    cta:         'Take the CAKE Quiz',
+    cta:         'Take the Cake Quiz',
     gradient:    'from-sky-400 to-sky-500',
     icon:        Cake,
   },

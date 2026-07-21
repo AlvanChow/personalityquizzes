@@ -57,8 +57,8 @@ const FRAMEWORKS = [
   },
   {
     id: 'cake',
-    name: 'Cake.me',
-    subtitle: 'Personality Through the Lens of Confection',
+    name: 'What Cake Are You?',
+    subtitle: 'Your Workplace Strengths, Served as Dessert',
     color: 'from-rose-50 to-peach-50',
     border: 'border-rose-100',
     accent: 'text-rose-700',
@@ -66,11 +66,11 @@ const FRAMEWORKS = [
     badgeColor: 'bg-rose-100 text-rose-700',
     quizPath: '/quiz/cake',
     quizLabel: 'Take the Cake Quiz',
-    origin: 'Cake.me is a playful personality framework that maps Big Five trait profiles onto six distinct cake archetypes. It was designed to make personality psychology accessible, shareable, and fun — while staying grounded in real trait science.',
-    howItWorks: 'The quiz uses 10 scenario-based questions that measure tendencies across Extraversion, Openness, Conscientiousness, Agreeableness, and Neuroticism. Your answers adjust your underlying Big Five scores, and the dominant adjusted trait determines which cake archetype you match. Funfetti = high Extraversion. Matcha Crepe = high Openness. Red Velvet = high Agreeableness. Lava Cake = high Neuroticism. Wedding Cake = high Conscientiousness. Chocolate = balanced.',
-    validity: 'Cake.me is not a clinical instrument. It is a pedagogical tool — a gateway to understanding the Big Five in a low-stakes, engaging format. The underlying scoring mechanism is directly grounded in OCEAN trait research.',
-    criticisms: 'Like any simplified personality tool, Cake.me trades precision for accessibility. A single dominant trait doesn\'t capture the full complexity of a person\'s personality profile. Think of it as an introduction, not a conclusion.',
-    sources: ['Costa & McCrae (1992) — The Big Five framework', 'John et al. (2008) — Paradigm shift to the integrative Big-Five taxonomy'],
+    origin: 'A playful workplace-personality quiz that matches you to one of six cakes, each standing for a professional strength. It was built to turn a "how do you show up on a team" conversation into something shareable and fun — no jargon, no scores to stress over.',
+    howItWorks: 'Ten quick statements place you along four workplace axes: deliberate ↔ full speed, heads-down ↔ people-first, proven playbook ↔ reinvention, and backstage ↔ front-of-room. Your answers become a vector, and you\'re matched to the closest cake by direction (cosine similarity — the same engine the character quizzes use). The six cakes each map to a signature strength: Layer Cake → Action Oriented, Cupcake → Problem Solving, Macaron → Innovation, Strawberry Cake → Teamwork, Roll Cake → Attention to Detail, and Tiramisu → Influence.',
+    validity: 'Not a clinical instrument and not a hiring tool — it\'s a light-hearted mirror for how you like to work. There\'s no "right" cake and no OCEAN scoring behind it; the point is a fun, low-stakes way to talk about team strengths.',
+    criticisms: 'Six cakes can\'t capture a whole working style, and crowning a single top strength flattens real nuance — most people are a blend. Take it as a conversation starter, not a performance review.',
+    sources: [],
   },
 ];
 
