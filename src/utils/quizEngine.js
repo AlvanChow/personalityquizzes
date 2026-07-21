@@ -80,6 +80,7 @@ function computeLikert(quiz, answers) {
   }
 
   // Normalize each dimension from its min (all 1s) → max (all 5s) to 0–100.
+  // These absolute scores decide the winner and drive banded/balance quizzes.
   const scores = {};
   for (const dim of Object.keys(quiz.dimensions)) {
     scores[dim] = counts[dim] > 0
@@ -90,6 +91,37 @@ function computeLikert(quiz, answers) {
   const overallPct = overallCount > 0
     ? Math.round(((overallSum - overallCount) / (overallCount * (LIKERT_MAX - 1))) * 100)
     : 0;
+
+  // ─── Spread + tie detection ───────────────────────────────────────────────
+  // A flat profile (someone who answers everything the same way, or is genuinely
+  // even) must NOT be presented as a confident single winner. `spread` is the
+  // gap between the strongest and weakest answered dimension; below TIE_EPS the
+  // result is "balanced", not a type. This is the fix for "100% on all six".
+  const TIE_EPS = 8;
+  const answeredScores = Object.keys(quiz.dimensions)
+    .filter((d) => counts[d] > 0)
+    .map((d) => scores[d]);
+  const maxScore = answeredScores.length ? Math.max(...answeredScores) : 0;
+  const minScore = answeredScores.length ? Math.min(...answeredScores) : 0;
+  const spread = maxScore - minScore;
+  const tie = answeredScores.length <= 1 ? false : spread < TIE_EPS;
+
+  // ─── Relative (ipsative) display scores ───────────────────────────────────
+  // Interest inventories (positively-keyed, `scoring: 'relative'`) report each
+  // dimension RELATIVE to the person's own range, so the profile always has a
+  // shape — the strongest lands ~100, the weakest ~15, and "likes everything"
+  // collapses to a flat mid-scale (never 100% across the board). The winner is
+  // unchanged (min-max is order-preserving).
+  let displayScores = scores;
+  if (quiz.scoring === 'relative') {
+    displayScores = {};
+    for (const dim of Object.keys(quiz.dimensions)) {
+      if (counts[dim] === 0) { displayScores[dim] = 0; continue; }
+      displayScores[dim] = spread > 0
+        ? Math.round(15 + ((scores[dim] - minScore) / spread) * 85)
+        : 50;
+    }
+  }
 
   if (quiz.bands?.length) {
     // Bands are declared in ascending `min` order; the last one at or below
@@ -111,6 +143,7 @@ function computeLikert(quiz, answers) {
     };
   }
 
+  // Winner is the highest ABSOLUTE dimension (order matches displayScores).
   let topDim = Object.keys(quiz.dimensions)[0];
   for (const dim of Object.keys(quiz.dimensions)) {
     if (scores[dim] > scores[topDim]) topDim = dim;
@@ -120,8 +153,11 @@ function computeLikert(quiz, answers) {
     mode: 'likert',
     resultKey: topDim,
     result: quiz.results[topDim],
-    scores,
+    scores: displayScores,
+    rawScores: scores,
     overallPct,
+    spread,
+    tie,
   };
 }
 

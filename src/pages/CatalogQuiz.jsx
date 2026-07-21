@@ -60,7 +60,9 @@ export default function CatalogQuiz() {
       resultKey: outcome.resultKey,
       result: outcome.result,
       scores: outcome.scores,
+      rawScores: outcome.rawScores ?? outcome.scores,
       overallPct: outcome.overallPct ?? null,
+      tie: outcome.tie ?? false,
       completedAt: new Date().toISOString(),
     };
     localStorage.setItem(storageKeyFor(quiz.key), JSON.stringify(stored));

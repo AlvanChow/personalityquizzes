@@ -6,10 +6,8 @@ import UserMenu from './UserMenu';
 const NAV = [
   { label: 'Quizzes', to: '/', match: (p) => p === '/' },
   { label: 'Circle', to: '/circle', match: (p) => p.startsWith('/circle'), icon: Users },
-  { label: 'Hot Takes', to: '/hot-takes', match: (p) => p.startsWith('/hot-takes') },
-  // Hidden on the smallest screens — the dashboard stays reachable through
-  // the hero CTA and the account menu.
-  { label: 'My Results', to: '/dashboard', match: (p) => p.startsWith('/dashboard'), desktopOnly: true },
+  // Hot Takes lives as a card in the catalog, not a top-level destination.
+  { label: 'My Results', to: '/dashboard', match: (p) => p.startsWith('/dashboard') },
 ];
 
 // Global top bar. Quiz-taking routes keep their own minimal chrome so the

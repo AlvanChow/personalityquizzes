@@ -468,6 +468,9 @@ export default function FlowerPetal() {
                   onRestart={() => {
                     setPetals(emptyPetals());
                     localStorage.removeItem(STORAGE_KEY);
+                    // Clear the completion stamp so a redo isn't re-marked done
+                    // on the first edit.
+                    completedAtRef.current = null;
                     setStep(-1);
                   }}
                 />

@@ -232,11 +232,21 @@ export default function CatalogResult() {
   const { result, scores, overallPct } = stored;
   const hasBands = model.kind === 'banded';
 
-  const kindred = (result.kindred ?? [])
+  // A flat / no-signal profile is presented as "balanced", never a confident
+  // single winner. Low-but-not-flat profiles soften the headline so a
+  // relatively-strongest-yet-modest area isn't oversold as a "superpower".
+  const rawScores = stored.rawScores ?? scores;
+  const tie = !hasBands && !!stored.tie;
+  const topRaw = rawScores?.[stored.resultKey] ?? 100;
+  const lowConfidence = !hasBands && !tie && topRaw < 55;
+
+  const BALANCED_COPY = 'You spread pretty evenly across these — no single one runs away with it. That breadth is genuinely useful, but it also means this read is less sharp than usual. Retake and answer more decisively if you want a clearer standout.';
+
+  const kindred = tie ? [] : (result.kindred ?? [])
     .map((k) => quiz.results?.[k])
     .filter(Boolean);
 
-  const tagPills = typeof result.tagline === 'string'
+  const tagPills = (!tie && typeof result.tagline === 'string')
     ? result.tagline.split(/\s+/).filter(Boolean).slice(0, 4)
     : [];
 
@@ -273,14 +283,14 @@ export default function CatalogResult() {
                 transition={{ delay: 0.2, type: 'spring', stiffness: 180, damping: 12 }}
                 className="relative text-6xl md:text-7xl"
               >
-                {result.emoji}
+                {tie ? '⚖️' : result.emoji}
               </motion.span>
             </div>
             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
-              {hasBands ? 'Your result' : 'You are…'}
+              {hasBands ? 'Your result' : tie ? 'Your profile' : lowConfidence ? 'Your strongest area' : 'You are…'}
             </p>
-            <h1 className={`text-3xl md:text-4xl font-black leading-tight ${result.accent}`}>
-              {result.name}
+            <h1 className={`text-3xl md:text-4xl font-black leading-tight ${tie ? 'text-gray-800' : result.accent}`}>
+              {tie ? 'Fairly balanced' : result.name}
             </h1>
 
             {tagPills.length > 0 && (
@@ -300,7 +310,7 @@ export default function CatalogResult() {
             )}
 
             <p className="text-gray-700 leading-relaxed text-[15px] md:text-base mt-5 text-left">
-              {result.description}
+              {tie ? BALANCED_COPY : result.description}
             </p>
           </div>
         </motion.div>
@@ -321,7 +331,7 @@ export default function CatalogResult() {
         {/* ── Ranked profile (unbanded likert + pick) ── */}
         {model.kind === 'ranked' && (
           <SectionCard icon={Trophy} iconBg="bg-sky-100 text-sky-600" title={quiz.resultsHeading} delay={0.35}>
-            {topBlend.length >= 2 && (
+            {!tie && topBlend.length >= 2 && (
               <div className="flex flex-wrap items-center gap-2 mb-4 pb-4 border-b border-gray-100">
                 <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Your top blend</span>
                 {topBlend.map((r) => (
@@ -360,7 +370,7 @@ export default function CatalogResult() {
               <SectionCard icon={Trophy} iconBg="bg-sky-100 text-sky-600" title={quiz.resultsHeading} delay={0.35}>
                 <div className="flex flex-wrap gap-3">
                   {model.tiles.map((t, i) => (
-                    <DimensionTile key={t.key} emoji={t.emoji} label={t.label} pct={t.pct} colorBg={t.colorBg} delay={0.1 + i * 0.08} />
+                    <DimensionTile key={t.key} label={t.label} pct={t.pct} colorBg={t.colorBg} delay={0.1 + i * 0.08} />
                   ))}
                 </div>
               </SectionCard>
@@ -371,13 +381,17 @@ export default function CatalogResult() {
           </>
         )}
 
-        {/* ── Growth edge ── */}
-        {result.growth && (
+        {/* ── Growth edge (skipped on a balanced/tie profile — the dim-specific
+             copy would misdescribe an undifferentiated result) ── */}
+        {!tie && result.growth && (
           <SectionCard icon={TrendingUp} iconBg="bg-emerald-100 text-emerald-600" title="Your Growth Edge" delay={0.5}>
             <p className="text-sm text-gray-600 leading-relaxed">{result.growth}</p>
-            {lowRow && lowRow.key !== model.rows?.[0]?.key && (
+            {lowRow
+              && lowRow.key !== model.rows?.[0]?.key
+              && (rawScores?.[lowRow.key] ?? 100) < 55
+              && (model.rows[0].pct - lowRow.pct) >= 25 && (
               <p className="text-xs text-gray-400 leading-relaxed mt-3 pt-3 border-t border-gray-100">
-                Quietest area right now: <span className="font-bold text-gray-500">{lowRow.shortName}</span> ({lowRow.pct}%) — a little attention there goes a long way.
+                Quietest area right now: <span className="font-bold text-gray-500">{lowRow.shortName}</span> — a little attention there goes a long way.
               </p>
             )}
           </SectionCard>
