@@ -204,22 +204,23 @@ export default function Landing() {
                 </div>
                 {/* Compact cards: icon, title, and a bottom-pinned time row.
                     Each quiz's full description now lives on its intro screen. */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 items-start">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
                   {section.tests.map((t) => (
                     <button
                       key={t.key}
                       onClick={t.action ?? (() => trackAndNavigate(t.key, t.to))}
-                      className="text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm transition-all duration-200 group flex items-start gap-2.5 hover:-translate-y-0.5 hover:border-coral-300 hover:shadow-[0_10px_32px_-14px_rgba(240,104,48,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
+                      className="text-left p-3 rounded-xl bg-white border border-gray-200 shadow-sm transition-all duration-200 group flex items-stretch gap-2.5 hover:-translate-y-0.5 hover:border-coral-300 hover:shadow-[0_10px_32px_-14px_rgba(240,104,48,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
                     >
-                      {/* Icon on the left; the title gets the room (up to 3 lines
-                          so long names aren't truncated), with a small, low-key
-                          time marker tucked under it. */}
+                      {/* Cards share a row height (grid stretches them); the icon
+                          stays top-left and the time is pinned to the bottom, so
+                          every title starts at the top and every "~min" lines up
+                          across the row instead of floating under short titles. */}
                       <span className="shrink-0 mt-0.5 transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-3">
                         <QuizGlyph quizKey={t.key} emoji={t.emoji} size={28} />
                       </span>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 flex flex-col">
                         <h3 className="text-sm font-extrabold text-gray-900 leading-snug line-clamp-3">{t.title}</h3>
-                        <span className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-coral-500/90">
+                        <span className="mt-auto pt-1.5 flex items-center gap-1 text-[11px] font-semibold text-coral-500/90">
                           {t.time}
                           <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                         </span>
