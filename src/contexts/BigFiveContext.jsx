@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 import { track } from '../utils/analytics';
 import { allowProfileSync } from '../utils/rateLimiter';
 import { safeJsonParse, isPlainObject } from '../utils/security';
-import { QUIZ_CATALOG } from '../data/quizzes';
+import { QUIZ_CATALOG, storageKeyFor } from '../data/quizzes';
 
 const STORAGE_KEY = 'personalens_bigfive';
 const defaultScores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
@@ -106,6 +106,33 @@ async function syncGuestQuizResults(userId, remoteResults) {
       p_user_id: userId,
       p_quiz_key: 'house',
       p_result: { resultKey: r.key, name: r.name, emoji: r.emoji, trait: r.tagline ?? '', quizName: 'Wizarding House' },
+    }));
+  }
+
+  // Every other catalog + vector quiz (naruto, office, riasec, eq, love_language, …).
+  // These all persist under personalens_<key> with the standard { resultKey, result }
+  // shape written by CatalogQuiz / VectorQuizExperience. The four quizzes above stay
+  // special-cased because they carry bespoke compat fields / composite names; the rest
+  // sync generically here. Without this, a guest who completes ANY themed/catalog quiz
+  // loses it on sign-in — and it gets wiped from localStorage on sign-out (PERSONAL_KEYS),
+  // so the result is destroyed. This is the core "start as a guest, sign in to save" path.
+  for (const meta of QUIZ_CATALOG) {
+    if (meta.custom) continue;                // flower_petal etc. store no standard result
+    const key = meta.key;
+    if (remoteResults[key]) continue;         // already on the server
+    const data = readLocalJson(storageKeyFor(key));
+    const r = data?.result;
+    if (!r || !data.resultKey || !r.name) continue;
+    tasks.push(supabase.rpc('upsert_quiz_result', {
+      p_user_id: userId,
+      p_quiz_key: key,
+      p_result: {
+        resultKey: String(data.resultKey).slice(0, 40),
+        name:      String(r.name).slice(0, 120),
+        emoji:     typeof r.emoji === 'string' ? r.emoji : '',
+        tagline:   typeof r.tagline === 'string' ? r.tagline : '',
+        quizName:  meta.quizName,
+      },
     }));
   }
 

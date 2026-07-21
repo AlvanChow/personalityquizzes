@@ -38,8 +38,9 @@ const CORE_QUIZZES = [
   {
     key: 'cake',
     check: () => !!localStorage.getItem('personalens_cake'),
-    label: 'Cake.me',
-    description: 'What kind of cake matches your vibe?',
+    // Title/description kept in sync with the Landing card for this quiz.
+    label: 'What Cake Are You?',
+    description: 'Your work superpower, served as dessert. Find your professional flavor.',
     path: '/quiz/cake',
     icon: Cake,
     gradient: 'from-pink-400 to-rose-500',

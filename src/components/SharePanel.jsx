@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, Link, Check, X, ImageDown, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,7 +39,7 @@ function WhatsAppIcon({ className }) {
  *   className — optional extra classes for the trigger button
  *   btnColor  — Tailwind gradient classes for the trigger button (defaults to coral)
  */
-export default function SharePanel({ quizType, result, scores = null, className = '', btnColor = 'from-coral-400 to-coral-500' }) {
+export default function SharePanel({ quizType, result, scores = null, scoreMeta = null, className = '', btnColor = 'from-coral-400 to-coral-500' }) {
   const { user } = useAuth();
   const [isOpen, setIsOpen]       = useState(false);
   const [shareUrl, setShareUrl]   = useState(null);
@@ -48,6 +48,8 @@ export default function SharePanel({ quizType, result, scores = null, className 
   const [error, setError]         = useState(null);
   const [storyBusy, setStoryBusy] = useState(false);
   const [storyNote, setStoryNote] = useState(null);
+  const sheetRef = useRef(null);
+  const lastFocusedRef = useRef(null);
 
   async function openPanel() {
     setIsOpen(true);
@@ -73,14 +75,36 @@ export default function SharePanel({ quizType, result, scores = null, className 
 
   function close() { setIsOpen(false); }
 
-  // Close the sheet on Escape, like any modal.
+  // Modal behaviour while the sheet is open: remember what had focus, move focus
+  // into the dialog, trap Tab inside it, close on Escape, and restore focus to
+  // the trigger on close.
   useEffect(() => {
     if (!isOpen) return;
+    lastFocusedRef.current = document.activeElement;
+    const focusables = () => sheetRef.current?.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ) ?? [];
+    const raf = requestAnimationFrame(() => {
+      const els = focusables();
+      (els[0] ?? sheetRef.current)?.focus();
+    });
+
     function onKeyDown(e) {
-      if (e.key === 'Escape') setIsOpen(false);
+      if (e.key === 'Escape') { setIsOpen(false); return; }
+      if (e.key !== 'Tab') return;
+      const els = focusables();
+      if (els.length === 0) return;
+      const first = els[0];
+      const last = els[els.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
     document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener('keydown', onKeyDown);
+      if (lastFocusedRef.current instanceof HTMLElement) lastFocusedRef.current.focus();
+    };
   }, [isOpen]);
 
   async function handleStory() {
@@ -88,7 +112,7 @@ export default function SharePanel({ quizType, result, scores = null, className 
     setStoryBusy(true);
     setStoryNote(null);
     try {
-      const outcome = await shareResultStory(quizType, result, scores, shareUrl);
+      const outcome = await shareResultStory(quizType, result, scores, shareUrl, scoreMeta);
       if (outcome === 'downloaded') {
         setStoryNote('Image saved! Add it to your story 📲');
       }
@@ -168,11 +192,18 @@ export default function SharePanel({ quizType, result, scores = null, className 
               transition={{ duration: 0.22, ease: 'easeOut' }}
               className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-lg px-4 pb-safe"
             >
-              <div className="bg-white rounded-t-2xl shadow-2xl border border-gray-100 p-6">
+              <div
+                ref={sheetRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="share-panel-title"
+                tabIndex={-1}
+                className="bg-white rounded-t-2xl shadow-2xl border border-gray-100 p-6 focus:outline-none"
+              >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <h2 className="text-base font-extrabold text-gray-800">Share your result</h2>
+                    <h2 id="share-panel-title" className="text-base font-extrabold text-gray-800">Share your result</h2>
                     <p className="text-xs text-gray-400 mt-0.5">Challenge friends to find out their type</p>
                   </div>
                   <button

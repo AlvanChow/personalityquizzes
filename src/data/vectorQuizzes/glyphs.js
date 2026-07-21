@@ -49,18 +49,38 @@ const G = {
 export { G };
 
 /* ---------- emblem renderer ---------- */
+
+// Attribute-encode a value before it goes into the SVG markup string. All emblem
+// fields are static today, but escaping here means the moment a quiz sources a
+// character name / image / aura from the DB or a URL, emblem() can't be turned
+// into an injection (stray `"`, `<`, or `javascript:`-style attribute).
+function escAttr(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+// Only let hex / rgb() / hsl() / simple named colours through; anything else
+// falls back to a safe default aura so a colour value can't break out of the
+// attribute it's interpolated into.
+function safeColor(c) {
+  const s = String(c ?? '');
+  return /^#[0-9a-fA-F]{3,8}$|^(?:rgb|hsl)a?\([0-9.,%\s/]+\)$|^[a-zA-Z]{3,20}$/.test(s) ? s : '#cba24a';
+}
+
 let EUID = 0;
 export function emblem(ch, size, noSpin, reduceMotion = false) {
-  const id = 'e' + (EUID++), a = ch.aura, aL = lighten(a, .4);
+  const id = 'e' + (EUID++), a = safeColor(ch.aura), aL = lighten(a, .4);
   let inner;
   if (ch.img) {
-    inner = `<clipPath id="${id}c"><circle cx="110" cy="110" r="72"/></clipPath><image href="${ch.img}" x="38" y="38" width="144" height="144" clip-path="url(#${id}c)" preserveAspectRatio="xMidYMid slice"/>`;
+    inner = `<clipPath id="${id}c"><circle cx="110" cy="110" r="72"/></clipPath><image href="${escAttr(ch.img)}" x="38" y="38" width="144" height="144" clip-path="url(#${id}c)" preserveAspectRatio="xMidYMid slice"/>`;
   } else {
-    const g = G[ch.glyph](a, aL);
+    const build = G[ch.glyph];
+    const g = build ? build(a, aL) : '';
     inner = `<g filter="url(#${id}b)" opacity=".28">${g}</g><g>${g}</g>`;
   }
   const anim = (reduceMotion || noSpin) ? '' : `<animateTransform attributeName="transform" type="rotate" from="0 110 110" to="360 110 110" dur="30s" repeatCount="indefinite"/>`;
-  return `<svg class="emblem-svg" viewBox="0 0 220 220" width="${size}" height="${size}" role="img" aria-label="${ch.name} emblem" style="color:${a}">
+  return `<svg class="emblem-svg" viewBox="0 0 220 220" width="${size}" height="${size}" role="img" aria-label="${escAttr(ch.name)} emblem" style="color:${a}">
     <defs>
       <radialGradient id="${id}g" cx="50%" cy="50%" r="60%">
         <stop offset="0%" stop-color="${aL}" stop-opacity=".5"/>

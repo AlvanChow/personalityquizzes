@@ -228,6 +228,18 @@ body {
 .dark .text-lime-600{color:color-mix(in srgb,#a3e635 70%,#fff);}
 .dark .text-lime-700{color:color-mix(in srgb,#a3e635 60%,#fff);}
 .dark .text-lime-800{color:color-mix(in srgb,#a3e635 50%,#fff);}
+/* Slate is used as a neutral accent (several result headlines, admin chips).
+   Only its gradient stops were remapped before, so text-slate-*/bg-slate-* stayed
+   dark-on-dark (~1.5:1) — nearly invisible in the default dark theme. */
+.dark .bg-slate-50{background-color:color-mix(in srgb,#94a3b8 12%,transparent);}
+.dark .bg-slate-100{background-color:color-mix(in srgb,#94a3b8 18%,transparent);}
+.dark .border-slate-100{border-color:color-mix(in srgb,#94a3b8 28%,transparent);}
+.dark .border-slate-200{border-color:color-mix(in srgb,#94a3b8 38%,transparent);}
+.dark .text-slate-400{color:color-mix(in srgb,#94a3b8 82%,#fff);}
+.dark .text-slate-500{color:color-mix(in srgb,#94a3b8 76%,#fff);}
+.dark .text-slate-600{color:color-mix(in srgb,#94a3b8 70%,#fff);}
+.dark .text-slate-700{color:color-mix(in srgb,#94a3b8 60%,#fff);}
+.dark .text-slate-800{color:color-mix(in srgb,#94a3b8 50%,#fff);}
 
 /* Pastel gradient stops become deep tints so their dark text stays readable */
 .dark .from-amber-100{--tw-gradient-from:color-mix(in srgb, #fbbf24 19%, #1c1a27) var(--tw-gradient-from-position);--tw-gradient-to:rgb(28 26 39 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to);}

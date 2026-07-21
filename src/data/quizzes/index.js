@@ -36,6 +36,9 @@
  */
 
 // Categories: 'pop' = pop-culture matches, 'know' = introspective assessments.
+// Entries WITHOUT a `load` (and not `custom`) are served by the immersive vector
+// experience (src/data/vectorQuizzes/) — the quiz DATA lives there and this
+// catalog only supplies card metadata. See src/data/vectorQuizzes/registry.js.
 export const QUIZ_CATALOG = [
   // ── Know Yourself ──────────────────────────────────────────────────────────
   {
@@ -70,7 +73,6 @@ export const QUIZ_CATALOG = [
     description: 'Words, time, gifts, acts, or touch — discover the language that makes you feel most loved.',
     time: '~3 min',
     gradient: 'from-rose-400 to-red-500',
-    load: () => import('./loveLanguage.js'),
   },
   {
     key: 'attachment',
@@ -81,7 +83,6 @@ export const QUIZ_CATALOG = [
     description: 'Secure, anxious, avoidant, or fearful — see the blueprint your closest relationships run on.',
     time: '~3 min',
     gradient: 'from-sky-400 to-blue-500',
-    load: () => import('./attachment.js'),
   },
   {
     key: 'disc',
@@ -92,7 +93,6 @@ export const QUIZ_CATALOG = [
     description: 'The classic DISC framework: Driver, Influencer, Steadier, or Conscientious — how you move through work.',
     time: '~3 min',
     gradient: 'from-amber-500 to-orange-600',
-    load: () => import('./disc.js'),
   },
   {
     key: 'ikigai',
@@ -114,7 +114,6 @@ export const QUIZ_CATALOG = [
     description: 'Inspired by Schwartz\'s famous theory of basic values — find the core value quietly steering your decisions.',
     time: '~3 min',
     gradient: 'from-violet-400 to-purple-500',
-    load: () => import('./values.js'),
   },
   {
     key: 'eq',
@@ -171,7 +170,6 @@ export const QUIZ_CATALOG = [
     description: 'Clutch assassin, joyful shooter, relentless workhorse — find the basketball great who plays like you live.',
     time: '~3 min',
     gradient: 'from-orange-500 to-amber-600',
-    load: () => import('./nba.js'),
   },
   {
     key: 'soccer',
@@ -182,7 +180,6 @@ export const QUIZ_CATALOG = [
     description: 'Quiet genius or showstopper? Find the football legend whose game matches your personality.',
     time: '~3 min',
     gradient: 'from-emerald-500 to-green-600',
-    load: () => import('./soccer.js'),
   },
   {
     key: 'naruto',
@@ -193,10 +190,6 @@ export const QUIZ_CATALOG = [
     description: 'A 23-character alignment test with a real matching engine — ten statements, one honest read of your ninja way.',
     time: '~2 min',
     gradient: 'from-orange-400 to-red-500',
-    // The naruto quiz has its own dedicated experience (NarutoQuiz.jsx) —
-    // this loader only serves legacy /quiz/naruto/result deep-links if the
-    // dedicated route is ever removed.
-    load: () => import('./naruto.js'),
   },
   {
     key: 'onepiece',
@@ -207,7 +200,6 @@ export const QUIZ_CATALOG = [
     description: 'Captain, swordsman, navigator, cook — find your place on the crew sailing for the One Piece.',
     time: '~3 min',
     gradient: 'from-red-500 to-rose-600',
-    load: () => import('./onepiece.js'),
   },
   // NOTE: the wizarding-house quiz lives at /quiz/house (its own page with
   // share + friend-compatibility wired in), not in this catalog — see the
@@ -221,7 +213,6 @@ export const QUIZ_CATALOG = [
     description: 'Jedi, scoundrel, princess, or something darker — discover your place in the galaxy far, far away.',
     time: '~3 min',
     gradient: 'from-indigo-600 to-slate-800',
-    load: () => import('./starwars.js'),
   },
   {
     key: 'superhero',
@@ -232,7 +223,6 @@ export const QUIZ_CATALOG = [
     description: 'Genius billionaire, friendly neighborhood hero, or Amazon warrior — find your inner cape.',
     time: '~3 min',
     gradient: 'from-blue-500 to-indigo-600',
-    load: () => import('./superhero.js'),
   },
   {
     key: 'disney',
@@ -243,7 +233,6 @@ export const QUIZ_CATALOG = [
     description: 'Adventurer, dreamer, rebel, or royal — find the animated hero who shares your heart.',
     time: '~3 min',
     gradient: 'from-fuchsia-400 to-purple-500',
-    load: () => import('./disney.js'),
   },
   {
     key: 'office',
@@ -254,7 +243,6 @@ export const QUIZ_CATALOG = [
     description: 'World\'s best boss, prankster, or beet farmer — find your Dunder Mifflin desk.',
     time: '~3 min',
     gradient: 'from-slate-500 to-gray-600',
-    load: () => import('./office.js'),
   },
   {
     key: 'friends',
@@ -265,7 +253,6 @@ export const QUIZ_CATALOG = [
     description: 'Could you BE any more curious? Find your seat on the orange couch at Central Perk.',
     time: '~3 min',
     gradient: 'from-amber-400 to-yellow-500',
-    load: () => import('./friends.js'),
   },
   {
     key: 'pokemon',
@@ -276,7 +263,6 @@ export const QUIZ_CATALOG = [
     description: 'Fire, water, grass, or electric — which iconic starter would choose you back?',
     time: '~3 min',
     gradient: 'from-yellow-400 to-amber-500',
-    load: () => import('./pokemon.js'),
   },
   {
     key: 'eras',
@@ -287,7 +273,6 @@ export const QUIZ_CATALOG = [
     description: 'Fearless romantic, reputation villain, or folklore poet — find the era that soundtracks your soul.',
     time: '~3 min',
     gradient: 'from-pink-400 to-fuchsia-500',
-    load: () => import('./eras.js'),
   },
 ];
 

@@ -7,6 +7,8 @@
  * Falls back to downloading the PNG when file sharing isn't available.
  */
 
+import { getQuizMeta } from '../data/quizzes';
+
 const W = 1080;
 const H = 1920;
 const SITE = 'mypersonalityquizzes.com';
@@ -20,8 +22,16 @@ const THEMES = {
   house:     { bg: ['#fbbf24', '#b45309'], accent: '#d97706', label: 'Wizarding House' },
 };
 
+// Neutral indigo fallback for the 20+ themed/catalog quizzes that don't have a
+// bespoke THEME. The label is derived from the quiz's real name so a shared
+// Naruto card no longer says "My MBTI result".
+const DEFAULT_THEME = { bg: ['#6366f1', '#4338ca'], accent: '#6366f1', label: 'Personality' };
+
 function theme(quizType) {
-  return THEMES[quizType] ?? THEMES.mbti;
+  const base = THEMES[quizType];
+  if (base) return base;
+  const label = getQuizMeta(quizType)?.quizName ?? 'Personality';
+  return { ...DEFAULT_THEME, label };
 }
 
 // Nunito is loaded by the page; make sure the canvas can use it. Never throws.
@@ -117,8 +127,19 @@ function drawBar(ctx, x, y, w, label, rightLabel, pct, accent) {
 }
 
 /** Build the per-quiz bar rows shown on the card. */
-function barRows(quizType, result, scores) {
+function barRows(quizType, result, scores, scoreMeta) {
   if (!scores) return [];
+  // Vector quizzes (naruto, cake, house, …) store axis positions as a0..aN in
+  // [-100, 100]. Map each to a 0–100 "where you landed" bar, labelling it with
+  // the spectrum's pole name when provided. Without this the whole bar section
+  // rendered blank for every vector quiz (including the live cake & house).
+  const vectorKeys = Object.keys(scores).filter((k) => /^a\d+$/.test(k));
+  if (vectorKeys.length) {
+    return vectorKeys.slice(0, 4).map((k) => {
+      const raw = Math.max(-100, Math.min(100, Number(scores[k]) || 0));
+      return { label: scoreMeta?.[k] ?? k.toUpperCase(), rightLabel: null, pct: Math.round((raw + 100) / 2) };
+    });
+  }
   if (quizType === 'mbti') {
     const dims = [
       { key: 'IE', l: 'I', r: 'E' },
@@ -172,7 +193,7 @@ function barRows(quizType, result, scores) {
  * @param {object} result   result object (.name, .emoji, .nickname/.competency/.tagline)
  * @param {object} [scores] raw quiz scores for the bar section
  */
-async function renderResultCard(quizType, result, scores) {
+async function renderResultCard(quizType, result, scores, scoreMeta) {
   await ensureFonts();
   const t = theme(quizType);
   const canvas = document.createElement('canvas');
@@ -189,7 +210,7 @@ async function renderResultCard(quizType, result, scores) {
   ctx.fillText(`My ${t.label} result`, W / 2, 240);
 
   // White card
-  const rows = barRows(quizType, result, scores);
+  const rows = barRows(quizType, result, scores, scoreMeta);
   const cardX = 90;
   const cardW = W - 180;
   const cardH = 900 + rows.length * 92;
@@ -371,8 +392,8 @@ async function shareCanvas(canvas, filename, shareText, shareUrl) {
 }
 
 /** One-click: render my-result story card and open the share sheet. */
-export async function shareResultStory(quizType, result, scores, shareUrl) {
-  const canvas = await renderResultCard(quizType, result, scores);
+export async function shareResultStory(quizType, result, scores, shareUrl, scoreMeta) {
+  const canvas = await renderResultCard(quizType, result, scores, scoreMeta);
   const label = theme(quizType).label;
   return shareCanvas(canvas, 'my-personality.png', `I got ${result.emoji ?? ''} ${result.name ?? ''} on the ${label} quiz!`, shareUrl);
 }

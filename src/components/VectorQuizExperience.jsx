@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import SharePanel from './SharePanel';
 import FeedbackWidget from './FeedbackWidget';
 import NextQuizBanner from './NextQuizBanner';
+import CompareBanner from './CompareBanner';
 import { emblem } from '../data/vectorQuizzes/glyphs';
 import { lighten, userVector, ranked, matchPct } from '../utils/vectorQuiz';
 import { getQuizFactsLine } from '../data/quizInfo';
@@ -19,6 +20,11 @@ import '../pages/narutoQuiz.css';
 // kindred/foil, clickable close matches) → full roster gallery → per-result
 // profiles. Every vector quiz renders through this component with its own
 // data module (see src/data/vectorQuizzes/) driving copy, theme, and roster.
+//
+// THEME: this is an intentionally self-contained dark "ink" experience (styles
+// in narutoQuiz.css, dark loader in VectorQuizPage) — it does NOT follow the
+// site's light/dark toggle. The immersive seal/aura art is designed for a dark
+// ground, so it stays dark in both site themes by design.
 
 const LIKERT = [
   { v: -1, size: 'lg', side: 'l', label: 'Strongly disagree' },
@@ -341,6 +347,9 @@ export default function VectorQuizExperience({ def }) {
       ...(top.store ?? {}),
     };
     const shareScores = uv ? Object.fromEntries(uv.map((v, i) => [`a${i}`, Math.round(v * 100)])) : null;
+    // Human labels for the a0..aN axes so the story-card bars read as real
+    // spectra (e.g. "Bold", "Analytical") instead of a blank section.
+    const shareScoreMeta = Object.fromEntries(SPECTRA.map((sp, i) => [`a${i}`, sp.r]));
 
     body = (
       <section className="result">
@@ -387,7 +396,7 @@ export default function VectorQuizExperience({ def }) {
             >
               {copied ? 'Copied ✓' : 'Copy my result'}
             </button>
-            <SharePanel quizType={QUIZ_KEY} result={shareResult} scores={shareScores} btnColor={def.shareGradient} />
+            <SharePanel quizType={QUIZ_KEY} result={shareResult} scores={shareScores} scoreMeta={shareScoreMeta} btnColor={def.shareGradient} />
           </div>
           <div className="also">
             <h3 className="also-title">Other close matches</h3>
@@ -412,6 +421,9 @@ export default function VectorQuizExperience({ def }) {
             <button className="linkbtn" onClick={() => { setScreen('gallery'); scrollTop(); }}>Browse all {nChars} {def.rosterNoun} →</button>
           </div>
           <div style={{ marginTop: 28, textAlign: 'left' }}>
+            {/* If the visitor arrived from a friend's shared cake/house result and
+                just took the quiz, invite them back to see compatibility. */}
+            <CompareBanner quizType={QUIZ_KEY} />
             <FeedbackWidget quizKey={QUIZ_KEY} />
             <NextQuizBanner currentQuizKey={QUIZ_KEY} />
           </div>
@@ -486,6 +498,11 @@ export default function VectorQuizExperience({ def }) {
       </section>
     );
   }
+
+  // Deep-linked to /quiz/<key>/result with nothing to show: the route→screen
+  // effect above is already redirecting to the quiz. Render nothing rather than
+  // flashing an empty themed shell for a frame (matches catalog/MBTI behaviour).
+  if (onResultRoute && !stored?.resultKey && !list) return null;
 
   return (
     <div className="nq" style={rootVars}>
