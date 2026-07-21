@@ -23,7 +23,12 @@ function ThemeToggle() {
     const next = !dark;
     setDark(next);
     document.documentElement.classList.toggle('dark', next);
-    try { localStorage.setItem('pq_theme', next ? 'dark' : 'light'); } catch { /* fine */ }
+    try {
+      localStorage.setItem('pq_theme', next ? 'dark' : 'light');
+      // Stamp the current preference scheme so this explicit choice is honored
+      // on future loads (see the pre-paint init in index.html).
+      localStorage.setItem('pq_theme_v', '2');
+    } catch { /* fine */ }
   }
   return (
     <button
