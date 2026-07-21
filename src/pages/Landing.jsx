@@ -221,21 +221,21 @@ export default function Landing() {
                     <button
                       key={t.key}
                       onClick={t.action ?? (() => trackAndNavigate(t.key, t.to))}
-                      className="text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm transition-all duration-200 group flex flex-col gap-2 hover:-translate-y-0.5 hover:border-coral-300 hover:shadow-[0_10px_32px_-14px_rgba(240,104,48,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
+                      className="text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm transition-all duration-200 group flex items-start gap-2.5 hover:-translate-y-0.5 hover:border-coral-300 hover:shadow-[0_10px_32px_-14px_rgba(240,104,48,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
                     >
-                      {/* Icon + title, then a tight time row. Cards hug their
-                          content (the grid uses items-start) so no empty space
-                          is left where the description used to be. */}
-                      <div className="flex items-start gap-2.5">
-                        <span className="shrink-0 mt-0.5 transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-3">
-                          <QuizGlyph quizKey={t.key} emoji={t.emoji} size={30} />
-                        </span>
-                        <h3 className="text-sm font-extrabold text-gray-900 leading-snug line-clamp-2">{t.title}</h3>
-                      </div>
-                      <span className="flex items-center gap-1 text-xs font-bold text-coral-500">
-                        {t.time}
-                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      {/* Icon on the left; title with the time tucked directly
+                          under the name. Cards hug their content (grid uses
+                          items-start) so there's no wasted vertical space. */}
+                      <span className="shrink-0 mt-0.5 transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-3">
+                        <QuizGlyph quizKey={t.key} emoji={t.emoji} size={30} />
                       </span>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-sm font-extrabold text-gray-900 leading-snug line-clamp-2">{t.title}</h3>
+                        <span className="mt-1 flex items-center gap-1 text-xs font-bold text-coral-500">
+                          {t.time}
+                          <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                        </span>
+                      </div>
                     </button>
                   ))}
                 </div>
