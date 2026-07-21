@@ -53,7 +53,9 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     if (!supabase) return;
-    if (!allowAuth()) return;
+    // Sign-out is not rate-limited: it shares the 'auth' bucket with sign-in, and
+    // dropping it would silently strand a user who clicked "Sign out" (and it is
+    // not an abuse vector — it clears the local session and makes one API call).
     track('auth_sign_out', {}, user?.id ?? null);
     const { error } = await supabase.auth.signOut();
     if (error) throw error;

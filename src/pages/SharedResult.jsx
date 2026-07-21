@@ -359,6 +359,8 @@ export default function SharedResult() {
   const [shared, setShared]   = useState(null);  // shared_results row
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState(false);      // transient fetch failure (retryable)
+  const [reloadKey, setReloadKey] = useState(0);
   const trackedRef = useRef(false);
 
   useEffect(() => {
@@ -376,12 +378,15 @@ export default function SharedResult() {
     }
 
     let cancelled = false;
+    setLoading(true);
+    setError(false);
+    setNotFound(false);
     (async () => {
       try {
         const data = await fetchSharedResult(shareId);
         if (cancelled) return;
         if (!data) {
-          setNotFound(true);
+          setNotFound(true);  // genuinely-missing row (query succeeded, no data)
         } else {
           setShared(data);
           // Rate-limited fire-and-forget view count increment
@@ -390,13 +395,15 @@ export default function SharedResult() {
           }
         }
       } catch {
-        if (!cancelled) setNotFound(true);
+        // A thrown error is a transient failure (network / RLS / edge hiccup),
+        // NOT a missing result — offer a retry instead of a dead "not found".
+        if (!cancelled) setError(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, [shareId]);
+  }, [shareId, reloadKey]);
 
   // Track analytics once per load
   useEffect(() => {
@@ -409,6 +416,32 @@ export default function SharedResult() {
     return (
       <div className="min-h-screen bg-cream-50 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-sky-200 border-t-sky-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-cream-50 flex flex-col items-center justify-center px-6 text-center">
+        <span className="text-5xl mb-4">😕</span>
+        <h1 className="text-xl font-extrabold text-gray-800 mb-2">Couldn&rsquo;t load this result</h1>
+        <p className="text-sm text-gray-500 mb-6 max-w-xs">
+          Something went wrong reaching the server. Check your connection and try again.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setReloadKey((k) => k + 1)}
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-coral-400 to-coral-500 text-white font-bold shadow-md hover:shadow-lg transition-shadow"
+          >
+            Retry
+          </button>
+          <button
+            onClick={() => navigate('/')}
+            className="px-6 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:border-gray-300 transition-colors"
+          >
+            All quizzes
+          </button>
+        </div>
       </div>
     );
   }
