@@ -21,10 +21,9 @@ import '../pages/narutoQuiz.css';
 // profiles. Every vector quiz renders through this component with its own
 // data module (see src/data/vectorQuizzes/) driving copy, theme, and roster.
 //
-// THEME: this is an intentionally self-contained dark "ink" experience (styles
-// in narutoQuiz.css, dark loader in VectorQuizPage) — it does NOT follow the
-// site's light/dark toggle. The immersive seal/aura art is designed for a dark
-// ground, so it stays dark in both site themes by design.
+// THEME: this immersive "ink" experience (styles in narutoQuiz.css) follows the
+// site's light/dark toggle — dark sumi-ink grounds by default, a warm-paper
+// palette under html:not(.dark). The per-quiz aura accent is set inline.
 
 const LIKERT = [
   { v: -1, size: 'lg', side: 'l', label: 'Strongly disagree' },

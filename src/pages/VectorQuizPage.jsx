@@ -24,8 +24,8 @@ export default function VectorQuizPage() {
 
   if (!def) {
     return (
-      <div className="min-h-screen bg-[#131019] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-white/10 border-t-white/50 rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#f7f3ea] dark:bg-[#131019] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-black/10 border-t-black/40 dark:border-white/10 dark:border-t-white/50 rounded-full animate-spin" />
       </div>
     );
   }
