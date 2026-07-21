@@ -56,8 +56,13 @@ function RouteTracker() {
 // everything else uses the generic catalog runner/result.
 function QuizDispatch({ kind }) {
   const { quizKey } = useParams();
-  if (isVectorQuiz(quizKey)) return <VectorQuizPage />;
-  return kind === 'quiz' ? <CatalogQuiz /> : <CatalogResult />;
+  // key={quizKey} forces a fresh mount per quiz, so run-once state (e.g. a
+  // result read from localStorage in a useState initializer) can never leak
+  // from one quiz to another if a quiz→quiz link is ever added.
+  if (isVectorQuiz(quizKey)) return <VectorQuizPage key={quizKey} />;
+  return kind === 'quiz'
+    ? <CatalogQuiz key={quizKey} />
+    : <CatalogResult key={quizKey} />;
 }
 
 function AppRoutes() {
