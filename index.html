@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -29,21 +29,20 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>" />
 
     <!-- Fonts are self-hosted (Space Grotesk + Source Serif 4) and bundled via Vite. -->
-    <script>
-      // Apply saved/system theme before first paint to avoid a flash.
+    <script data-cfasync="false">
+      // Dark is the default and is set statically via <html class="dark"> above,
+      // so the site stays dark even if this script is deferred (e.g. by a CDN
+      // script optimizer) or if storage is unavailable (in-app browsers, blocked
+      // cookies, privacy modes). Here we ONLY opt out to light when the visitor
+      // explicitly chose light under the CURRENT preference scheme; any older or
+      // stale preference is ignored so returning visitors re-land in dark.
       (function () {
         try {
-          // Dark is the default. Only a light choice saved under the CURRENT
-          // preference scheme opts out — any older/stale preference (e.g. a
-          // light flip from before dark became the default) is ignored so
-          // every returning visitor re-lands in dark, as intended.
-          var THEME_SCHEME = '2';
-          var scheme = localStorage.getItem('pq_theme_v');
-          var pref = localStorage.getItem('pq_theme');
-          if (!(scheme === THEME_SCHEME && pref === 'light')) {
-            document.documentElement.classList.add('dark');
+          if (localStorage.getItem('pq_theme_v') === '2' &&
+              localStorage.getItem('pq_theme') === 'light') {
+            document.documentElement.classList.remove('dark');
           }
-        } catch (e) { /* storage unavailable */ }
+        } catch (e) { /* storage unavailable -> stay dark */ }
       })();
     </script>
   </head>
