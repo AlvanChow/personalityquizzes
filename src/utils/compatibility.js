@@ -322,12 +322,21 @@ function headlineFor(score) {
  * @param {string} myType    visitor's type identity (from getMyResultFor().type)
  * @returns {{score:number, title:string, emoji:string, dimensions:Array}|null}
  */
+const isMbtiType = (t) => /^[IE][SN][TF][JP]$/i.test(String(t ?? ''));
+const isEnneagramType = (t) => /^[1-9]$/.test(String(t ?? ''));
+
 export function computeCompatibility(quizType, theirType, myType) {
   if (!theirType || !myType) return null;
   let base;
-  if (quizType === 'mbti') base = mbtiCompatibility(myType, theirType);
-  else if (quizType === 'enneagram') base = enneagramCompatibility(myType, theirType);
-  else if (quizType === 'cake') base = cakeCompatibility(myType, theirType);
+  if (quizType === 'mbti') {
+    // Guard the type shape so a malformed stored key (e.g. an old-schema or
+    // direct-RPC value) yields "no match" instead of a wrong/NaN score.
+    if (!isMbtiType(myType) || !isMbtiType(theirType)) return null;
+    base = mbtiCompatibility(myType, theirType);
+  } else if (quizType === 'enneagram') {
+    if (!isEnneagramType(myType) || !isEnneagramType(theirType)) return null;
+    base = enneagramCompatibility(myType, theirType);
+  } else if (quizType === 'cake') base = cakeCompatibility(myType, theirType);
   else if (quizType === 'house' && HOUSES[myType] && HOUSES[theirType]) base = houseCompatibility(myType, theirType);
   else return null;
 

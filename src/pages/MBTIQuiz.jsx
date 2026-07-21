@@ -11,6 +11,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { safeJsonParse } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
 import { getQuizFactsLine } from '../data/quizInfo';
+import CoreIntroBreakdown from '../components/CoreIntroBreakdown';
 import './narutoQuiz.css';
 
 // Presentation-only rebuild: the MBTI instrument now renders through the
@@ -198,6 +199,7 @@ export default function MBTIQuiz() {
           28 everyday scenarios — no trick questions. Pick the answer that sounds
           most like you and watch your four letters take shape.
         </p>
+        <CoreIntroBreakdown quizKey="mbti" />
         <div className="cta">
           <button className="btn btn-primary" onClick={() => setScreen('quiz')}>
             {resuming ? 'Continue' : 'Begin'}

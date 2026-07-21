@@ -135,18 +135,11 @@ export function track(event, properties = {}, userId = null) {
 
   const sessionId = getSessionId();
 
-  // Merge device info into the first event of this session only.
+  // Attach device info to the first SUCCESSFULLY-inserted event of the session.
   const DEVICE_SENT_KEY = 'pq_device_sent';
-  let finalProperties = sanitizedProps;
-  try {
-    if (!sessionStorage.getItem(DEVICE_SENT_KEY)) {
-      finalProperties = { ...getDeviceInfo(), ...sanitizedProps };
-      sessionStorage.setItem(DEVICE_SENT_KEY, '1');
-    }
-  } catch {
-    // sessionStorage unavailable — include device info as best effort.
-    finalProperties = { ...getDeviceInfo(), ...sanitizedProps };
-  }
+  let includeDevice = true;
+  try { includeDevice = !sessionStorage.getItem(DEVICE_SENT_KEY); } catch { includeDevice = true; }
+  const finalProperties = includeDevice ? { ...getDeviceInfo(), ...sanitizedProps } : sanitizedProps;
 
   supabase
     .from('analytics_events')
@@ -157,8 +150,14 @@ export function track(event, properties = {}, userId = null) {
       properties:  finalProperties,
     })
     .then(({ error }) => {
-      if (error && import.meta.env.DEV) {
-        console.warn('[analytics] insert failed:', event, error);
+      if (error) {
+        if (import.meta.env.DEV) console.warn('[analytics] insert failed:', event, error);
+        return;
+      }
+      // Mark device info delivered only after a confirmed insert, so a failed
+      // first event doesn't permanently drop device metadata for the session.
+      if (includeDevice) {
+        try { sessionStorage.setItem(DEVICE_SENT_KEY, '1'); } catch { /* ignore */ }
       }
     });
 }

@@ -21,10 +21,9 @@ import '../pages/narutoQuiz.css';
 // profiles. Every vector quiz renders through this component with its own
 // data module (see src/data/vectorQuizzes/) driving copy, theme, and roster.
 //
-// THEME: this is an intentionally self-contained dark "ink" experience (styles
-// in narutoQuiz.css, dark loader in VectorQuizPage) — it does NOT follow the
-// site's light/dark toggle. The immersive seal/aura art is designed for a dark
-// ground, so it stays dark in both site themes by design.
+// THEME: this immersive "ink" experience (styles in narutoQuiz.css) follows the
+// site's light/dark toggle — dark sumi-ink grounds by default, a warm-paper
+// palette under html:not(.dark). The per-quiz aura accent is set inline.
 
 const LIKERT = [
   { v: -1, size: 'lg', side: 'l', label: 'Strongly disagree' },
@@ -71,6 +70,13 @@ function TierBadge({ tier, labels, className = '' }) {
   return tier === 'cut'
     ? <span className={`badge badge-cut ${className}`}>{labels.cut}</span>
     : <span className={`badge badge-front ${className}`}>{labels.front}</span>;
+}
+
+// Lowercase a tier label and naively pluralise it for the intro count line
+// ("14 main characters", "6 core values"), so a count never reads "1 characters".
+function pluralizeLabel(word, n) {
+  const w = String(word).toLowerCase();
+  return n === 1 ? w : `${w}s`;
 }
 
 function RelBlock({ chars, charKey, label }) {
@@ -285,7 +291,7 @@ export default function VectorQuizExperience({ def }) {
           <button className="btn btn-primary" onClick={begin}>{def.beginLabel ?? 'Begin'}</button>
           <button className="btn btn-ghost" onClick={() => setScreen('gallery')}>Meet all {nChars} {def.rosterNoun}</button>
           <p className="fine">{getQuizFactsLine(QUIZ_KEY)}</p>
-          <p className="fine"><b>{nChars}</b> possible results <span className="dot" /> {nFront} {tierLabels.front.toLowerCase()} <span className="dot" /> {nChars - nFront} {tierLabels.cut.toLowerCase()}s</p>
+          <p className="fine"><b>{nChars}</b> possible results <span className="dot" /> {nFront} {pluralizeLabel(tierLabels.front, nFront)}{nChars - nFront > 0 && <> <span className="dot" /> {nChars - nFront} {pluralizeLabel(tierLabels.cut, nChars - nFront)}</>}</p>
         </div>
         <button className="linkbtn" onClick={() => navigate('/')}>← All quizzes</button>
       </section>

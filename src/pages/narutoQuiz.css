@@ -188,3 +188,35 @@
 
 /* Non-quiz pages reuse the shell without the shinobi watermark. */
 .nq.no-seal .res-card::before{content:none;}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIGHT MODE — the ink shell follows the site theme. Redefining the palette
+   variables flips every rule that references them (grounds, text, lines, tracks,
+   gallery/option cards) from dark sumi-ink to warm paper automatically. Only the
+   handful of rules that use --paper as a *surface* (the result card) or paint a
+   faint light-on-dark tint need an explicit override below. Per-quiz auras are
+   set inline, so accent text is darkened via color-mix to stay legible.
+   ═══════════════════════════════════════════════════════════════════════════ */
+html:not(.dark) .nq{
+  --ink:#f7f3ea; --ink-2:#efe8d9; --ink-3:#e6ddca;
+  --line:rgba(60,50,25,.14); --line-strong:rgba(60,50,25,.24);
+  --paper:#2c261a; --paper-dim:#5c5446; --paper-mute:#8b8373;
+  --ink-on-paper:#2a2419;
+  --gold:#9c7518;
+}
+html:not(.dark) .nq .bg .glow{opacity:.26;}
+html:not(.dark) .nq .bg .vignette{background:radial-gradient(120% 90% at 50% 30%, transparent 60%, rgba(80,60,25,.08) 100%);}
+/* The result card is a light "scroll" in both themes, but --paper is now the
+   dark text colour, so set the card surface explicitly. */
+html:not(.dark) .nq .res-card{background:linear-gradient(180deg,#fffdf8,#f1ead7); box-shadow:0 20px 50px -30px rgba(70,55,25,.4), inset 0 0 0 1px rgba(0,0,0,.07);}
+html:not(.dark) .nq .gcard{background:linear-gradient(180deg,#fffdf8,#f1ead7);}
+/* Faint light-on-dark tints vanish on a light ground — flip them to dark tints. */
+html:not(.dark) .nq .also-item{background:rgba(60,50,25,.035);}
+html:not(.dark) .nq .also-item:hover{background:rgba(60,50,25,.07);}
+html:not(.dark) .nq .btn-ghost:hover,
+html:not(.dark) .nq .back:hover,
+html:not(.dark) .nq .linkbtn:hover{background:rgba(60,50,25,.05);}
+/* Keep aura accent text legible on the light ground. */
+html:not(.dark) .nq .intro h1 .em,
+html:not(.dark) .nq .res-tag,
+html:not(.dark) .nq .gtag{color:color-mix(in srgb, var(--aura) 75%, #3a2f14);}

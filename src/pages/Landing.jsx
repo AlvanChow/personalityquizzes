@@ -179,18 +179,6 @@ export default function Landing() {
               <ChevronDown className="w-4 h-4" />
             </button>
           </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="text-sm text-gray-500 font-medium"
-          >
-            Free · No sign-up needed to start ·{' '}
-            <button onClick={() => navigate('/how-it-works')} className="underline underline-offset-2 hover:text-gray-700 transition-colors">
-              How it works
-            </button>
-          </motion.p>
         </div>
 
         {/* ── The full catalog ── */}
@@ -216,22 +204,23 @@ export default function Landing() {
                 </div>
                 {/* Compact cards: icon, title, and a bottom-pinned time row.
                     Each quiz's full description now lives on its intro screen. */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 items-start">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 items-start">
                   {section.tests.map((t) => (
                     <button
                       key={t.key}
                       onClick={t.action ?? (() => trackAndNavigate(t.key, t.to))}
-                      className="text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm transition-all duration-200 group flex items-start gap-2.5 hover:-translate-y-0.5 hover:border-coral-300 hover:shadow-[0_10px_32px_-14px_rgba(240,104,48,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
+                      className="text-left px-3 py-2.5 rounded-xl bg-white border border-gray-200 shadow-sm transition-all duration-200 group flex items-center gap-2.5 hover:-translate-y-0.5 hover:border-coral-300 hover:shadow-[0_10px_32px_-14px_rgba(240,104,48,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
                     >
-                      {/* Icon on the left; title with the time tucked directly
-                          under the name. Cards hug their content (grid uses
-                          items-start) so there's no wasted vertical space. */}
-                      <span className="shrink-0 mt-0.5 transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-3">
-                        <QuizGlyph quizKey={t.key} emoji={t.emoji} size={30} />
+                      {/* Compact cards that hug their content — icon centred beside a
+                          title + small time marker. No forced row height, so a
+                          short-title card stays short instead of stretching and
+                          leaving a big empty gap. */}
+                      <span className="shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-3">
+                        <QuizGlyph quizKey={t.key} emoji={t.emoji} size={26} />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-extrabold text-gray-900 leading-snug line-clamp-2">{t.title}</h3>
-                        <span className="mt-1 flex items-center gap-1 text-xs font-bold text-coral-500">
+                        <h3 className="text-sm font-extrabold text-gray-900 leading-snug line-clamp-3">{t.title}</h3>
+                        <span className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-coral-500/90">
                           {t.time}
                           <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                         </span>

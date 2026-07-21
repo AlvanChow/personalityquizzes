@@ -9,6 +9,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { safeJsonParse } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
 import { getQuizFactsLine } from '../data/quizInfo';
+import CoreIntroBreakdown from '../components/CoreIntroBreakdown';
 import './narutoQuiz.css';
 
 // The baseline Big Five assessment, dressed in the ink-scroll (.nq) shell the
@@ -153,6 +154,7 @@ export default function Assessment() {
           instinct is the right instinct — and your five trait spectra light up
           on your dashboard.
         </p>
+        <CoreIntroBreakdown quizKey="big5" />
         <div className="cta">
           <button className="btn btn-primary" onClick={() => setScreen('quiz')}>
             {answeredCount > 0 ? 'Continue' : 'Begin'}

@@ -5,6 +5,7 @@ import UserMenu from './UserMenu';
 
 const NAV = [
   { label: 'Quizzes', to: '/', match: (p) => p === '/' },
+  { label: 'How it works', to: '/how-it-works', match: (p) => p.startsWith('/how-it-works'), desktopOnly: true },
   { label: 'Circle', to: '/circle', match: (p) => p.startsWith('/circle'), icon: Users },
   // Hot Takes lives as a card in the catalog, not a top-level destination.
   { label: 'My Results', to: '/dashboard', match: (p) => p.startsWith('/dashboard') },

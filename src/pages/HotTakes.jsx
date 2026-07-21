@@ -243,6 +243,15 @@ export default function HotTakes() {
                         delay={0.1}
                       />
                     ))}
+                    {/* Social proof: how many OTHER people have weighed in (the
+                        live tally includes the visitor's own vote, so subtract it). */}
+                    {tally && total > 0 && (
+                      <p className="text-xs font-semibold text-gray-400 mt-2">
+                        {total - 1 === 0
+                          ? "You're the first to vote 🎉"
+                          : `${(total - 1).toLocaleString()} ${total - 1 === 1 ? 'other has' : 'others have'} voted`}
+                      </p>
+                    )}
                     <p className="text-xs italic text-gray-400 leading-relaxed mt-3">💡 {take.fact}</p>
                   </div>
                 )}
@@ -259,7 +268,7 @@ export default function HotTakes() {
             >
               <p className="text-4xl mb-3">🔥</p>
               <h2 className="text-lg font-extrabold text-gray-800 mb-1">You&rsquo;ve picked every side 🔥</h2>
-              <p className="text-sm text-gray-500 mb-5">8 debates. 8 opinions. Zero regrets.</p>
+              <p className="text-sm text-gray-500 mb-5">{hotTakes.length} debates. {hotTakes.length} opinions. Zero regrets.</p>
               <div className="flex gap-3">
                 <motion.button
                   onClick={handleShare}

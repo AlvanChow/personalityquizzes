@@ -25,7 +25,7 @@ export const QUIZ_INFO = {
   'enneagram-deep':  { basedOn: 'the Enneagram core fears & desires model', tier: 'framework', format: 'Weighted inventory' },
 
   // ── Know Yourself ───────────────────────────────────────────────────────────
-  riasec:            { basedOn: "Holland's Codes (RIASEC)", tier: 'research', format: 'Pick what fits' },
+  riasec:            { basedOn: "Holland's Codes (RIASEC)", tier: 'research', format: 'Agree/disagree, 1–5' },
   love_language:     { basedOn: "Chapman's Five Love Languages", tier: 'framework', format: 'Pick a side' },
   attachment:        { basedOn: 'attachment theory (Bowlby & Ainsworth)', tier: 'research', format: 'Agree/disagree, 1–5' },
   disc:              { basedOn: 'the DISC model', tier: 'framework', format: 'Pick a side' },
