@@ -243,6 +243,15 @@ export default function HotTakes() {
                         delay={0.1}
                       />
                     ))}
+                    {/* Social proof: how many OTHER people have weighed in (the
+                        live tally includes the visitor's own vote, so subtract it). */}
+                    {tally && total > 0 && (
+                      <p className="text-xs font-semibold text-gray-400 mt-2">
+                        {total - 1 === 0
+                          ? "You're the first to vote 🎉"
+                          : `${(total - 1).toLocaleString()} ${total - 1 === 1 ? 'other has' : 'others have'} voted`}
+                      </p>
+                    )}
                     <p className="text-xs italic text-gray-400 leading-relaxed mt-3">💡 {take.fact}</p>
                   </div>
                 )}

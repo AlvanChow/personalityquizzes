@@ -18,6 +18,82 @@ const fromCatalog = (meta) => ({
   to: getQuizPath(meta),
 });
 
+// A "what each measures" breakdown for the three core, research-grade tests —
+// shown under the Core section so people can see the structure of each (traits /
+// preferences / types) at a glance. The full deep-dive lives on /how-it-works.
+const CORE_BREAKDOWN = [
+  {
+    key: 'big5', emoji: '🧬', name: 'Big 5 · OCEAN',
+    what: 'Five independent trait spectrums, each scored 0–100 — the most scientifically validated model in personality psychology.',
+    items: [
+      ['Openness', 'curiosity & imagination'],
+      ['Conscientiousness', 'discipline & drive'],
+      ['Extraversion', 'energy & sociability'],
+      ['Agreeableness', 'warmth & cooperation'],
+      ['Neuroticism', 'emotional sensitivity'],
+    ],
+  },
+  {
+    key: 'mbti', emoji: '🧠', name: 'MBTI · 16 Types',
+    what: 'Four either/or preferences that combine into one of 16 types, like INTJ or ESFP.',
+    items: [
+      ['Introvert · Extravert', 'where energy comes from'],
+      ['Sensing · Intuition', 'how you take in info'],
+      ['Thinking · Feeling', 'how you decide'],
+      ['Judging · Perceiving', 'how you meet the world'],
+    ],
+  },
+  {
+    key: 'enneagram', emoji: '✳️', name: 'Enneagram · 9 Types',
+    what: 'Nine core types, each driven by a defining desire and a core fear.',
+    items: [
+      ['1 · Reformer', 'principled'],
+      ['2 · Helper', 'caring'],
+      ['3 · Achiever', 'driven'],
+      ['4 · Individualist', 'expressive'],
+      ['5 · Investigator', 'perceptive'],
+      ['6 · Loyalist', 'committed'],
+      ['7 · Enthusiast', 'spontaneous'],
+      ['8 · Challenger', 'decisive'],
+      ['9 · Peacemaker', 'easygoing'],
+    ],
+  },
+];
+
+function CoreBreakdown({ navigate }) {
+  return (
+    <div className="mt-4 flex flex-col gap-3">
+      {CORE_BREAKDOWN.map((t) => (
+        <div key={t.key} className="rounded-xl bg-white border border-gray-200 shadow-sm p-5">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <span className="text-2xl shrink-0" aria-hidden="true">{t.emoji}</span>
+              <div className="min-w-0">
+                <h3 className="text-sm font-extrabold text-gray-900">{t.name}</h3>
+                <p className="text-xs text-gray-500 leading-relaxed mt-0.5">{t.what}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/how-it-works')}
+              className="shrink-0 text-xs font-bold text-coral-500 hover:text-coral-600 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300 rounded"
+            >
+              Full breakdown →
+            </button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
+            {t.items.map(([label, desc]) => (
+              <div key={label} className="min-w-0">
+                <p className="text-xs font-bold text-gray-700 truncate">{label}</p>
+                <p className="text-[11px] text-gray-400 truncate">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Landing() {
   const navigate = useNavigate();
   // `loading` covers the window where a signed-in user's completion only
@@ -179,18 +255,6 @@ export default function Landing() {
               <ChevronDown className="w-4 h-4" />
             </button>
           </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="text-sm text-gray-500 font-medium"
-          >
-            Free · No sign-up needed to start ·{' '}
-            <button onClick={() => navigate('/how-it-works')} className="underline underline-offset-2 hover:text-gray-700 transition-colors">
-              How it works
-            </button>
-          </motion.p>
         </div>
 
         {/* ── The full catalog ── */}
@@ -239,6 +303,7 @@ export default function Landing() {
                     </button>
                   ))}
                 </div>
+                {section.key === 'core' && <CoreBreakdown navigate={navigate} />}
               </motion.section>
             );
           })}
