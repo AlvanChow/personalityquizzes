@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SharePanel from './SharePanel';
 import FeedbackWidget from './FeedbackWidget';
+import NextQuizBanner from './NextQuizBanner';
 import { emblem } from '../data/vectorQuizzes/glyphs';
 import { lighten, userVector, ranked, matchPct } from '../utils/vectorQuiz';
 import { storageKeyFor } from '../data/quizzes';
@@ -407,6 +408,7 @@ export default function VectorQuizExperience({ def }) {
           </div>
           <div style={{ marginTop: 28, textAlign: 'left' }}>
             <FeedbackWidget quizKey={QUIZ_KEY} />
+            <NextQuizBanner currentQuizKey={QUIZ_KEY} />
           </div>
           <button className="linkbtn" onClick={() => navigate('/dashboard')}>← Back to my results</button>
         </div>
