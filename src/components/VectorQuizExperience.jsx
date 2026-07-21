@@ -334,6 +334,9 @@ export default function VectorQuizExperience({ def }) {
       emoji: top.emoji ?? def.shareEmoji,
       tagline: top.tag,
       description: top.desc,
+      // Compat contract fields (e.g. cake's trait code) must ride into the
+      // share snapshot too, or a shared result computes null compatibility.
+      ...(top.store ?? {}),
     };
     const shareScores = uv ? Object.fromEntries(uv.map((v, i) => [`a${i}`, Math.round(v * 100)])) : null;
 

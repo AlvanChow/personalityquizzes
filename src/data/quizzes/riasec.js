@@ -5,6 +5,10 @@
 export default {
   key: 'riasec',
   mode: 'likert',
+  // Interest inventory: every item is positively keyed, so absolute scores
+  // cluster high. Report RELATIVE standing across the person's own interests
+  // (see computeLikert) — the strongest lands ~100, not "100% on everything".
+  scoring: 'relative',
   resultsHeading: 'Your interest profile',
 
   dimensions: {
