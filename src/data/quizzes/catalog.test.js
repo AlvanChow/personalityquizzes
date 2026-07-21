@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { QUIZ_CATALOG, getQuizMeta } from './index.js';
+import { isVectorQuiz } from '../vectorQuizzes/registry.js';
 import { computeQuizResult, LIKERT_OPTIONS } from '../../utils/quizEngine.js';
 
 const KEY_PATTERN = /^[a-z][a-z0-9_]*$/;
@@ -32,7 +33,9 @@ describe('quiz catalog metadata', () => {
       expect(meta.description).toBeTruthy();
       expect(meta.time).toMatch(/^~\d+ min$/);
       expect(meta.gradient).toMatch(GRADIENT_PATTERN);
-      expect(meta.custom ? meta.path : meta.load).toBeTruthy();
+      // An entry is served by EITHER a custom page (path), the generic catalog
+      // runner (load), or the immersive vector experience (registered key).
+      expect(meta.custom ? meta.path : (meta.load || isVectorQuiz(meta.key))).toBeTruthy();
     }
   });
 

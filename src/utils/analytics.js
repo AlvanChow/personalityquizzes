@@ -100,6 +100,14 @@ function detectOS(ua) {
 // ─── Core track function ─────────────────────────────────────────────────────
 // Fire-and-forget — callers do NOT await this.
 // userId should be user.id for authenticated users, or null for guests.
+//
+// TRUST NOTE: events are written directly from the browser with the public anon
+// key. RLS blocks user_id spoofing and the DB enforces the event allowlist, but
+// session_id and properties are client-controlled and the per-IP/session limits
+// only bound volume — anyone can forge allowlisted events. Treat all analytics
+// aggregates (admin dashboard counts, funnels) as indicative, not authoritative;
+// any metric that must be tamper-proof has to be emitted from a trusted server
+// context (edge function with the service role), not from here.
 export function track(event, properties = {}, userId = null) {
   if (!supabase) return;
 

@@ -201,6 +201,10 @@ export default function Dashboard() {
       { key: 'mbti', emoji: '🧠', title: 'MBTI', to: '/quiz/mbti/result' },
       { key: 'enneagram', emoji: '✳️', title: 'Enneagram', to: '/quiz/enneagram/result' },
       { key: 'cake', emoji: '🍰', title: 'Cake', to: '/quiz/cake/result' },
+      // house is a vector quiz with no catalog entry, so it isn't covered by the
+      // catalogSections loop below — list it here or a completed House result
+      // never appears on the shelf even though it counts toward the badge.
+      { key: 'house', emoji: '🪄', title: 'Wizarding House', to: '/quiz/house/result' },
     ];
     for (const c of core) {
       const stored = safeLocalStorageRead(`personalens_${c.key}`, null);

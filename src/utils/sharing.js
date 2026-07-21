@@ -59,7 +59,11 @@ export async function createShareableLink(quizType, result, scores, ownerId = nu
   const { error } = await supabase.from('shared_results').insert({
     id,
     quiz_type:    quizType,
-    result_key:   (result.name ?? result.resultKey ?? '').slice(0, 20),
+    // Prefer the stable result KEY (e.g. "gryffindor", "layercake") over the
+    // display name so admin views and any future result_key-based type lookups
+    // get an identifier, not a human label. Falls back to the name if a result
+    // carries no key (legacy MBTI/catalog shapes).
+    result_key:   (result.key ?? result.resultKey ?? result.name ?? '').slice(0, 20),
     result_name:  (result.name ?? '').slice(0, 100),
     result_emoji: (result.emoji ?? '').slice(0, 16),
     result_data:  buildShareSnapshot(result, scores),

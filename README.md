@@ -25,7 +25,7 @@ That's it: routing (`/quiz/<key>` + `/quiz/<key>/result`), scoring, result
 rendering, sharing, dashboard/landing cards, and the next-quiz journey all
 pick the quiz up from the catalog automatically. Database saves require the
 quiz key to match `^[a-z][a-z0-9_]{1,31}$` (enforced by
-`supabase/migrations/20260714000001_expand_quiz_catalog.sql`).
+`supabase/migrations/20260720000004_expand_quiz_catalog.sql`).
 
 ---
 

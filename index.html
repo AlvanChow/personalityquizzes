@@ -28,7 +28,9 @@
     <!-- Favicon: emoji sparkles -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>" />
 
-    <!-- Fonts are self-hosted (Space Grotesk + Source Serif 4) and bundled via Vite. -->
+    <!-- UI font is self-hosted Nunito (variable) via @fontsource, bundled by Vite
+         (see src/main.jsx). The Naruto vector quiz additionally loads a Google
+         Fonts CJK face at runtime, which is why the CSP allows fonts.g*.com. -->
     <script data-cfasync="false">
       // Dark is the default and is set statically via <html class="dark"> above,
       // so the site stays dark even if this script is deferred (e.g. by a CDN

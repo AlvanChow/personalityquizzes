@@ -48,6 +48,26 @@ export default function UserMenu() {
     return () => clearTimeout(errorTimerRef.current);
   }, []);
 
+  // When the menu opens, move focus into it (roving focus for keyboard users).
+  useEffect(() => {
+    if (!open) return;
+    menuRef.current?.querySelector('[role="menuitem"]')?.focus();
+  }, [open]);
+
+  // Arrow / Home / End navigation between menu items.
+  function handleMenuKeyDown(e) {
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
+    const items = Array.from(menuRef.current?.querySelectorAll('[role="menuitem"]') ?? []);
+    if (!items.length) return;
+    e.preventDefault();
+    const cur = items.indexOf(document.activeElement);
+    let next = 0;
+    if (e.key === 'ArrowDown') next = cur < 0 ? 0 : (cur + 1) % items.length;
+    else if (e.key === 'ArrowUp') next = cur <= 0 ? items.length - 1 : cur - 1;
+    else if (e.key === 'End') next = items.length - 1;
+    items[next].focus();
+  }
+
   if (loading) {
     return <div className="w-9 h-9 rounded-full bg-gray-100 animate-pulse" />;
   }
@@ -113,7 +133,7 @@ export default function UserMenu() {
       </button>
 
       {open && (
-        <div role="menu" aria-label="Account" className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-md border border-gray-200 py-2 z-50">
+        <div role="menu" aria-label="Account" onKeyDown={handleMenuKeyDown} className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-md border border-gray-200 py-2 z-50">
           <div className="px-4 py-3 border-b border-gray-100">
             <p className="text-sm font-semibold text-gray-800 truncate">{displayName}</p>
             <p className="text-xs text-gray-400 truncate">{user.email}</p>
