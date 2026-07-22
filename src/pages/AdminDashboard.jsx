@@ -7,7 +7,7 @@ import { allowAdminFetch } from '../utils/rateLimiter';
 import UserMenu from '../components/UserMenu';
 import {
   Users, Activity, BarChart2, CheckCircle,
-  RefreshCw, ChevronLeft, Shield, Star, Share2, Eye,
+  RefreshCw, ChevronLeft, Shield, Star, Share2, Eye, Mail, Download,
 } from 'lucide-react';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -33,6 +33,20 @@ function fmtTime(iso) {
 function quizCompletedCount(quizResults, key) {
   if (!quizResults) return false;
   return !!quizResults[key];
+}
+
+// Build a CSV from the email subscriber rows, escaping any value that contains
+// a comma, quote, or newline (RFC 4180 style).
+function subscribersToCsv(rows) {
+  const esc = (v) => {
+    const s = v == null ? '' : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = ['email,source,joined_at'];
+  for (const r of rows) {
+    lines.push([esc(r.email), esc(r.source), esc(r.created_at)].join(','));
+  }
+  return lines.join('\n');
 }
 
 const EVENT_COLORS = {
@@ -85,6 +99,7 @@ export default function AdminDashboard() {
   const [eventCounts, setEventCounts] = useState([]);
   const [feedback, setFeedback] = useState([]);
   const [shares, setShares] = useState([]);
+  const [subscribers, setSubscribers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastRefresh, setLastRefresh] = useState(null);
@@ -111,6 +126,7 @@ export default function AdminDashboard() {
         recentUsersRes,
         feedbackRes,
         sharesRes,
+        subscribersRes,
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', todayStr),
@@ -122,6 +138,7 @@ export default function AdminDashboard() {
         // so the dashboard still renders if a migration hasn't been applied.
         supabase.from('quiz_feedback').select('quiz_key, rating, created_at').order('created_at', { ascending: false }).limit(2000),
         supabase.from('shared_results').select('id, quiz_type, result_key, result_name, view_count, created_at').order('created_at', { ascending: false }).limit(1000),
+        supabase.from('email_subscribers').select('id, email, source, created_at').order('created_at', { ascending: false }).limit(5000),
       ]);
 
       // Compute active users today from recent events
@@ -149,6 +166,7 @@ export default function AdminDashboard() {
       setEventCounts(sortedCounts);
       setFeedback(feedbackRes.data ?? []);
       setShares(sharesRes.data ?? []);
+      setSubscribers(subscribersRes.data ?? []);
       setLastRefresh(new Date());
     } catch (err) {
       setError(err.message ?? 'Failed to load dashboard data.');
@@ -156,6 +174,20 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   }, []);
+
+  const downloadSubscribersCsv = useCallback(() => {
+    if (!subscribers.length) return;
+    const csv = subscribersToCsv(subscribers);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `email-subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [subscribers]);
 
   useEffect(() => {
     document.title = 'Admin — My Personality Quizzes';
@@ -492,6 +524,52 @@ export default function AdminDashboard() {
             </div>
           </section>
         </div>
+
+        {/* Email list */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+              Email List
+              <span className="ml-1 font-normal normal-case text-gray-400">(opt-in subscribers)</span>
+            </h2>
+            <button
+              onClick={downloadSubscribersCsv}
+              disabled={subscribers.length === 0}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Export CSV
+            </button>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <StatCard
+              icon={Mail}
+              label="Subscribers"
+              value={subscribers.length >= 5000 ? '5000+' : subscribers.length}
+              sub={`+${subscribers.filter(s => s.created_at >= startOfToday()).length} today`}
+              color="bg-coral-50 text-coral-500"
+            />
+            <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Most recent</p>
+              {subscribers.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">No subscribers yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {subscribers.slice(0, 8).map((s) => (
+                    <div key={s.id} className="flex items-center justify-between text-xs">
+                      <span className="font-medium text-gray-800 truncate max-w-[220px]">{s.email}</span>
+                      <span className="flex items-center gap-2 shrink-0 ml-2 text-gray-400">
+                        {s.source && <span className="text-gray-500">{s.source}</span>}
+                        <span>·</span>
+                        <span>{fmtTime(s.created_at)}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
 
         {/* Recent users */}
         <section>
