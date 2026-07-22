@@ -12,6 +12,7 @@ import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
 import CompareBanner from '../components/CompareBanner';
 import FeedbackWidget from '../components/FeedbackWidget';
+import EmailCaptureCard from '../components/EmailCaptureCard';
 import InsightCard from '../components/InsightCard';
 
 // The standard quiz maxes at 12 per type (3 questions × 4). The deep quiz uses
@@ -277,6 +278,8 @@ export default function EnneagramResult() {
         </motion.div>
 
         <FeedbackWidget quizKey={data.quizKey || 'enneagram'} />
+
+        <EmailCaptureCard source={data.quizKey || 'enneagram'} />
 
         <CompareBanner quizType="enneagram" />
 

@@ -3,9 +3,13 @@
 > Status: strategy · Drafted 2026-07-21 · Companion to `Monetization plan.md`
 > and `SOCIAL_ROADMAP.md`.
 >
-> `Monetization plan.md` is an *implementation* plan for one model (pay-per-quiz).
-> This document is the *strategy* layer: which models fit which parts of the
-> product, in what order, and where the existing plan needs to change.
+> **Current direction (2026-07): the product is FREE.** No paywall is active.
+> Growth runs on an opt-in email list (see `Monetization plan.md` and
+> `EmailCaptureCard`). Everything below is a menu of **optional future levers** —
+> kept for reference in case monetization is ever revisited. None of it is live.
+>
+> This document is the *strategy* layer: which models would fit which parts of
+> the product, in what order, if the free-first decision were ever reversed.
 
 ---
 

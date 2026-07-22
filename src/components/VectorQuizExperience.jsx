@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SharePanel from './SharePanel';
 import FeedbackWidget from './FeedbackWidget';
+import EmailCaptureCard from './EmailCaptureCard';
 import NextQuizBanner from './NextQuizBanner';
 import CompareBanner from './CompareBanner';
 import { emblem } from '../data/vectorQuizzes/glyphs';
@@ -431,6 +432,7 @@ export default function VectorQuizExperience({ def }) {
                 just took the quiz, invite them back to see compatibility. */}
             <CompareBanner quizType={QUIZ_KEY} />
             <FeedbackWidget quizKey={QUIZ_KEY} />
+            <EmailCaptureCard source={QUIZ_KEY} />
             <NextQuizBanner currentQuizKey={QUIZ_KEY} />
           </div>
           <button className="linkbtn" onClick={() => navigate('/dashboard')}>← Back to my results</button>

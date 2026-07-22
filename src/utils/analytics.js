@@ -34,6 +34,9 @@ const ALLOWED_EVENTS = new Set([
   'circle_request_declined',
   'circle_viewed',
   'circle_member_removed',
+  // Email capture (free-product growth)
+  'email_captured',
+  'email_capture_dismissed',
 ]);
 
 // ─── Session ID ──────────────────────────────────────────────────────────────

@@ -92,3 +92,18 @@ export function isValidShareId(id) {
   if (typeof id !== 'string') return false;
   return /^[a-f0-9]{8}$/.test(id);
 }
+
+/**
+ * Validate an email address with a conservative, non-catastrophic regex.
+ * Mirrors the DB-side CHECK in the email_subscribers migration: exactly one
+ * "@", no whitespace, a dotted domain, and a bounded total length.
+ *
+ * @param {string} email
+ * @returns {boolean}
+ */
+export function isValidEmail(email) {
+  if (typeof email !== 'string') return false;
+  const trimmed = email.trim();
+  if (trimmed.length < 3 || trimmed.length > 254) return false;
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmed);
+}
