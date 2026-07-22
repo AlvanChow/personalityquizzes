@@ -6,6 +6,7 @@ import SharePanel from '../components/SharePanel';
 import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
 import FeedbackWidget from '../components/FeedbackWidget';
+import EmailCaptureCard from '../components/EmailCaptureCard';
 import { getQuizMeta, storageKeyFor } from '../data/quizzes';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
@@ -411,6 +412,8 @@ export default function CatalogResult() {
         )}
 
         <FeedbackWidget quizKey={meta.key} />
+
+        <EmailCaptureCard source={meta.key} />
 
         <NextQuizBanner currentQuizKey={meta.key} />
 

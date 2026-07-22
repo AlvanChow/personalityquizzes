@@ -12,6 +12,7 @@ import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
 import CompareBanner from '../components/CompareBanner';
 import FeedbackWidget from '../components/FeedbackWidget';
+import EmailCaptureCard from '../components/EmailCaptureCard';
 import InsightCard from '../components/InsightCard';
 
 const DIMENSION_LABELS = {
@@ -340,6 +341,8 @@ export default function MBTIResult() {
         </motion.div>
 
         <FeedbackWidget quizKey={data.quizKey || 'mbti'} />
+
+        <EmailCaptureCard source={data.quizKey || 'mbti'} />
 
         <CompareBanner quizType="mbti" />
 

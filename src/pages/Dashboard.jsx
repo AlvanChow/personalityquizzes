@@ -6,6 +6,7 @@ import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import NextQuizBanner from '../components/NextQuizBanner';
 import FeedbackWidget from '../components/FeedbackWidget';
+import EmailCaptureCard from '../components/EmailCaptureCard';
 import { track } from '../utils/analytics';
 import lifeAnalysis from '../data/lifeAnalysis';
 import { getCompletedCount, QUIZ_ORDER } from '../utils/quizProgression';
@@ -476,6 +477,7 @@ export default function Dashboard() {
 
         <div className="mb-12">
           <FeedbackWidget quizKey="big5" delay={0.2} />
+          <EmailCaptureCard source="big5" delay={0.3} />
         </div>
       </main>
     </div>
