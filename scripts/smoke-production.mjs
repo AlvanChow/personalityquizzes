@@ -116,6 +116,22 @@ async function checkAuthProviders() {
   );
 }
 
+async function checkNotFoundStatuses() {
+  const routes = [
+    '/not-a-real-page',
+    '/s/01234567',
+    '/s/ffffffffffffffffffffffffffffffff',
+  ];
+
+  for (const route of routes) {
+    const { response } = await fetchText(`${baseUrl}${route}`);
+    requireValue(
+      response.status === 404,
+      `${baseUrl}${route} returned HTTP ${response.status}; expected 404`,
+    );
+  }
+}
+
 const entryAsset = await expectedEntryAsset();
 
 await Promise.all([
@@ -124,6 +140,7 @@ await Promise.all([
   retry('share route reaches the Worker', checkShareRoute),
   retry('branded auth domain reaches Supabase', checkAuthDomain),
   retry('only the intended Google auth provider is enabled', checkAuthProviders),
+  retry('unknown and missing routes return real 404s', checkNotFoundStatuses),
 ]);
 
 console.log('Production smoke test passed.');
