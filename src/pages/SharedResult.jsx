@@ -15,6 +15,7 @@ import {
   savePendingCompare,
 } from '../utils/compatibility';
 import { shareCompatStory } from '../utils/storyCard';
+import BigFiveScoreCard from '../components/BigFiveScoreCard';
 
 const QUIZ_META = {
   mbti: {
@@ -551,6 +552,8 @@ export default function SharedResult() {
             )}
           </div>
         </motion.div>
+
+        {shared.quiz_type === 'big5' && <BigFiveScoreCard result={result} />}
 
         {/* ── Social proof nudge ── */}
         <p className="text-center text-xs text-gray-400 mb-6">
