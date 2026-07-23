@@ -43,7 +43,9 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$SUPABASE_ACCESS_TOKEN" || { echo "::error::SUPABASE_ACCESS_TOKEN is missing"; exit 1; }
-          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::CLOUDFLARE_API_TOKEN is missing"; exit 1; }
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::warning::CLOUDFLARE_API_TOKEN is missing; Supabase can be initialized, but DNS cannot be configured automatically."
+          fi
 
       - name: Configure custom auth domain
         shell: bash
@@ -84,10 +86,6 @@ jobs:
             return 1
           }
 
-          cf_response="$(curl -fsS             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"             -H "Content-Type: application/json"             "https://api.cloudflare.com/client/v4/zones?name=$ROOT_DOMAIN&status=active")"
-          ZONE_ID="$(jq -r '.result[0].id // empty' <<<"$cf_response")"
-          test -n "$ZONE_ID" || { echo "::error::Cloudflare zone not found"; exit 1; }
-
           upsert_dns() {
             local type="$1"
             local name="$2"
@@ -118,9 +116,10 @@ jobs:
             local origin ownership_type ownership_name ownership_value
 
             origin="$(jq -r '.data.result.custom_origin_server // empty' "$response_file")"
-            if [ -n "$origin" ]; then
-              upsert_dns CNAME "$CUSTOM_HOSTNAME" "$origin"
+            if [ -z "$origin" ]; then
+              origin="$INITIAL_CNAME_TARGET"
             fi
+            upsert_dns CNAME "$CUSTOM_HOSTNAME" "$origin"
 
             ownership_type="$(jq -r '.data.result.ownership_verification.type // empty' "$response_file")"
             ownership_name="$(jq -r '.data.result.ownership_verification.name // empty' "$response_file")"
@@ -135,6 +134,36 @@ jobs:
               txt_value="$(jq -r '.txt_value // empty' <<<"$record")"
               if [ -n "$txt_name" ] && [ -n "$txt_value" ]; then
                 upsert_dns TXT "$txt_name" "$txt_value"
+              fi
+            done < <(jq -c '.data.result.ssl.validation_records[]?' "$response_file")
+          }
+
+
+          print_dns_records() {
+            local response_file="$1"
+            local origin ownership_type ownership_name ownership_value
+
+            origin="$(jq -r '.data.result.custom_origin_server // empty' "$response_file")"
+            if [ -z "$origin" ]; then
+              origin="$INITIAL_CNAME_TARGET"
+            fi
+
+            echo "DNS records required for $CUSTOM_HOSTNAME:"
+            printf 'CNAME %s -> %s\n' "$CUSTOM_HOSTNAME" "$origin"
+
+            ownership_type="$(jq -r '.data.result.ownership_verification.type // empty' "$response_file")"
+            ownership_name="$(jq -r '.data.result.ownership_verification.name // empty' "$response_file")"
+            ownership_value="$(jq -r '.data.result.ownership_verification.value // empty' "$response_file")"
+            if [ -n "$ownership_type" ] && [ -n "$ownership_name" ] && [ -n "$ownership_value" ]; then
+              printf '%s %s -> %s\n' "$ownership_type" "$ownership_name" "$ownership_value"
+            fi
+
+            while IFS= read -r record; do
+              local txt_name txt_value
+              txt_name="$(jq -r '.txt_name // empty' <<<"$record")"
+              txt_value="$(jq -r '.txt_value // empty' <<<"$record")"
+              if [ -n "$txt_name" ] && [ -n "$txt_value" ]; then
+                printf 'TXT %s -> %s\n' "$txt_name" "$txt_value"
               fi
             done < <(jq -c '.data.result.ssl.validation_records[]?' "$response_file")
           }
@@ -162,13 +191,11 @@ jobs:
             {
               echo "### Branded auth domain activated"
               echo ""
-              echo "- Hostname: `$CUSTOM_HOSTNAME`"
-              echo "- Supabase status: `$final_status`"
+              printf -- '- Hostname: `%s`\n' "$CUSTOM_HOSTNAME"
+              printf -- '- Supabase status: `%s`\n' "$final_status"
             } >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-
-          upsert_dns CNAME "$CUSTOM_HOSTNAME" "$INITIAL_CNAME_TARGET"
 
           if [ "$get_code" = "404" ]; then
             create_body="$(jq -cn --arg hostname "$CUSTOM_HOSTNAME" '{custom_hostname:$hostname}')"
@@ -181,6 +208,34 @@ jobs:
               echo "::error::A different Supabase custom hostname is already configured: $configured_hostname"
               exit 1
             fi
+          fi
+
+
+          echo "Supabase custom hostname initialized successfully."
+          jq '{status, custom_hostname, origin:.data.result.custom_origin_server, ownership_verification:.data.result.ownership_verification, ssl_validation_records:.data.result.ssl.validation_records}' /tmp/domain.json
+          print_dns_records /tmp/domain.json
+
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Cloudflare DNS could not be configured because CLOUDFLARE_API_TOKEN is missing."
+            exit 1
+          fi
+
+          cf_code="$(curl -sS
+            -o /tmp/cloudflare-zones.json
+            -w "%{http_code}"
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+            -H "Content-Type: application/json"
+            "https://api.cloudflare.com/client/v4/zones?name=$ROOT_DOMAIN&status=active")"
+          if [ "$cf_code" != "200" ]; then
+            echo "::error::Cloudflare zone lookup returned HTTP $cf_code. The token needs Zone:Read and DNS:Edit access to $ROOT_DOMAIN."
+            jq . /tmp/cloudflare-zones.json 2>/dev/null || true
+            exit 1
+          fi
+
+          ZONE_ID="$(jq -r '.result[0].id // empty' /tmp/cloudflare-zones.json)"
+          if [ -z "$ZONE_ID" ]; then
+            echo "::error::Cloudflare did not return the $ROOT_DOMAIN zone. Check the token's zone resource scope."
+            exit 1
           fi
 
           configure_dns_from_domain_response /tmp/domain.json
@@ -212,11 +267,11 @@ jobs:
           {
             echo "### Branded auth domain prepared"
             echo ""
-            echo "- Hostname: `$CUSTOM_HOSTNAME`"
-            echo "- Supabase status: `$current_status`"
-            echo "- SSL status: `$ssl_status`"
+            printf -- '- Hostname: `%s`\n' "$CUSTOM_HOSTNAME"
+            printf -- '- Supabase status: `%s`\n' "$current_status"
+            printf -- '- SSL status: `%s`\n' "$ssl_status"
             echo "- Google callback to add before activation:"
-            echo "  `https://$CUSTOM_HOSTNAME/auth/v1/callback`"
+            printf '  `https://%s/auth/v1/callback`\n' "$CUSTOM_HOSTNAME"
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$ready" != "true" ]; then
