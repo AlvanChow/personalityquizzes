@@ -353,7 +353,7 @@ const COMPARE_KEY = 'pq_compare';
 export function savePendingCompare(shareId, quizType, friendName) {
   try {
     sessionStorage.setItem(COMPARE_KEY, JSON.stringify({
-      shareId: String(shareId).slice(0, 16),
+      shareId: String(shareId).slice(0, 32),
       quizType: String(quizType).slice(0, 16),
       friendName: String(friendName ?? '').slice(0, 60),
     }));
@@ -367,7 +367,7 @@ export function getPendingCompare(quizType) {
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return null;
     if (quizType && parsed.quizType !== quizType) return null;
-    if (!/^[a-f0-9]{8}$/.test(parsed.shareId ?? '')) return null;
+    if (!/^[a-f0-9]{32}$/.test(parsed.shareId ?? '')) return null;
     return parsed;
   } catch {
     return null;

@@ -441,7 +441,12 @@ export default function CatalogResult() {
           >
             Dashboard
           </motion.button>
-          <SharePanel quizType={meta.key} result={result} scores={scores} btnColor="from-coral-400 to-coral-500" />
+          <SharePanel
+            quizType={meta.key}
+            result={{ ...result, key: stored.resultKey }}
+            scores={scores}
+            btnColor="from-coral-400 to-coral-500"
+          />
         </div>
       </div>
     </div>

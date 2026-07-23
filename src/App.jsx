@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { BigFiveProvider } from './contexts/BigFiveContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import SiteHeader from './components/SiteHeader';
+import SiteFooter from './components/SiteFooter';
 import { useAuth } from './contexts/AuthContext';
 import { track } from './utils/analytics';
 import { isVectorQuiz } from './data/vectorQuizzes/registry';
@@ -33,6 +34,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const CatalogQuiz = lazy(() => import('./pages/CatalogQuiz'));
 const CatalogResult = lazy(() => import('./pages/CatalogResult'));
 const FlowerPetal = lazy(() => import('./pages/FlowerPetal'));
+const Privacy = lazy(() => import('./pages/Privacy'));
 
 // Tracks page_view on every route change. Must live inside BrowserRouter and
 // AuthProvider so it can access both useLocation and useAuth.
@@ -110,11 +112,13 @@ function AppRoutes() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/s/:shareId" element={<SharedResult />} />
           <Route path="/circle" element={<Circle />} />
+          <Route path="/privacy" element={<Privacy />} />
           {/* Feature was briefly live as "Crew" — keep old links working. */}
           <Route path="/crew" element={<Navigate to="/circle" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
+      <SiteFooter />
     </>
   );
 }

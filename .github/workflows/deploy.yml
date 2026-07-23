@@ -37,6 +37,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Verify database share catalog
+        run: npm run check:share-catalog
+
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
 

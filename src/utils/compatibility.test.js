@@ -1,11 +1,19 @@
-import { describe, it, expect } from 'vitest';
-import { computeCompatibility } from './compatibility.js';
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import {
+  computeCompatibility,
+  getPendingCompare,
+  savePendingCompare,
+} from './compatibility.js';
 import { mbtiResults } from '../data/mbtiResults.js';
 
 const MBTI_TYPES = Object.keys(mbtiResults);
 const ENNEA_TYPES = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 const CAKE_TRAITS = ['AO', 'PS', 'IN', 'TM', 'AD', 'INF'];
 const HOUSES = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin'];
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('computeCompatibility', () => {
   it('returns null for missing inputs or unknown quiz types', () => {
@@ -79,5 +87,25 @@ describe('computeCompatibility', () => {
     const res = computeCompatibility('enneagram', '4', '9');
     expect(res.title.length).toBeGreaterThan(0);
     expect(res.emoji.length).toBeGreaterThan(0);
+  });
+});
+
+describe('pending comparison', () => {
+  it('preserves a complete 128-bit share ID', () => {
+    const values = new Map();
+    vi.stubGlobal('sessionStorage', {
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => values.set(key, value),
+      removeItem: (key) => values.delete(key),
+    });
+    const shareId = '0123456789abcdef0123456789abcdef';
+
+    savePendingCompare(shareId, 'mbti', 'A friend');
+
+    expect(getPendingCompare('mbti')).toEqual({
+      shareId,
+      quizType: 'mbti',
+      friendName: 'A friend',
+    });
   });
 });

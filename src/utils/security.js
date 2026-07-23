@@ -127,13 +127,13 @@ export function isValidUUID(id) {
 }
 
 /**
- * Validate a share ID format (128-bit tokens plus legacy 32-bit links).
+ * Validate a 128-bit share ID format.
  * @param {string} id
  * @returns {boolean}
  */
 export function isValidShareId(id) {
   if (typeof id !== 'string') return false;
-  return /^(?:[a-f0-9]{8}|[a-f0-9]{32})$/.test(id);
+  return /^[a-f0-9]{32}$/.test(id);
 }
 
 /**

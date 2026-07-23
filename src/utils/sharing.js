@@ -6,8 +6,8 @@ const BASE_URL = 'https://mypersonalityquizzes.com';
 
 // ─── ID generation ─────────────────────────────────────────────────────────
 export function generateShareId(byteLength = 16) {
-  if (!Number.isInteger(byteLength) || byteLength < 4 || byteLength > 32) {
-    throw new RangeError('Share ID byte length must be between 4 and 32.');
+  if (!Number.isInteger(byteLength) || byteLength < 16 || byteLength > 32) {
+    throw new RangeError('Share ID byte length must be between 16 and 32.');
   }
   const bytes = new Uint8Array(byteLength);
   crypto.getRandomValues(bytes);
@@ -15,10 +15,9 @@ export function generateShareId(byteLength = 16) {
 }
 
 // ─── Snapshot trimming ─────────────────────────────────────────────────────
-// Only the fields the share page and compatibility engine actually need are
-// stored. This keeps rows small (the DB caps result_data at 4 KB), avoids
-// duplicating long editorial copy into the DB, and shrinks the abuse surface
-// of the anonymously-writable table.
+// The database now derives every public result field from a private catalog.
+// This client-side snapshot remains useful for stable UI cache keys and for
+// extracting the small numeric score object sent to the validated RPC.
 export function buildShareSnapshot(result, scores) {
   const snapshot = {
     name:        typeof result.name === 'string' ? result.name.slice(0, 100) : '',
@@ -63,9 +62,17 @@ export function getShareSnapshotKey(quizType, result, scores, ownerId = null) {
   });
 }
 
+export function getShareResultKey(quizType, result) {
+  if (quizType === 'big5') return 'profile';
+  if (quizType === 'enneagram' && result.typeNumber != null) return String(result.typeNumber);
+  return String(result.key ?? result.resultKey ?? result.name ?? '').slice(0, 20);
+}
+
 // ─── Create a persistent shareable link ────────────────────────────────────
-// Inserts a snapshot into shared_results and returns the full share URL.
-// Returns null if Supabase is unavailable.
+// The create_shared_result RPC validates the quiz/result pair, generates the
+// 128-bit token, derives public copy from the server-owned result catalog, and
+// infers ownership from the authenticated session. The browser only supplies
+// the stable result key and bounded numeric scores.
 export async function createShareableLink(quizType, result, scores, ownerId = null) {
   if (!supabase) return null;
 
@@ -75,41 +82,22 @@ export async function createShareableLink(quizType, result, scores, ownerId = nu
     return null;
   }
 
-  const row = {
-    quiz_type:    quizType,
-    // Prefer the stable result KEY (e.g. "gryffindor", "layercake") over the
-    // display name so admin views and any future result_key-based type lookups
-    // get an identifier, not a human label. Falls back to the name if a result
-    // carries no key (legacy MBTI/catalog shapes).
-    result_key:   (result.key ?? result.resultKey ?? result.name ?? '').slice(0, 20),
-    result_name:  (result.name ?? '').slice(0, 100),
-    result_emoji: (result.emoji ?? '').slice(0, 16),
-    result_data:  buildShareSnapshot(result, scores),
-    // Signed-in sharers own their link, which lets viewers ask to join their
-    // circle. Guest shares have no owner and can't receive requests.
-    owner_id:     ownerId,
-  };
+  const snapshot = buildShareSnapshot(result, scores);
+  const { data, error } = await supabase.rpc('create_shared_result', {
+    p_quiz_type: quizType,
+    p_result_key: getShareResultKey(quizType, result),
+    p_scores: snapshot.scores ?? {},
+  });
 
-  // New deployments use a 128-bit token. During the migration rollout, an old
-  // database may still enforce the legacy 8-character policy; fall back only
-  // for the policy/check error so frontend and database can deploy safely in
-  // either order. Unique collisions are retried instead of surfacing a random
-  // share failure.
-  for (const byteLength of [16, 4]) {
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      const id = generateShareId(byteLength);
-      const { error } = await supabase.from('shared_results').insert({ id, ...row });
-      if (!error) return `${BASE_URL}/s/${id}`;
-      if (error.code === '23505') continue;
-      const legacySchema = byteLength === 16 && (error.code === '23514' || error.code === '42501');
-      if (legacySchema) break;
-      if (import.meta.env.DEV) console.warn('[sharing] createShareableLink failed:', error);
-      return null;
-    }
+  if (error || typeof data !== 'string' || !/^[a-f0-9]{32}$/.test(data)) {
+    if (import.meta.env.DEV) console.warn('[sharing] createShareableLink failed:', error ?? data);
+    return null;
   }
 
-  if (import.meta.env.DEV) console.warn('[sharing] createShareableLink exhausted ID retries');
-  return null;
+  // ownerId is deliberately not sent. Keeping it in this signature preserves
+  // the exact-snapshot cache key while the database uses auth.uid() directly.
+  void ownerId;
+  return `${BASE_URL}/s/${data}`;
 }
 
 // ─── Per-platform share copy ────────────────────────────────────────────────

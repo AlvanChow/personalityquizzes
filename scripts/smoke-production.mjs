@@ -1,9 +1,14 @@
 import { readFile } from 'node:fs/promises';
+import { DEFAULT_SUPABASE_ANON_KEY } from '../src/config/supabase.js';
 
 const baseUrl = (process.env.SMOKE_BASE_URL || 'https://mypersonalityquizzes.com').replace(/\/+$/, '');
 const wwwUrl = (process.env.SMOKE_WWW_URL || 'https://www.mypersonalityquizzes.com').replace(/\/+$/, '');
 const authHealthUrl = process.env.SMOKE_AUTH_HEALTH_URL
   || 'https://auth.mypersonalityquizzes.com/auth/v1/health';
+const authSettingsUrl = process.env.SMOKE_AUTH_SETTINGS_URL
+  || 'https://auth.mypersonalityquizzes.com/auth/v1/settings';
+const shareCanaryId = process.env.SMOKE_SHARE_CANARY_ID
+  || '0000000000000000000000000000cafe';
 const skipBuildMatch = process.env.SMOKE_SKIP_BUILD_MATCH === '1';
 const attempts = Number.parseInt(process.env.SMOKE_ATTEMPTS || '12', 10);
 const retryDelayMs = Number.parseInt(process.env.SMOKE_RETRY_DELAY_MS || '5000', 10);
@@ -32,9 +37,12 @@ async function retry(label, check) {
   throw new Error(`${label} failed after ${attempts} attempts: ${lastError?.message}`);
 }
 
-async function fetchText(url) {
+async function fetchText(url, headers = {}) {
   const response = await fetch(url, {
-    headers: { 'user-agent': 'personalityquizzes-production-smoke/1.0' },
+    headers: {
+      'user-agent': 'personalityquizzes-production-smoke/1.0',
+      ...headers,
+    },
     signal: AbortSignal.timeout(10_000),
   });
   const body = await response.text();
@@ -67,7 +75,7 @@ async function checkAppShell(url, entryAsset) {
 }
 
 async function checkShareRoute() {
-  const shareUrl = `${baseUrl}/s/01234567`;
+  const shareUrl = `${baseUrl}/s/${shareCanaryId}`;
   const { response, body } = await fetchText(shareUrl);
   requireValue(response.status === 200, `${shareUrl} returned HTTP ${response.status}`);
   requireValue(
@@ -79,8 +87,10 @@ async function checkShareRoute() {
     `${shareUrl} is missing Worker-generated canonical metadata`,
   );
   requireValue(
-    body.includes('Shared Personality Result'),
-    `${shareUrl} did not run the share metadata Worker`,
+    body.includes('Big Five Personality Profile')
+      && body.includes('Big Five Result')
+      && !body.includes('Shared Personality Result — My Personality Quizzes'),
+    `${shareUrl} did not return the expected permanent Big Five canary`,
   );
 }
 
@@ -92,6 +102,20 @@ async function checkAuthDomain() {
   );
 }
 
+async function checkAuthProviders() {
+  const { response, body } = await fetchText(authSettingsUrl, {
+    apikey: DEFAULT_SUPABASE_ANON_KEY,
+    authorization: `Bearer ${DEFAULT_SUPABASE_ANON_KEY}`,
+  });
+  requireValue(response.status === 200, `${authSettingsUrl} returned HTTP ${response.status}`);
+  const settings = JSON.parse(body);
+  requireValue(settings?.external?.google === true, 'Google authentication is not enabled');
+  requireValue(
+    settings?.external?.email === false,
+    'Email/password authentication is still enabled in Supabase',
+  );
+}
+
 const entryAsset = await expectedEntryAsset();
 
 await Promise.all([
@@ -99,6 +123,7 @@ await Promise.all([
   retry('www domain serves the deployed build', () => checkAppShell(wwwUrl, entryAsset)),
   retry('share route reaches the Worker', checkShareRoute),
   retry('branded auth domain reaches Supabase', checkAuthDomain),
+  retry('only the intended Google auth provider is enabled', checkAuthProviders),
 ]);
 
 console.log('Production smoke test passed.');
