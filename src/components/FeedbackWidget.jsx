@@ -62,15 +62,14 @@ export default function FeedbackWidget({ quizKey, delay = 0.7 }) {
           <p className="text-sm font-semibold text-gray-600">How accurate does this feel?</p>
           <div
             className="flex items-center gap-1"
-            role="radiogroup"
+            role="group"
             aria-label="Rate result accuracy from 1 to 5 stars"
             onMouseLeave={() => setHovered(0)}
           >
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
-                role="radio"
-                aria-checked="false"
+                type="button"
                 aria-label={`${n} star${n > 1 ? 's' : ''}`}
                 onMouseEnter={() => setHovered(n)}
                 onFocus={() => setHovered(n)}

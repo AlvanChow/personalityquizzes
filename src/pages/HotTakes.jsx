@@ -6,7 +6,7 @@ import { hotTakes } from '../data/hotTakes';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { track, getSessionId } from '../utils/analytics';
-import { safeLocalStorageRead } from '../utils/security';
+import { safeLocalStorageRead, safeLocalStorageWrite } from '../utils/security';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const VOTES_KEY = 'personalens_hottakes';
@@ -119,7 +119,7 @@ export default function HotTakes() {
     const nextVotes = { ...votes, [take.key]: choice };
     setVotes(nextVotes);
     try {
-      localStorage.setItem(VOTES_KEY, JSON.stringify(nextVotes));
+      safeLocalStorageWrite(VOTES_KEY, nextVotes);
     } catch { /* storage unavailable — the vote still counts for this visit */ }
 
     track('hot_take_voted', { debate: take.key, choice }, user?.id ?? null);

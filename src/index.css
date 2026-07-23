@@ -228,9 +228,8 @@ body {
 .dark .text-lime-600{color:color-mix(in srgb,#a3e635 70%,#fff);}
 .dark .text-lime-700{color:color-mix(in srgb,#a3e635 60%,#fff);}
 .dark .text-lime-800{color:color-mix(in srgb,#a3e635 50%,#fff);}
-/* Slate is used as a neutral accent (several result headlines, admin chips).
-   Only its gradient stops were remapped before, so text-slate-*/bg-slate-* stayed
-   dark-on-dark (~1.5:1) — nearly invisible in the default dark theme. */
+/* Slate is used as a neutral accent (several result headlines and admin chips).
+   Its text and background utilities also need dark-theme remapping for contrast. */
 .dark .bg-slate-50{background-color:color-mix(in srgb,#94a3b8 12%,transparent);}
 .dark .bg-slate-100{background-color:color-mix(in srgb,#94a3b8 18%,transparent);}
 .dark .border-slate-100{border-color:color-mix(in srgb,#94a3b8 28%,transparent);}

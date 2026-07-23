@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { safeJsonParse } from '../utils/security';
+import { safeJsonParse, safeLocalStorageWrite } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
 import { getQuizFactsLine } from '../data/quizInfo';
 import './narutoQuiz.css';
@@ -88,7 +88,6 @@ export default function MBTIDeepQuiz() {
   usePageTitle('MBTI Deep Quiz — My Personality Quizzes');
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [saveError, setSaveError] = useState(null);
   const startTimeRef = useRef(null);
 
   const [restored] = useState(() => readProgress());
@@ -127,7 +126,8 @@ export default function MBTIDeepQuiz() {
     const scores = computeMBTIDeepScores(answers, mbtiDeepQuestions);
     const result = getMBTIResult(scores);
 
-    localStorage.setItem('personalens_mbti', JSON.stringify({ scores, result, quizKey: 'mbti_deep', quizName: 'MBTI Deep (OEJTS)' }));
+    const storedResult = { scores, result, quizKey: 'mbti_deep', quizName: 'MBTI Deep (OEJTS)' };
+    safeLocalStorageWrite('personalens_mbti', storedResult);
 
     if (user && supabase && allowQuizSave()) {
       try {
@@ -146,16 +146,13 @@ export default function MBTIDeepQuiz() {
         if (error) throw error;
       } catch (err) {
         console.error('Failed to save MBTI deep quiz result:', err);
-        setSaveError('Could not save your result. Please check your connection and try again.');
-        submittingRef.current = false;
-        return;
       }
     }
 
     const duration_ms = startTimeRef.current ? Date.now() - startTimeRef.current : null;
     track('quiz_completed', { quiz: 'mbti_deep', result_key: result.name, duration_ms }, user?.id ?? null);
 
-    navigate('/quiz/mbti/result', { replace: true });
+    navigate('/quiz/mbti/result', { replace: true, state: { storedResult } });
   }, [navigate, user]);
 
   const handleAnswer = useCallback((question, value) => {
@@ -261,20 +258,6 @@ export default function MBTIDeepQuiz() {
         <div className="grain" />
         <div className="vignette" />
       </div>
-      {saveError && (
-        <p
-          role="alert"
-          style={{
-            position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-            zIndex: 50, maxWidth: '90vw', background: '#2a1512',
-            boxShadow: 'inset 0 0 0 1px rgba(217,58,43,.55), 0 12px 30px -12px rgba(0,0,0,.8)',
-            color: '#f2c1b8', fontSize: '.9rem', fontWeight: 600,
-            padding: '12px 20px', borderRadius: 16,
-          }}
-        >
-          {saveError}
-        </p>
-      )}
       <main className="wrap">{body}</main>
     </div>
   );

@@ -78,7 +78,9 @@ npm run build
 npx wrangler deploy
 ```
 
-Wrangler will use the `custom_domains` in `wrangler.jsonc` to automatically wire up `mypersonalityquizzes.com` and `www.mypersonalityquizzes.com` to the Worker.
+Wrangler will use the custom-domain entries under `routes` in `wrangler.jsonc`
+to wire up `mypersonalityquizzes.com` and `www.mypersonalityquizzes.com` to the
+Worker.
 
 > **Important:** The automatic deployment on push to `main` runs *before* you complete the Cloudflare setup. You must trigger a **new** deployment after the domain is active — otherwise the custom domain registration step is skipped.
 
@@ -96,6 +98,12 @@ Create a `.env` file based on `.env.example` and fill in your Supabase credentia
 ## Build & Deploy
 
 ```bash
-npm run build
+npm run check
 npx wrangler deploy
 ```
+
+Apply new files in `supabase/migrations/` to the production Supabase project in
+filename order before deploying frontend features that depend on them. The app
+degrades safely during a rolling deployment, but the migrations are required
+for hardened share tokens, admin account-email access, and atomic guest-result
+sync.

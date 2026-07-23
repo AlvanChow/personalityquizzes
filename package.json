@@ -4,25 +4,28 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm install --prefer-offline --silent && vite",
+    "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "npm run build && wrangler dev",
     "test": "vitest run",
+    "check": "npm run lint && npm test && npm run build && npm audit --omit=dev --audit-level=high",
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "@fontsource-variable/nunito": "^5.3.0",
-    "@supabase/supabase-js": "^2.97.0",
+    "@supabase/supabase-js": "^2.110.8",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.13.0"
+    "react-router-dom": "^7.18.1"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.25.5",
+    "@cloudflare/vite-plugin": "^1.46.0",
     "@eslint/js": "^9.39.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
@@ -32,10 +35,14 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "jsdom": "^29.1.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
     "vite": "^7.3.1",
     "vitest": "^4.0.18",
-    "wrangler": "^4.68.1"
+    "wrangler": "^4.113.0"
+  },
+  "overrides": {
+    "sharp": "^0.35.3"
   }
 }

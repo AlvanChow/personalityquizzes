@@ -106,6 +106,9 @@ export default function Circle() {
   }, [user]);
 
   useEffect(() => {
+    // Authentication is external state; entering an authenticated session
+    // intentionally triggers the first remote Circle load.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (user) load();
   }, [user, load]);
 

@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { safeJsonParse } from '../utils/security';
+import { safeJsonParse, safeLocalStorageWrite } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
 import { getQuizFactsLine } from '../data/quizInfo';
 import './narutoQuiz.css';
@@ -78,7 +78,6 @@ export default function EnneagramDeepQuiz() {
   usePageTitle('Enneagram Deep Quiz — My Personality Quizzes');
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [saveError, setSaveError] = useState(null);
   const startTimeRef = useRef(null);
 
   useEffect(() => {
@@ -107,10 +106,6 @@ export default function EnneagramDeepQuiz() {
     writeProgress(answers, idx);
   }, [screen, answers, idx]);
 
-  useEffect(() => {
-    setPulseVal(null);
-  }, [idx]);
-
   const handleComplete = useCallback(async (answers) => {
     // Guard against double submission
     if (submittingRef.current) return;
@@ -119,7 +114,8 @@ export default function EnneagramDeepQuiz() {
     const scores = computeEnneagramDeepScores(answers, enneagramDeepQuestions);
     const result = getEnneagramResult(scores);
 
-    localStorage.setItem('personalens_enneagram', JSON.stringify({ scores, result, quizKey: 'enneagram_deep', quizName: 'Enneagram Deep (36-item)' }));
+    const storedResult = { scores, result, quizKey: 'enneagram_deep', quizName: 'Enneagram Deep (36-item)' };
+    safeLocalStorageWrite('personalens_enneagram', storedResult);
 
     if (user && supabase && allowQuizSave()) {
       try {
@@ -137,16 +133,13 @@ export default function EnneagramDeepQuiz() {
         if (error) throw error;
       } catch (err) {
         console.error('Failed to save Enneagram deep quiz result:', err);
-        setSaveError('Could not save your result. Please check your connection and try again.');
-        submittingRef.current = false;
-        return;
       }
     }
 
     const duration_ms = startTimeRef.current ? Date.now() - startTimeRef.current : null;
     track('quiz_completed', { quiz: 'enneagram_deep', result_key: result.typeNumber, duration_ms }, user?.id ?? null);
 
-    navigate('/quiz/enneagram/result', { replace: true });
+    navigate('/quiz/enneagram/result', { replace: true, state: { storedResult } });
   }, [navigate, user]);
 
   const pick = useCallback((question, value) => {
@@ -155,6 +148,7 @@ export default function EnneagramDeepQuiz() {
     setPulseVal(value);
     window.setTimeout(() => {
       if (idx < enneagramDeepQuestions.length - 1) {
+        setPulseVal(null);
         setIdx(idx + 1);
       } else {
         clearProgress();
@@ -248,11 +242,6 @@ export default function EnneagramDeepQuiz() {
         <div className="vignette" />
       </div>
       <main className="wrap">{body}</main>
-      {saveError && (
-        <p role="alert" className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-50 border border-red-200 text-red-700 text-sm font-semibold px-5 py-3 rounded-2xl shadow-md z-50">
-          {saveError}
-        </p>
-      )}
     </div>
   );
 }

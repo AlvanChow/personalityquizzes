@@ -40,12 +40,55 @@ export function safeJsonParse(raw, fallback = null) {
  * @returns {*} The parsed value or fallback.
  */
 export function safeLocalStorageRead(key, fallback = null) {
+  const parseFailed = Symbol('parse-failed');
+  for (const getStorage of [() => globalThis.localStorage, () => globalThis.sessionStorage]) {
+    try {
+      const storage = getStorage();
+      const raw = storage?.getItem(key);
+      if (raw !== null && raw !== undefined) {
+        const parsed = safeJsonParse(raw, parseFailed);
+        if (parsed !== parseFailed) return parsed;
+      }
+    } catch {
+      // Try the session-scoped fallback. Some browsers and embedded webviews
+      // expose localStorage but reject writes/reads at runtime.
+    }
+  }
+  return fallback;
+}
+
+/**
+ * Persist JSON without allowing a blocked/full localStorage implementation to
+ * break a completion flow. sessionStorage is an automatic fallback so the
+ * result still survives navigation within the current tab.
+ *
+ * @returns {boolean} true when either storage accepted the value.
+ */
+export function safeLocalStorageWrite(key, value) {
+  let serialized;
   try {
-    const raw = localStorage.getItem(key);
-    if (raw === null) return fallback;
-    return safeJsonParse(raw, fallback);
+    serialized = JSON.stringify(value);
   } catch {
-    return fallback;
+    return false;
+  }
+
+  for (const getStorage of [() => globalThis.localStorage, () => globalThis.sessionStorage]) {
+    try {
+      const storage = getStorage();
+      if (!storage) continue;
+      storage.setItem(key, serialized);
+      return true;
+    } catch {
+      // Continue to the session-scoped fallback.
+    }
+  }
+  return false;
+}
+
+/** Remove a value from both persistent and session-scoped storage. */
+export function safeLocalStorageRemove(key) {
+  for (const getStorage of [() => globalThis.localStorage, () => globalThis.sessionStorage]) {
+    try { getStorage()?.removeItem(key); } catch { /* unavailable */ }
   }
 }
 
@@ -84,13 +127,13 @@ export function isValidUUID(id) {
 }
 
 /**
- * Validate a share ID format (8 lowercase hex characters).
+ * Validate a share ID format (128-bit tokens plus legacy 32-bit links).
  * @param {string} id
  * @returns {boolean}
  */
 export function isValidShareId(id) {
   if (typeof id !== 'string') return false;
-  return /^[a-f0-9]{8}$/.test(id);
+  return /^(?:[a-f0-9]{8}|[a-f0-9]{32})$/.test(id);
 }
 
 /**

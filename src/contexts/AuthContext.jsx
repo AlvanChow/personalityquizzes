@@ -41,7 +41,17 @@ export function AuthProvider({ children }) {
     if (!supabase) throw new Error('Authentication is not available right now.');
     if (!allowAuth()) throw new Error('Too many sign-in attempts. Please wait a moment.');
     track('auth_sign_in_started', {}, null);
-    const safePath = typeof redirectPath === 'string' && redirectPath.startsWith('/') ? redirectPath : '';
+    const hasControlCharacters = typeof redirectPath === 'string'
+      && Array.from(redirectPath).some((char) => {
+        const code = char.charCodeAt(0);
+        return code < 32 || code === 127;
+      });
+    const safePath = typeof redirectPath === 'string'
+      && redirectPath.startsWith('/')
+      && !redirectPath.startsWith('//')
+      && !hasControlCharacters
+      ? redirectPath
+      : '';
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

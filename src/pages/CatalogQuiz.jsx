@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
+import { safeLocalStorageWrite } from '../utils/security';
 
 function Spinner() {
   return (
@@ -66,7 +67,7 @@ export default function CatalogQuiz() {
       tie: outcome.tie ?? false,
       completedAt: new Date().toISOString(),
     };
-    localStorage.setItem(storageKeyFor(quiz.key), JSON.stringify(stored));
+    safeLocalStorageWrite(storageKeyFor(quiz.key), stored);
 
     // Best-effort profile sync — the localStorage copy is authoritative for
     // rendering, so a failed save should never block the result screen.
@@ -92,7 +93,7 @@ export default function CatalogQuiz() {
     const duration_ms = startTimeRef.current ? Date.now() - startTimeRef.current : null;
     track('quiz_completed', { quiz: quiz.key, result_key: outcome.resultKey, duration_ms }, user?.id ?? null);
 
-    navigate(`/quiz/${quiz.key}/result`, { replace: true });
+    navigate(`/quiz/${quiz.key}/result`, { replace: true, state: { storedResult: stored } });
   }, [quiz, meta, user, navigate]);
 
   const renderPickOptions = useCallback((question, onAnswer, selectedValue) => {

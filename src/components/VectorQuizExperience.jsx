@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SharePanel from './SharePanel';
 import FeedbackWidget from './FeedbackWidget';
-import EmailCaptureCard from './EmailCaptureCard';
+import AuthNudgeBanner from './AuthNudgeBanner';
 import NextQuizBanner from './NextQuizBanner';
 import CompareBanner from './CompareBanner';
 import { emblem } from '../data/vectorQuizzes/glyphs';
@@ -13,7 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
-import { safeLocalStorageRead } from '../utils/security';
+import { safeLocalStorageRead, safeLocalStorageWrite } from '../utils/security';
 import '../pages/narutoQuiz.css';
 
 // The shared five-screen vector-quiz experience: seal intro → auto-advancing
@@ -171,6 +171,9 @@ export default function VectorQuizExperience({ def }) {
         navigate(`/quiz/${QUIZ_KEY}`, { replace: true });
         return;
       }
+      // URL navigation is an external state change that intentionally drives
+      // this stateful multi-screen experience.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFocusKey((k) => k ?? stored?.resultKey ?? list?.[0]?.k ?? null);
       setScreen('result');
     } else if (screen === 'result') {
@@ -214,7 +217,7 @@ export default function VectorQuizExperience({ def }) {
     // Short-keyed integer scores so the share snapshot keeps them
     // (keys must match ^[A-Za-z0-9]{1,4}$, values finite).
     const scores = Object.fromEntries(vec.map((v, i) => [`a${i}`, Math.round(v * 100)]));
-    localStorage.setItem(storageKeyFor(QUIZ_KEY), JSON.stringify({
+    safeLocalStorageWrite(storageKeyFor(QUIZ_KEY), {
       quizKey: QUIZ_KEY,
       resultKey: top.k,
       result,
@@ -222,7 +225,7 @@ export default function VectorQuizExperience({ def }) {
       uv: vec,
       overallPct: null,
       completedAt: new Date().toISOString(),
-    }));
+    });
 
     if (user && supabase && allowQuizSave()) {
       try {
@@ -432,7 +435,7 @@ export default function VectorQuizExperience({ def }) {
                 just took the quiz, invite them back to see compatibility. */}
             <CompareBanner quizType={QUIZ_KEY} />
             <FeedbackWidget quizKey={QUIZ_KEY} />
-            <EmailCaptureCard source={QUIZ_KEY} />
+            <AuthNudgeBanner quiz={QUIZ_KEY} />
             <NextQuizBanner currentQuizKey={QUIZ_KEY} />
           </div>
           <button className="linkbtn" onClick={() => navigate('/dashboard')}>← Back to my results</button>

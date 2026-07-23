@@ -1,3 +1,5 @@
+import { safeLocalStorageRead } from '../../utils/security';
+
 /**
  * Central quiz catalog.
  *
@@ -296,15 +298,9 @@ export function storageKeyFor(quizKey) {
 }
 
 export function isQuizCompleted(quizKey) {
-  try {
-    const raw = localStorage.getItem(storageKeyFor(quizKey));
-    if (!raw) return false;
-    // Quizzes store a result on finish; the Flower Petal exercise persists
-    // partial progress with completedAt null until it's actually done — an
-    // in-progress save must not count as completed.
-    const parsed = JSON.parse(raw);
-    return !!(parsed && typeof parsed === 'object' && (parsed.result || parsed.completedAt));
-  } catch {
-    return false;
-  }
+  const parsed = safeLocalStorageRead(storageKeyFor(quizKey), null);
+  // Quizzes store a result on finish; the Flower Petal exercise persists
+  // partial progress with completedAt null until it's actually done — an
+  // in-progress save must not count as completed.
+  return !!(parsed && typeof parsed === 'object' && (parsed.result || parsed.completedAt));
 }

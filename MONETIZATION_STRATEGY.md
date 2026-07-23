@@ -4,8 +4,8 @@
 > and `SOCIAL_ROADMAP.md`.
 >
 > **Current direction (2026-07): the product is FREE.** No paywall is active.
-> Growth runs on an opt-in email list (see `Monetization plan.md` and
-> `EmailCaptureCard`). Everything below is a menu of **optional future levers** —
+> Growth runs on signed-in accounts that retain results across devices (see
+> `Monetization plan.md` and `AuthNudgeBanner`). Everything below is a menu of **optional future levers** —
 > kept for reference in case monetization is ever revisited. None of it is live.
 >
 > This document is the *strategy* layer: which models would fit which parts of
@@ -97,13 +97,12 @@ neutral. **Start with books/courses, not therapy.**
 
 ---
 
-## The thing to do first, regardless: capture emails
+## The thing to do first, regardless: grow signed-in accounts
 
-There is currently **no email capture** anywhere in the product. That is the
-single biggest leak. Every result page is a natural "email me my full breakdown"
-moment. An email list is the asset that makes every later model work
-(relaunch nudges, report upsells, subscription conversion). Cheapest,
-highest-leverage item on this list — do it before any paywall.
+Every result page is a natural point to invite account creation. Google sign-in
+saves the verified account email through Supabase Auth and preserves results
+across devices without promising an emailed report or treating authentication
+as newsletter consent.
 
 ---
 
@@ -111,7 +110,7 @@ highest-leverage item on this list — do it before any paywall.
 
 | Phase | Ship | Why now |
 |---|---|---|
-| **0 — Now** | Email capture on result pages | Stops the biggest leak; enables everything downstream |
+| **0 — Now** | Google sign-in on result pages | Saves account identity and results without a separate email form |
 | **1 — Pre-scale** | One premium deep-report unlock (Stripe Payment Link, no backend rewrite). **No quiz-taking gate.** | Prove people pay for depth |
 | **2 — Early traction** | Compatibility unlock + AdSense on pop quizzes | Add emotional-intent revenue + passive ad income |
 | **3 — Return-user base** | All-Access subscription bundling Circle/social analytics | Recurring revenue once retention exists |
@@ -119,7 +118,7 @@ highest-leverage item on this list — do it before any paywall.
 
 Note: Phase 1 reuses most of the current plan's Stripe/`purchases` infrastructure
 (`Monetization plan.md` Phases 1–2 & 5) — the change is **what** gets gated
-(depth, not quiz #2) and adding email capture ahead of it.
+(depth, not quiz #2) and adding account creation ahead of it.
 
 ---
 
