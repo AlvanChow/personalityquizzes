@@ -1,0 +1,168 @@
+name: Apply Supabase migrations (one-time)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/apply-supabase-migrations.yml
+
+concurrency:
+  group: production-database-migrations
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: Reconcile and apply committed migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Reconcile and apply migrations
+        id: migrate
+        continue-on-error: true
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set +e
+          status=unknown_failure
+          exit_code=1
+
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            status=missing_supabase_access_token
+            exit_code=64
+          elif [ -z "$SUPABASE_DB_PASSWORD" ]; then
+            status=missing_supabase_db_password
+            exit_code=65
+          else
+            supabase link --project-ref ivptkiuhxzdhjnslzalv --password "$SUPABASE_DB_PASSWORD"
+            link_code=$?
+
+            if [ "$link_code" -ne 0 ]; then
+              status=project_link_failed
+              exit_code=$link_code
+            else
+              echo "Recording migrations that already exist in the live schema:"
+              supabase migration repair \
+                20260221001047 \
+                20260224000001 \
+                20260224000002 \
+                20260226000001 \
+                20260226000002 \
+                20260303000001 \
+                20260305000001 \
+                20260308000001 \
+                20260411000001 \
+                20260720000001 \
+                20260720000002 \
+                20260720000003 \
+                20260720000004 \
+                20260720000005 \
+                20260720000006 \
+                20260720000007 \
+                20260721000001 \
+                20260721000002 \
+                --status applied
+              repair_code=$?
+
+              if [ "$repair_code" -ne 0 ]; then
+                status=migration_history_repair_failed
+                exit_code=$repair_code
+              else
+                echo "Migration state after history repair:"
+                supabase migration list
+
+                dry_output="$(supabase db push --dry-run --yes 2>&1)"
+                dry_run_code=$?
+                printf '%s\n' "$dry_output"
+
+                pending="$(printf '%s\n' "$dry_output" | grep -oE '[0-9]{14}_[A-Za-z0-9_]+\.sql' | sort -u)"
+                expected="$(printf '%s\n' \
+                  20260722000001_harden_share_tokens.sql \
+                  20260722000002_admin_auth_accounts.sql \
+                  20260722000003_bulk_guest_result_sync.sql | sort)"
+
+                if [ "$dry_run_code" -ne 0 ]; then
+                  status=migration_dry_run_failed
+                  exit_code=$dry_run_code
+                elif [ "$pending" != "$expected" ]; then
+                  echo "Unexpected pending migration set. Refusing to write."
+                  printf 'Expected:\n%s\nActual:\n%s\n' "$expected" "$pending"
+                  status=unexpected_pending_migrations
+                  exit_code=66
+                else
+                  echo "Applying the three verified migrations:"
+                  supabase db push --yes
+                  push_code=$?
+
+                  if [ "$push_code" -ne 0 ]; then
+                    status=migration_push_failed
+                    exit_code=$push_code
+                  else
+                    post_output="$(supabase db push --dry-run --yes 2>&1)"
+                    post_code=$?
+                    printf '%s\n' "$post_output"
+                    remaining="$(printf '%s\n' "$post_output" | grep -oE '[0-9]{14}_[A-Za-z0-9_]+\.sql' | sort -u)"
+
+                    echo "Final migration state:"
+                    supabase migration list
+                    list_code=$?
+
+                    if [ "$post_code" -eq 0 ] && [ "$list_code" -eq 0 ] && [ -z "$remaining" ]; then
+                      status=migrations_applied_and_verified
+                      exit_code=0
+                    else
+                      status=migration_verification_failed
+                      exit_code=67
+                    fi
+                  fi
+                fi
+              fi
+            fi
+          fi
+
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          exit "$exit_code"
+
+      - name: Record migration result
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          MIGRATION_STATUS: ${{ steps.migrate.outputs.status }}
+          MIGRATION_EXIT_CODE: ${{ steps.migrate.outputs.exit_code }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const status = process.env.MIGRATION_STATUS || 'workflow_error'
+            const exitCode = process.env.MIGRATION_EXIT_CODE || 'unknown'
+            const body = JSON.stringify({
+              status,
+              exit_code: exitCode,
+              source_sha: context.sha,
+              run_id: context.runId,
+              recorded_at: new Date().toISOString()
+            }, null, 2) + '\n'
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: '.github/supabase-migration-status.json',
+              message: `chore: record Supabase migration status (${status})`,
+              content: Buffer.from(body).toString('base64'),
+              branch: 'main'
+            })
+
+      - name: Mark unsuccessful migration
+        if: steps.migrate.outputs.exit_code != '0'
+        run: exit 1
