@@ -1,0 +1,46 @@
+name: Cloudflare build audit
+
+on:
+  push:
+    branches:
+      - agent/fix-retake-share-cache
+    paths:
+      - .github/workflows/cloudflare-build-audit.yml
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Inspect native Workers Builds triggers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+
+          workers_json="$(
+            curl --silent --show-error --fail-with-body \
+              "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts" \
+              --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
+          )"
+          worker_tag="$(
+            jq --exit-status --raw-output \
+              '.result[] | select(.id == "personalityquizzes") | .tag' \
+              <<< "${workers_json}"
+          )"
+
+          triggers_json="$(
+            curl --silent --show-error --fail-with-body \
+              "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/builds/workers/${worker_tag}/triggers" \
+              --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
+          )"
+
+          jq --exit-status '.success == true' <<< "${triggers_json}" > /dev/null
+          trigger_count="$(jq '.result | length' <<< "${triggers_json}")"
+          echo "Native Workers Builds triggers for personalityquizzes: ${trigger_count}"
+          jq --raw-output \
+            '.result[] | "trigger_uuid=\(.trigger_uuid) name=\(.trigger_name) branches=\(.branch_includes | join(","))"' \
+            <<< "${triggers_json}"
