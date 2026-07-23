@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, Check, ArrowRight, RotateCcw, ChevronDown } from 'lucide-react';
+import { ArrowRight, RotateCcw, ChevronDown } from 'lucide-react';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { useAuth } from '../contexts/AuthContext';
 import NextQuizBanner from '../components/NextQuizBanner';
 import FeedbackWidget from '../components/FeedbackWidget';
 import AuthNudgeBanner from '../components/AuthNudgeBanner';
+import SharePanel from '../components/SharePanel';
 import { track } from '../utils/analytics';
 import lifeAnalysis from '../data/lifeAnalysis';
 import { getCompletedCount, QUIZ_ORDER } from '../utils/quizProgression';
@@ -172,7 +173,6 @@ export default function Dashboard() {
   const { scores, hasCompleted, loading, quizResults = {} } = useBigFive();
   const { user } = useAuth();
 
-  const [copied, setCopied] = useState(false);
   const [expandedTrait, setExpandedTrait] = useState(null);
   const [expandedSections, setExpandedSections] = useState(() => new Set(['careers']));
 
@@ -182,6 +182,15 @@ export default function Dashboard() {
     () => Math.max(getCompletedCount(), completedTiles.length + (hasCompleted ? 1 : 0)),
     [completedTiles.length, hasCompleted],
   );
+  const bigFiveShareResult = useMemo(() => ({
+    key: 'profile',
+    name: 'Big Five Personality Profile',
+    emoji: '🧬',
+    tagline: 'My five-trait personality profile',
+    description: 'See my Big Five personality scores and discover your own profile.',
+    color: 'from-violet-50 to-sky-100',
+    accent: 'text-violet-700',
+  }), []);
 
   function toggleSection(key) {
     setExpandedSections(prev => {
@@ -202,22 +211,6 @@ export default function Dashboard() {
   useEffect(() => {
     document.title = 'Dashboard — My Personality Quizzes';
   }, []);
-
-  async function handleShare() {
-    const lines = traitOrder.map((t) => `${traitData[t].label} ${scores[t]}`).join('\n');
-    const text = `My Big Five Personality:\n\n${lines}\n\nTake yours at mypersonalityquizzes.com`;
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      try {
-        if (navigator.share) await navigator.share({ title: 'My Big Five Personality', text });
-      } catch (err) {
-        if (err?.name !== 'AbortError') console.error('Share failed:', err);
-      }
-    }
-  }
 
   if (loading) return (
     <div className="min-h-screen bg-cream-50 flex items-center justify-center">
@@ -241,17 +234,13 @@ export default function Dashboard() {
                 {completedCount === QUIZ_ORDER.length ? '✓ All quizzes completed' : `${completedCount}/${QUIZ_ORDER.length} quizzes completed`}
               </span>
             </div>
-            <motion.button
-              onClick={handleShare}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors shrink-0 ${
-                copied ? 'bg-emerald-500 text-white' : 'bg-gray-900 text-white hover:bg-gray-800'
-              }`}
-            >
-              {copied ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
-              {copied ? 'Copied!' : 'Share'}
-            </motion.button>
+            <SharePanel
+              quizType="big5"
+              result={bigFiveShareResult}
+              scores={scores}
+              btnColor="from-gray-900 to-gray-800"
+              className="!flex-none !py-2 px-4 !rounded-lg shrink-0"
+            />
           </div>
           <p className="text-gray-500 mb-6">Your Big Five at a glance — tap a trait for the full read.</p>
 
