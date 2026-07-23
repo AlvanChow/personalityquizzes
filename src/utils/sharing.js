@@ -47,6 +47,22 @@ export function buildShareSnapshot(result, scores) {
   return Object.fromEntries(Object.entries(snapshot).filter(([, v]) => v !== undefined));
 }
 
+// Identifies the exact immutable result snapshot behind a share URL. SharePanel
+// uses this to avoid reusing a link after a retake changes the result or scores.
+export function getShareSnapshotKey(quizType, result, scores, ownerId = null) {
+  const snapshot = buildShareSnapshot(result, scores);
+  if (snapshot.scores) {
+    snapshot.scores = Object.fromEntries(
+      Object.entries(snapshot.scores).sort(([left], [right]) => left.localeCompare(right)),
+    );
+  }
+  return JSON.stringify({
+    quizType,
+    ownerId: ownerId ?? null,
+    snapshot,
+  });
+}
+
 // ─── Create a persistent shareable link ────────────────────────────────────
 // Inserts a snapshot into shared_results and returns the full share URL.
 // Returns null if Supabase is unavailable.
