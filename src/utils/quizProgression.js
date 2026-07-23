@@ -1,5 +1,6 @@
 import { Activity, Brain, CircleDashed, Cake, Wand2 } from 'lucide-react';
 import { QUIZ_CATALOG, getQuizPath, isQuizCompleted } from '../data/quizzes';
+import { safeLocalStorageRead } from './security';
 
 // The guided journey starts with the core assessments, then the introspective
 // catalog, then the pop-culture quizzes. Entries carry either a lucide `icon`
@@ -7,7 +8,7 @@ import { QUIZ_CATALOG, getQuizPath, isQuizCompleted } from '../data/quizzes';
 const CORE_QUIZZES = [
   {
     key: 'big5',
-    check: () => localStorage.getItem('personalens_bigfive_completed') === 'true',
+    check: () => safeLocalStorageRead('personalens_bigfive_completed', false) === true,
     label: 'Big 5 Personality',
     description: 'The scientifically-backed OCEAN model. Discover your core traits.',
     path: '/assessment',
@@ -17,7 +18,7 @@ const CORE_QUIZZES = [
   },
   {
     key: 'mbti',
-    check: () => !!localStorage.getItem('personalens_mbti'),
+    check: () => !!safeLocalStorageRead('personalens_mbti', null),
     label: 'MBTI (16 Types)',
     description: 'Find your Myers-Briggs type and cognitive style.',
     path: '/quiz/mbti',
@@ -27,7 +28,7 @@ const CORE_QUIZZES = [
   },
   {
     key: 'enneagram',
-    check: () => !!localStorage.getItem('personalens_enneagram'),
+    check: () => !!safeLocalStorageRead('personalens_enneagram', null),
     label: 'Enneagram',
     description: 'Discover which of the 9 types drives your deepest motivations.',
     path: '/quiz/enneagram',
@@ -37,7 +38,7 @@ const CORE_QUIZZES = [
   },
   {
     key: 'cake',
-    check: () => !!localStorage.getItem('personalens_cake'),
+    check: () => !!safeLocalStorageRead('personalens_cake', null),
     // Title/description kept in sync with the Landing card for this quiz.
     label: 'What Cake Are You?',
     description: 'Your work superpower, served as dessert. Find your professional flavor.',
@@ -48,7 +49,7 @@ const CORE_QUIZZES = [
   },
   {
     key: 'house',
-    check: () => !!localStorage.getItem('personalens_house'),
+    check: () => !!safeLocalStorageRead('personalens_house', null),
     label: 'Wizarding House',
     description: 'Gryffindor, Hufflepuff, Ravenclaw, or Slytherin?',
     path: '/quiz/house',

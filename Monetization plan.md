@@ -6,18 +6,18 @@
 
 ## What replaces it
 
-Instead of charging, the site grows an **opt-in email list** — the highest-
-leverage asset for a free product. Result pages invite visitors to leave their
-email for new quizzes and a copy of their results.
+Instead of charging or collecting standalone newsletter addresses, result pages
+invite visitors to sign in with Google. Supabase Auth retains the verified
+account email and the authenticated profile keeps quiz results available across
+devices. The product does not promise to email a copy of a result.
 
 **Shipped:**
 
 | Piece | Where |
 |---|---|
-| `email_subscribers` table (anon/auth insert, admin-only read, per-IP rate limit) | `supabase/migrations/20260721000002_add_email_subscribers.sql` |
-| `EmailCaptureCard` opt-in component (self-suppresses after subscribe/dismiss) | `src/components/EmailCaptureCard.jsx` |
-| `isValidEmail` helper | `src/utils/security.js` |
-| `email_captured` / `email_capture_dismissed` analytics | `src/utils/analytics.js` |
+| Google OAuth + authenticated result sync | `src/contexts/AuthContext.jsx`, `src/contexts/BigFiveContext.jsx` |
+| Sign-in result-saving prompt | `src/components/AuthNudgeBanner.jsx` |
+| Admin-only account-email view | `supabase/migrations/20260722000002_admin_auth_accounts.sql` |
 | Placement on result surfaces | MBTI / Enneagram / Catalog / Vector results + Dashboard |
 
 ## If monetization is ever revisited
@@ -25,4 +25,4 @@ email for new quizzes and a copy of their results.
 The full menu of options — premium reports, compatibility unlocks,
 subscription, ads, B2B teams — and why each fits (or doesn't) is preserved in
 `MONETIZATION_STRATEGY.md` as **optional future levers**. Nothing there is
-active; the current direction is free + email list.
+active; the current direction is free + signed-in accounts.

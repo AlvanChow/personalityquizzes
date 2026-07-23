@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAdmin } from '../hooks/useAdmin';
 import { allowAdminFetch } from '../utils/rateLimiter';
 import UserMenu from '../components/UserMenu';
+import { accountsToCsv } from '../utils/csv';
 import {
   Users, Activity, BarChart2, CheckCircle,
   RefreshCw, ChevronLeft, Shield, Star, Share2, Eye, Mail, Download,
@@ -33,20 +34,6 @@ function fmtTime(iso) {
 function quizCompletedCount(quizResults, key) {
   if (!quizResults) return false;
   return !!quizResults[key];
-}
-
-// Build a CSV from the email subscriber rows, escaping any value that contains
-// a comma, quote, or newline (RFC 4180 style).
-function subscribersToCsv(rows) {
-  const esc = (v) => {
-    const s = v == null ? '' : String(v);
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  };
-  const lines = ['email,source,joined_at'];
-  for (const r of rows) {
-    lines.push([esc(r.email), esc(r.source), esc(r.created_at)].join(','));
-  }
-  return lines.join('\n');
 }
 
 const EVENT_COLORS = {
@@ -99,7 +86,8 @@ export default function AdminDashboard() {
   const [eventCounts, setEventCounts] = useState([]);
   const [feedback, setFeedback] = useState([]);
   const [shares, setShares] = useState([]);
-  const [subscribers, setSubscribers] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [accountsWarning, setAccountsWarning] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastRefresh, setLastRefresh] = useState(null);
@@ -126,7 +114,7 @@ export default function AdminDashboard() {
         recentUsersRes,
         feedbackRes,
         sharesRes,
-        subscribersRes,
+        accountsRes,
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', todayStr),
@@ -134,12 +122,25 @@ export default function AdminDashboard() {
         supabase.from('analytics_events').select('*', { count: 'exact', head: true }).gte('created_at', todayStr),
         supabase.from('analytics_events').select('id, session_id, user_id, event, properties, created_at').order('created_at', { ascending: false }).limit(1000),
         supabase.from('profiles').select('id, display_name, avatar_url, baseline_completed, quiz_results, created_at').order('created_at', { ascending: false }).limit(100),
-        // These two tables arrive with the launch migrations — tolerate errors
-        // so the dashboard still renders if a migration hasn't been applied.
+        // Launch tables and the admin auth RPC are required schema. Any query
+        // error is surfaced below instead of rendering misleading zeroes.
         supabase.from('quiz_feedback').select('quiz_key, rating, created_at').order('created_at', { ascending: false }).limit(2000),
         supabase.from('shared_results').select('id, quiz_type, result_key, result_name, view_count, created_at').order('created_at', { ascending: false }).limit(1000),
-        supabase.from('email_subscribers').select('id, email, source, created_at').order('created_at', { ascending: false }).limit(5000),
+        supabase.rpc('admin_list_auth_users'),
       ]);
+
+      const failedQuery = [
+        totalUsersRes, todayUsersRes, baselineRes, eventsTodayRes,
+        recentEventsRes, recentUsersRes, feedbackRes, sharesRes,
+      ].find((response) => response.error);
+      if (failedQuery) throw failedQuery.error;
+
+      // The frontend and Supabase migrations can roll out independently. Keep
+      // the rest of the admin dashboard useful while clearly surfacing a
+      // missing/failed account-email RPC instead of showing a false zero.
+      setAccountsWarning(accountsRes.error
+        ? 'Signed-in account emails are unavailable until the admin auth migration is applied.'
+        : null);
 
       // Compute active users today from recent events
       const todayEvents = (recentEventsRes.data ?? []).filter(e => e.created_at >= todayStr);
@@ -166,7 +167,7 @@ export default function AdminDashboard() {
       setEventCounts(sortedCounts);
       setFeedback(feedbackRes.data ?? []);
       setShares(sharesRes.data ?? []);
-      setSubscribers(subscribersRes.data ?? []);
+      setAccounts(accountsRes.error ? [] : (accountsRes.data ?? []));
       setLastRefresh(new Date());
     } catch (err) {
       setError(err.message ?? 'Failed to load dashboard data.');
@@ -175,19 +176,19 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  const downloadSubscribersCsv = useCallback(() => {
-    if (!subscribers.length) return;
-    const csv = subscribersToCsv(subscribers);
+  const downloadAccountsCsv = useCallback(() => {
+    if (!accounts.length) return;
+    const csv = accountsToCsv(accounts);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `email-subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `signed-in-accounts-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [subscribers]);
+  }, [accounts]);
 
   useEffect(() => {
     document.title = 'Admin — My Personality Quizzes';
@@ -195,6 +196,8 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!adminLoading && isAdmin) {
+      // The authenticated/admin state gates the initial remote data load.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchData();
     }
   }, [adminLoading, isAdmin, fetchData]);
@@ -275,6 +278,9 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        <p className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold px-4 py-3 rounded-xl">
+          Analytics events are recorded by clients and are directional product signals, not tamper-proof financial or billing records.
+        </p>
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
             {error}
@@ -525,16 +531,16 @@ export default function AdminDashboard() {
           </section>
         </div>
 
-        {/* Email list */}
+        {/* Signed-in account emails */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-              Email List
-              <span className="ml-1 font-normal normal-case text-gray-400">(opt-in subscribers)</span>
+              Signed-in Accounts
+              <span className="ml-1 font-normal normal-case text-gray-400">(account emails, not marketing consent)</span>
             </h2>
             <button
-              onClick={downloadSubscribersCsv}
-              disabled={subscribers.length === 0}
+              onClick={downloadAccountsCsv}
+              disabled={accounts.length === 0}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               <Download className="w-3.5 h-3.5" />
@@ -542,25 +548,28 @@ export default function AdminDashboard() {
             </button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {accountsWarning && (
+              <p className="lg:col-span-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold px-4 py-3 rounded-xl" role="status">
+                {accountsWarning}
+              </p>
+            )}
             <StatCard
               icon={Mail}
-              label="Subscribers"
-              value={subscribers.length >= 5000 ? '5000+' : subscribers.length}
-              sub={`+${subscribers.filter(s => s.created_at >= startOfToday()).length} today`}
+              label="Accounts with email"
+              value={accounts.length >= 10000 ? '10000+' : accounts.length}
+              sub={`+${accounts.filter(s => s.created_at >= startOfToday()).length} today`}
               color="bg-coral-50 text-coral-500"
             />
             <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-4">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Most recent</p>
-              {subscribers.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">No subscribers yet.</p>
+              {accounts.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">No signed-in accounts yet.</p>
               ) : (
                 <div className="space-y-2">
-                  {subscribers.slice(0, 8).map((s) => (
-                    <div key={s.id} className="flex items-center justify-between text-xs">
+                  {accounts.slice(0, 8).map((s) => (
+                    <div key={s.user_id} className="flex items-center justify-between text-xs">
                       <span className="font-medium text-gray-800 truncate max-w-[220px]">{s.email}</span>
                       <span className="flex items-center gap-2 shrink-0 ml-2 text-gray-400">
-                        {s.source && <span className="text-gray-500">{s.source}</span>}
-                        <span>·</span>
                         <span>{fmtTime(s.created_at)}</span>
                       </span>
                     </div>

@@ -63,9 +63,17 @@ describe('buildShareSnapshot', () => {
 });
 
 describe('generateShareId', () => {
-  it('produces 8 lowercase hex chars', () => {
+  it('produces a 128-bit lowercase hex token by default', () => {
     for (let i = 0; i < 20; i++) {
-      expect(generateShareId()).toMatch(/^[a-f0-9]{8}$/);
+      expect(generateShareId()).toMatch(/^[a-f0-9]{32}$/);
     }
+  });
+
+  it('can produce a legacy 32-bit token during a safe database rollout', () => {
+    expect(generateShareId(4)).toMatch(/^[a-f0-9]{8}$/);
+  });
+
+  it('rejects unsafe token sizes', () => {
+    expect(() => generateShareId(3)).toThrow(RangeError);
   });
 });

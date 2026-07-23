@@ -12,6 +12,7 @@ import { houseResults } from '../data/houseResults';
 import ScoreBar from '../components/ScoreBar';
 import { generateProfileSummary } from '../utils/generateSummary';
 import { getQuizMeta } from '../data/quizzes';
+import { safeLocalStorageRemove } from '../utils/security';
 
 // For each quiz type: the result lookup table, the result-page route, a function
 // to extract the lookup key from the stored result object, and whether the result
@@ -47,6 +48,7 @@ export default function Profile() {
   // Tracks which item is pending confirmation: a quiz key ('cake'/'mbti'/'enneagram')
   // or 'baseline' for the Big Five reset.
   const [confirmReset, setConfirmReset] = useState(null);
+  const [operationError, setOperationError] = useState(null);
 
   useEffect(() => {
     document.title = 'My Profile — My Personality Quizzes';
@@ -100,12 +102,18 @@ export default function Profile() {
   };
 
   async function handleQuizReset(quizKey) {
-    localStorage.removeItem(quizLocalKeys[quizKey] ?? `personalens_${quizKey}`);
+    setOperationError(null);
     const newResults = { ...quizResults };
     delete newResults[quizKey];
     if (supabase) {
-      await supabase.from('profiles').update({ quiz_results: newResults }).eq('id', user.id);
+      const { error } = await supabase.from('profiles').update({ quiz_results: newResults }).eq('id', user.id);
+      if (error) {
+        setOperationError('That result could not be removed. Please check your connection and try again.');
+        setConfirmReset(null);
+        return;
+      }
     }
+    safeLocalStorageRemove(quizLocalKeys[quizKey] ?? `personalens_${quizKey}`);
     setProfile((prev) => ({ ...prev, quiz_results: newResults }));
     setConfirmReset(null);
   }
@@ -139,6 +147,11 @@ export default function Profile() {
       </header>
 
       <main className="px-6 py-10 max-w-2xl mx-auto">
+        {operationError && (
+          <p role="alert" className="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm font-semibold px-4 py-3 rounded-xl">
+            {operationError}
+          </p>
+        )}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

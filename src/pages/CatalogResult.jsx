@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Sparkles, TrendingUp, Heart, Trophy } from 'lucide-react';
 import SharePanel from '../components/SharePanel';
 import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
 import FeedbackWidget from '../components/FeedbackWidget';
-import EmailCaptureCard from '../components/EmailCaptureCard';
 import { getQuizMeta, storageKeyFor } from '../data/quizzes';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
@@ -150,11 +149,16 @@ function BandLadder({ bands, currentKey, accentClass }) {
 export default function CatalogResult() {
   const { quizKey } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const meta = getQuizMeta(quizKey);
 
   const [quiz, setQuiz] = useState(null);
-  const [stored] = useState(() => (meta ? safeLocalStorageRead(storageKeyFor(meta.key), null) : null));
+  const [stored] = useState(() => {
+    if (!meta) return null;
+    const persisted = safeLocalStorageRead(storageKeyFor(meta.key), null);
+    return persisted?.result ? persisted : location.state?.storedResult ?? null;
+  });
 
   useEffect(() => {
     if (!meta?.load) {
@@ -413,11 +417,9 @@ export default function CatalogResult() {
 
         <FeedbackWidget quizKey={meta.key} />
 
-        <EmailCaptureCard source={meta.key} />
+        <AuthNudgeBanner quiz={meta.key} />
 
         <NextQuizBanner currentQuizKey={meta.key} />
-
-        <AuthNudgeBanner quiz={meta.key} />
 
         <div className="flex gap-3">
           <motion.button

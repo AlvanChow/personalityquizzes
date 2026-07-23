@@ -1,16 +1,19 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "personalityquizzes",
+  "main": "./worker/index.js",
   "compatibility_date": "2026-02-24",
   "observability": {
     "enabled": true
   },
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/s/*"]
   },
-  "custom_domains": [
-    { "hostname": "mypersonalityquizzes.com", "override_existing_dns_record": true },
-    { "hostname": "www.mypersonalityquizzes.com", "override_existing_dns_record": true }
+  "routes": [
+    { "pattern": "mypersonalityquizzes.com", "custom_domain": true },
+    { "pattern": "www.mypersonalityquizzes.com", "custom_domain": true }
   ]
 }

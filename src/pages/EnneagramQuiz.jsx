@@ -11,7 +11,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { lighten } from '../utils/vectorQuiz';
 import { getQuizFactsLine } from '../data/quizInfo';
 import CoreIntroBreakdown from '../components/CoreIntroBreakdown';
-import { safeJsonParse } from '../utils/security';
+import { safeJsonParse, safeLocalStorageWrite } from '../utils/security';
 import './narutoQuiz.css';
 
 // Presentation-only restyle: the Enneagram flow now renders through the
@@ -81,7 +81,6 @@ export default function EnneagramQuiz() {
   usePageTitle('Enneagram Quiz — My Personality Quizzes');
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [saveError, setSaveError] = useState(null);
   const startTimeRef = useRef(null);
 
   useEffect(() => {
@@ -107,7 +106,8 @@ export default function EnneagramQuiz() {
     const scores = computeEnneagramScores(answers);
     const result = getEnneagramResult(scores);
 
-    localStorage.setItem('personalens_enneagram', JSON.stringify({ scores, result }));
+    const storedResult = { scores, result };
+    safeLocalStorageWrite('personalens_enneagram', storedResult);
 
     if (user && supabase && allowQuizSave()) {
       try {
@@ -125,9 +125,6 @@ export default function EnneagramQuiz() {
         if (error) throw error;
       } catch (err) {
         console.error('Failed to save Enneagram quiz result:', err);
-        setSaveError('Could not save your result. Please check your connection and try again.');
-        submittingRef.current = false;
-        return;
       }
     }
 
@@ -135,7 +132,7 @@ export default function EnneagramQuiz() {
     track('quiz_completed', { quiz: 'enneagram', result_key: result.typeNumber, duration_ms }, user?.id ?? null);
 
     // Replace the quiz in browser history so the back button skips it.
-    navigate('/quiz/enneagram/result', { replace: true });
+    navigate('/quiz/enneagram/result', { replace: true, state: { storedResult } });
   }, [navigate, user]);
 
   // ─── presentation state ───
@@ -233,13 +230,6 @@ export default function EnneagramQuiz() {
             ))}
           </div>
         </div>
-        {saveError && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 30 }}>
-            <button className="btn btn-primary" onClick={() => handleComplete(answers)}>
-              Try saving again
-            </button>
-          </div>
-        )}
         <div className="quiz-nav">
           <button className="back" onClick={goBack}>
             {idx === 0 ? '← Exit' : '← Previous'}
@@ -251,11 +241,6 @@ export default function EnneagramQuiz() {
 
   return (
     <>
-      {saveError && (
-        <p role="alert" className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-50 border border-red-200 text-red-700 text-sm font-semibold px-5 py-3 rounded-2xl shadow-md z-50">
-          {saveError}
-        </p>
-      )}
       <div className="nq no-seal" style={AURA_VARS}>
         <div className="bg" aria-hidden="true">
           <div className="glow g1" />

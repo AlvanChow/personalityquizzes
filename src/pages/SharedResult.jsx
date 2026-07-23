@@ -364,10 +364,16 @@ export default function SharedResult() {
   const trackedRef = useRef(false);
 
   useEffect(() => {
-    document.title = 'Shared Result — My Personality Quizzes';
-  }, []);
+    const resultName = sanitizeString(shared?.result_name, 100);
+    document.title = resultName
+      ? `${resultName} — My Personality Quizzes`
+      : 'Shared Result — My Personality Quizzes';
+  }, [shared]);
 
   useEffect(() => {
+    // The share token and network availability are external state. This effect
+    // owns the corresponding fetch lifecycle and its loading/error UI.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!supabase) { setNotFound(true); setLoading(false); return; }
 
     // Validate share ID format before querying the database

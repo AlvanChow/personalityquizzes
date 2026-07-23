@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Briefcase, Users, Brain, Feather, Heart, AlertTriangle, TrendingUp, Zap, Layers, ArrowRight } from 'lucide-react';
 import SharePanel from '../components/SharePanel';
@@ -12,7 +12,6 @@ import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
 import CompareBanner from '../components/CompareBanner';
 import FeedbackWidget from '../components/FeedbackWidget';
-import EmailCaptureCard from '../components/EmailCaptureCard';
 import InsightCard from '../components/InsightCard';
 
 // The standard quiz maxes at 12 per type (3 questions × 4). The deep quiz uses
@@ -49,9 +48,11 @@ const TYPE_NAMES = {
 
 export default function EnneagramResult() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [data] = useState(() => {
-    const stored = safeLocalStorageRead('personalens_enneagram', null);
+    const persisted = safeLocalStorageRead('personalens_enneagram', null);
+    const stored = WING_ADJACENTS[persisted?.result?.typeNumber] ? persisted : location.state?.storedResult;
     // Guard against partial/corrupt stored data: we need a resolvable type
     // number and a non-empty scores object, or the page can't render.
     if (!WING_ADJACENTS[stored?.result?.typeNumber]) return null;
@@ -279,13 +280,11 @@ export default function EnneagramResult() {
 
         <FeedbackWidget quizKey={data.quizKey || 'enneagram'} />
 
-        <EmailCaptureCard source={data.quizKey || 'enneagram'} />
+        <AuthNudgeBanner quiz={data.quizKey || 'enneagram'} />
 
         <CompareBanner quizType="enneagram" />
 
         <NextQuizBanner currentQuizKey="enneagram" />
-
-        <AuthNudgeBanner quiz="enneagram" />
 
         <div className="flex gap-3 mt-2">
           <motion.button onClick={() => { track('quiz_retaken', { quiz: 'enneagram' }, user?.id ?? null); navigate('/quiz/enneagram'); }}

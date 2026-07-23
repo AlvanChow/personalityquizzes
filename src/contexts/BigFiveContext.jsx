@@ -3,7 +3,12 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 import { track } from '../utils/analytics';
 import { allowProfileSync } from '../utils/rateLimiter';
-import { safeJsonParse, isPlainObject } from '../utils/security';
+import {
+  safeLocalStorageRead,
+  safeLocalStorageRemove,
+  safeLocalStorageWrite,
+  isPlainObject,
+} from '../utils/security';
 import { QUIZ_CATALOG, storageKeyFor } from '../data/quizzes';
 
 const STORAGE_KEY = 'personalens_bigfive';
@@ -11,38 +16,22 @@ const defaultScores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
 const BigFiveContext = createContext(null);
 
 function readLocal() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return defaultScores;
-    const parsed = safeJsonParse(stored, null);
-    // Validate the shape: must be a plain object with expected keys.
-    if (!isPlainObject(parsed)) return defaultScores;
-    // Normalize: guarantee all five O/C/E/A/N keys exist as finite 0–100
-    // numbers, so partial/legacy data never produces NaN bars downstream.
-    return clampScores(parsed);
-  } catch {
-    return defaultScores;
-  }
+  const parsed = safeLocalStorageRead(STORAGE_KEY, null);
+  // Validate the shape: must be a plain object with expected keys.
+  if (!isPlainObject(parsed)) return defaultScores;
+  // Normalize: guarantee all five O/C/E/A/N keys exist as finite 0–100
+  // numbers, so partial/legacy data never produces NaN bars downstream.
+  return clampScores(parsed);
 }
 
 function readLocalCompleted() {
-  try {
-    return localStorage.getItem(`${STORAGE_KEY}_completed`) === 'true';
-  } catch {
-    return false;
-  }
+  return safeLocalStorageRead(`${STORAGE_KEY}_completed`, false) === true;
 }
 
 function readLocalJson(key) {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return null;
-    const parsed = safeJsonParse(raw, null);
-    // Only return plain objects to prevent prototype pollution
-    return isPlainObject(parsed) ? parsed : null;
-  } catch {
-    return null;
-  }
+  const parsed = safeLocalStorageRead(key, null);
+  // Only return plain objects to prevent prototype pollution
+  return isPlainObject(parsed) ? parsed : null;
 }
 
 /**
@@ -65,48 +54,56 @@ function clampScores(scores) {
  */
 async function syncGuestQuizResults(userId, remoteResults) {
   if (!supabase) return;
-  const tasks = [];
+  const pendingResults = {};
 
   const cakeData = readLocalJson('personalens_cake');
   if (cakeData?.resultKey && !remoteResults.cake) {
     const r = cakeData.result;
-    tasks.push(supabase.rpc('upsert_quiz_result', {
-      p_user_id: userId,
-      p_quiz_key: 'cake',
-      p_result: { resultKey: cakeData.resultKey, name: r.name, emoji: r.emoji, trait: r.trait, quizName: 'What Cake Are You?' },
-    }));
+    pendingResults.cake = {
+      resultKey: cakeData.resultKey,
+      name: r.name,
+      emoji: r.emoji,
+      trait: r.trait,
+      quizName: 'What Cake Are You?',
+    };
   }
 
   const mbtiData = readLocalJson('personalens_mbti');
   const mbtiQuizKey = mbtiData?.quizKey || 'mbti';
   if (mbtiData?.result && !remoteResults[mbtiQuizKey]) {
     const r = mbtiData.result;
-    tasks.push(supabase.rpc('upsert_quiz_result', {
-      p_user_id: userId,
-      p_quiz_key: mbtiQuizKey,
-      p_result: { resultKey: r.name, name: `${r.name} — ${r.nickname}`, emoji: r.emoji, trait: r.nickname, quizName: mbtiData.quizName || 'MBTI (16 Types)' },
-    }));
+    pendingResults[mbtiQuizKey] = {
+      resultKey: r.name,
+      name: `${r.name} — ${r.nickname}`,
+      emoji: r.emoji,
+      trait: r.nickname,
+      quizName: mbtiData.quizName || 'MBTI (16 Types)',
+    };
   }
 
   const enneagramData = readLocalJson('personalens_enneagram');
   const enneagramQuizKey = enneagramData?.quizKey || 'enneagram';
   if (enneagramData?.result && !remoteResults[enneagramQuizKey]) {
     const r = enneagramData.result;
-    tasks.push(supabase.rpc('upsert_quiz_result', {
-      p_user_id: userId,
-      p_quiz_key: enneagramQuizKey,
-      p_result: { resultKey: r.typeNumber, name: r.name, emoji: r.emoji, trait: r.nickname, quizName: enneagramData.quizName || 'Enneagram' },
-    }));
+    pendingResults[enneagramQuizKey] = {
+      resultKey: r.typeNumber,
+      name: r.name,
+      emoji: r.emoji,
+      trait: r.nickname,
+      quizName: enneagramData.quizName || 'Enneagram',
+    };
   }
 
   const houseData = readLocalJson('personalens_house');
   if (houseData?.result?.key && !remoteResults.house) {
     const r = houseData.result;
-    tasks.push(supabase.rpc('upsert_quiz_result', {
-      p_user_id: userId,
-      p_quiz_key: 'house',
-      p_result: { resultKey: r.key, name: r.name, emoji: r.emoji, trait: r.tagline ?? '', quizName: 'Wizarding House' },
-    }));
+    pendingResults.house = {
+      resultKey: r.key,
+      name: r.name,
+      emoji: r.emoji,
+      trait: r.tagline ?? '',
+      quizName: 'Wizarding House',
+    };
   }
 
   // Every other catalog + vector quiz (naruto, office, riasec, eq, love_language, …).
@@ -123,28 +120,58 @@ async function syncGuestQuizResults(userId, remoteResults) {
     const data = readLocalJson(storageKeyFor(key));
     const r = data?.result;
     if (!r || !data.resultKey || !r.name) continue;
-    tasks.push(supabase.rpc('upsert_quiz_result', {
-      p_user_id: userId,
-      p_quiz_key: key,
-      p_result: {
-        resultKey: String(data.resultKey).slice(0, 40),
-        name:      String(r.name).slice(0, 120),
-        emoji:     typeof r.emoji === 'string' ? r.emoji : '',
-        tagline:   typeof r.tagline === 'string' ? r.tagline : '',
-        quizName:  meta.quizName,
-      },
-    }));
+    pendingResults[key] = {
+      resultKey: String(data.resultKey).slice(0, 40),
+      name:      String(r.name).slice(0, 120),
+      emoji:     typeof r.emoji === 'string' ? r.emoji : '',
+      tagline:   typeof r.tagline === 'string' ? r.tagline : '',
+      quizName:  meta.quizName,
+    };
   }
 
-  if (tasks.length > 0) {
-    const results = await Promise.allSettled(tasks);
-    results.forEach((outcome) => {
-      if (outcome.status === 'rejected') {
-        console.error('Failed to sync guest quiz result to Supabase:', outcome.reason);
-      } else if (outcome.value?.error) {
-        console.error('Failed to sync guest quiz result to Supabase:', outcome.value.error);
+  if (Object.keys(pendingResults).length === 0) return;
+
+  async function retry(operation) {
+    let lastError = null;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        const outcome = await operation();
+        if (!outcome.error) return { ok: true, value: outcome };
+        lastError = outcome.error;
+      } catch (error) {
+        lastError = error;
       }
-    });
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+      }
+    }
+    return { ok: false, error: lastError ?? new Error('Guest result sync failed') };
+  }
+
+  // One server-side merge avoids lost updates and the per-call rate limit when
+  // a returning guest has completed many quizzes. The individual RPC fallback
+  // keeps sign-in compatible while the new migration is rolling out.
+  const bulk = await retry(() => supabase.rpc('upsert_quiz_results_bulk', {
+    p_user_id: userId,
+    p_results: pendingResults,
+  }));
+  if (bulk.ok) return;
+
+  const missingBulkRpc = bulk.error?.code === 'PGRST202' || bulk.error?.code === '42883';
+  if (!missingBulkRpc) {
+    console.error('Failed to bulk-sync guest quiz results to Supabase:', bulk.error);
+    return;
+  }
+
+  for (const [quizKey, result] of Object.entries(pendingResults)) {
+    const fallback = await retry(() => supabase.rpc('upsert_quiz_result', {
+      p_user_id: userId,
+      p_quiz_key: quizKey,
+      p_result: result,
+    }));
+    if (!fallback.ok) {
+      console.error(`Failed to sync guest quiz result "${quizKey}" to Supabase:`, fallback.error);
+    }
   }
 }
 
@@ -184,7 +211,7 @@ export function BigFiveProvider({ children }) {
     if (prevUserIdRef.current) {
       prevUserIdRef.current = null;
       try {
-        PERSONAL_KEYS.forEach((key) => localStorage.removeItem(key));
+        PERSONAL_KEYS.forEach(safeLocalStorageRemove);
       } catch { /* storage unavailable */ }
       setScores(defaultScores);
       setHasCompleted(false);
@@ -193,11 +220,11 @@ export function BigFiveProvider({ children }) {
 
   useEffect(() => {
     scoresRef.current = scores;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
+    safeLocalStorageWrite(STORAGE_KEY, scores);
   }, [scores]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_completed`, String(hasCompleted));
+    safeLocalStorageWrite(`${STORAGE_KEY}_completed`, hasCompleted);
     hasCompletedRef.current = hasCompleted;
   }, [hasCompleted]);
 
@@ -287,8 +314,8 @@ export function BigFiveProvider({ children }) {
     setScores(defaultScores);
     setHasCompleted(false);
     // Only clear the Big Five localStorage keys — quiz results are preserved.
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(`${STORAGE_KEY}_completed`);
+    safeLocalStorageRemove(STORAGE_KEY);
+    safeLocalStorageRemove(`${STORAGE_KEY}_completed`);
     // Only reset Big Five fields in Supabase; quiz_results is left untouched.
     syncToSupabase(defaultScores, false);
     track('baseline_reset', {}, user?.id ?? null);

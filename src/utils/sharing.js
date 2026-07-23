@@ -5,8 +5,13 @@ import { getQuizMeta } from '../data/quizzes';
 const BASE_URL = 'https://mypersonalityquizzes.com';
 
 // ─── ID generation ─────────────────────────────────────────────────────────
-export function generateShareId() {
-  return crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+export function generateShareId(byteLength = 16) {
+  if (!Number.isInteger(byteLength) || byteLength < 4 || byteLength > 32) {
+    throw new RangeError('Share ID byte length must be between 4 and 32.');
+  }
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 // ─── Snapshot trimming ─────────────────────────────────────────────────────
@@ -54,10 +59,7 @@ export async function createShareableLink(quizType, result, scores, ownerId = nu
     return null;
   }
 
-  const id = generateShareId();
-
-  const { error } = await supabase.from('shared_results').insert({
-    id,
+  const row = {
     quiz_type:    quizType,
     // Prefer the stable result KEY (e.g. "gryffindor", "layercake") over the
     // display name so admin views and any future result_key-based type lookups
@@ -70,14 +72,28 @@ export async function createShareableLink(quizType, result, scores, ownerId = nu
     // Signed-in sharers own their link, which lets viewers ask to join their
     // circle. Guest shares have no owner and can't receive requests.
     owner_id:     ownerId,
-  });
+  };
 
-  if (error) {
-    if (import.meta.env.DEV) console.warn('[sharing] createShareableLink failed:', error);
-    return null;
+  // New deployments use a 128-bit token. During the migration rollout, an old
+  // database may still enforce the legacy 8-character policy; fall back only
+  // for the policy/check error so frontend and database can deploy safely in
+  // either order. Unique collisions are retried instead of surfacing a random
+  // share failure.
+  for (const byteLength of [16, 4]) {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const id = generateShareId(byteLength);
+      const { error } = await supabase.from('shared_results').insert({ id, ...row });
+      if (!error) return `${BASE_URL}/s/${id}`;
+      if (error.code === '23505') continue;
+      const legacySchema = byteLength === 16 && (error.code === '23514' || error.code === '42501');
+      if (legacySchema) break;
+      if (import.meta.env.DEV) console.warn('[sharing] createShareableLink failed:', error);
+      return null;
+    }
   }
 
-  return `${BASE_URL}/s/${id}`;
+  if (import.meta.env.DEV) console.warn('[sharing] createShareableLink exhausted ID retries');
+  return null;
 }
 
 // ─── Per-platform share copy ────────────────────────────────────────────────

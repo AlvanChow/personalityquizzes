@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Briefcase, Users, Star, ShieldAlert, Sparkles, TrendingUp, Zap, AlertTriangle, ChevronDown, Layers, ArrowRight } from 'lucide-react';
 import SharePanel from '../components/SharePanel';
@@ -12,7 +12,6 @@ import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import NextQuizBanner from '../components/NextQuizBanner';
 import CompareBanner from '../components/CompareBanner';
 import FeedbackWidget from '../components/FeedbackWidget';
-import EmailCaptureCard from '../components/EmailCaptureCard';
 import InsightCard from '../components/InsightCard';
 
 const DIMENSION_LABELS = {
@@ -91,9 +90,11 @@ function ExpandableItem({ title, text, accent }) {
 
 export default function MBTIResult() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [data] = useState(() => {
-    const stored = safeLocalStorageRead('personalens_mbti', null);
+    const persisted = safeLocalStorageRead('personalens_mbti', null);
+    const stored = persisted?.result?.name ? persisted : location.state?.storedResult;
     // Guard against partial/corrupt stored data, not just missing data.
     return stored?.result?.name ? stored : null;
   });
@@ -342,13 +343,11 @@ export default function MBTIResult() {
 
         <FeedbackWidget quizKey={data.quizKey || 'mbti'} />
 
-        <EmailCaptureCard source={data.quizKey || 'mbti'} />
+        <AuthNudgeBanner quiz={data.quizKey || 'mbti'} />
 
         <CompareBanner quizType="mbti" />
 
         <NextQuizBanner currentQuizKey="mbti" />
-
-        <AuthNudgeBanner quiz="mbti" />
 
         <div className="flex gap-3 mt-2">
           <motion.button

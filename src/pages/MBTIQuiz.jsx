@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { safeJsonParse } from '../utils/security';
+import { safeJsonParse, safeLocalStorageWrite } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
 import { getQuizFactsLine } from '../data/quizInfo';
 import CoreIntroBreakdown from '../components/CoreIntroBreakdown';
@@ -87,7 +87,6 @@ export default function MBTIQuiz() {
   usePageTitle('MBTI Quiz — My Personality Quizzes');
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [saveError, setSaveError] = useState(null);
   const startTimeRef = useRef(null);
 
   const [restored] = useState(() => readProgress());
@@ -126,7 +125,8 @@ export default function MBTIQuiz() {
     const scores = computeMBTIScores(answers);
     const result = getMBTIResult(scores);
 
-    localStorage.setItem('personalens_mbti', JSON.stringify({ scores, result }));
+    const storedResult = { scores, result };
+    safeLocalStorageWrite('personalens_mbti', storedResult);
 
     if (user && supabase && allowQuizSave()) {
       try {
@@ -145,9 +145,6 @@ export default function MBTIQuiz() {
         if (error) throw error;
       } catch (err) {
         console.error('Failed to save MBTI quiz result:', err);
-        setSaveError('Could not save your result. Please check your connection and try again.');
-        submittingRef.current = false;
-        return;
       }
     }
 
@@ -155,7 +152,7 @@ export default function MBTIQuiz() {
     track('quiz_completed', { quiz: 'mbti', result_key: result.name, duration_ms }, user?.id ?? null);
 
     // Replace the quiz in browser history so the back button skips it.
-    navigate('/quiz/mbti/result', { replace: true });
+    navigate('/quiz/mbti/result', { replace: true, state: { storedResult } });
   }, [navigate, user]);
 
   const handleAnswer = useCallback((question, value) => {
@@ -260,20 +257,6 @@ export default function MBTIQuiz() {
         <div className="grain" />
         <div className="vignette" />
       </div>
-      {saveError && (
-        <p
-          role="alert"
-          style={{
-            position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-            zIndex: 50, maxWidth: '90vw', background: '#2a1512',
-            boxShadow: 'inset 0 0 0 1px rgba(217,58,43,.55), 0 12px 30px -12px rgba(0,0,0,.8)',
-            color: '#f2c1b8', fontSize: '.9rem', fontWeight: 600,
-            padding: '12px 20px', borderRadius: 16,
-          }}
-        >
-          {saveError}
-        </p>
-      )}
       <main className="wrap">{body}</main>
     </div>
   );

@@ -6,7 +6,7 @@ import NextQuizBanner from '../components/NextQuizBanner';
 import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
-import { safeLocalStorageRead, sanitizeString } from '../utils/security';
+import { safeLocalStorageRead, safeLocalStorageRemove, safeLocalStorageWrite, sanitizeString } from '../utils/security';
 
 const STORAGE_KEY = 'personalens_flower_petal';
 const MAX_ITEMS_PER_PETAL = 8;
@@ -307,7 +307,7 @@ export default function FlowerPetal() {
       completedAt: completedAtRef.current,
     };
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      safeLocalStorageWrite(STORAGE_KEY, payload);
     } catch {
       // Storage unavailable (quota/private mode) — keep the in-memory session going.
     }
@@ -467,7 +467,7 @@ export default function FlowerPetal() {
                   onEditPetal={(key) => setStep(PETALS.findIndex((p) => p.key === key))}
                   onRestart={() => {
                     setPetals(emptyPetals());
-                    localStorage.removeItem(STORAGE_KEY);
+                    safeLocalStorageRemove(STORAGE_KEY);
                     // Clear the completion stamp so a redo isn't re-marked done
                     // on the first edit.
                     completedAtRef.current = null;
