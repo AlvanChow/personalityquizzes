@@ -197,7 +197,7 @@ jobs:
             exit 0
           fi
 
-          if [ "$get_code" = "404" ]; then
+          if [ "$get_code" = "400" ] || [ "$get_code" = "404" ]; then
             create_body="$(jq -cn --arg hostname "$CUSTOM_HOSTNAME" '{custom_hostname:$hostname}')"
             create_code="$(sb_call POST "/v1/projects/$PROJECT_REF/custom-hostname/initialize" /tmp/domain.json "$create_body")"
             require_http "$create_code" /tmp/domain.json 200 201
