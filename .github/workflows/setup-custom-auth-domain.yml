@@ -125,7 +125,7 @@ jobs:
             ownership_name="$(jq -r '.data.result.ownership_verification.name // empty' "$response_file")"
             ownership_value="$(jq -r '.data.result.ownership_verification.value // empty' "$response_file")"
             if [ -n "$ownership_type" ] && [ -n "$ownership_name" ] && [ -n "$ownership_value" ]; then
-              upsert_dns "$ownership_type" "$ownership_name" "$ownership_value"
+              upsert_dns "$(tr '[:lower:]' '[:upper:]' <<<"$ownership_type")" "$ownership_name" "$ownership_value"
             fi
 
             while IFS= read -r record; do
@@ -220,12 +220,7 @@ jobs:
             exit 1
           fi
 
-          cf_code="$(curl -sS
-            -o /tmp/cloudflare-zones.json
-            -w "%{http_code}"
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
-            -H "Content-Type: application/json"
-            "https://api.cloudflare.com/client/v4/zones?name=$ROOT_DOMAIN&status=active")"
+          cf_code="$(curl -sS -o /tmp/cloudflare-zones.json -w "%{http_code}" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "https://api.cloudflare.com/client/v4/zones?name=$ROOT_DOMAIN&status=active")"
           if [ "$cf_code" != "200" ]; then
             echo "::error::Cloudflare zone lookup returned HTTP $cf_code. The token needs Zone:Read and DNS:Edit access to $ROOT_DOMAIN."
             jq . /tmp/cloudflare-zones.json 2>/dev/null || true
