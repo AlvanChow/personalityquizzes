@@ -4,6 +4,7 @@ import {
   safeLocalStorageRead,
   safeLocalStorageRemove,
   safeLocalStorageWrite,
+  isValidShareId,
 } from './security';
 
 function memoryStorage() {
@@ -68,5 +69,13 @@ describe('safe storage', () => {
     expect(safeLocalStorageWrite('result', { ok: true })).toBe(false);
     expect(safeLocalStorageRead('result', 'fallback')).toBe('fallback');
     expect(() => safeLocalStorageRemove('result')).not.toThrow();
+  });
+});
+
+describe('share ID validation', () => {
+  it('accepts only 128-bit lowercase hex tokens', () => {
+    expect(isValidShareId('0123456789abcdef0123456789abcdef')).toBe(true);
+    expect(isValidShareId('01234567')).toBe(false);
+    expect(isValidShareId('0123456789ABCDEF0123456789ABCDEF')).toBe(false);
   });
 });

@@ -29,15 +29,17 @@ export default function FeedbackWidget({ quizKey, delay = 0.7 }) {
   const [hovered, setHovered] = useState(0);
   const [submitted, setSubmitted] = useState(() => alreadyRated(quizKey));
 
-  if (!supabase) return null;
+  // Ratings affect product decisions, so accept one rating per signed-in
+  // account and quiz instead of trusting unlimited anonymous browser sessions.
+  if (!supabase || !user) return null;
 
   async function handleRate(rating) {
     setSubmitted(true);
     markRated(quizKey);
-    track('quiz_feedback_given', { quiz: quizKey, rating }, user?.id ?? null);
+    track('quiz_feedback_given', { quiz: quizKey, rating }, user.id);
     const { error } = await supabase.from('quiz_feedback').insert({
       session_id: getSessionId(),
-      user_id: user?.id ?? null,
+      user_id: user.id,
       quiz_key: quizKey,
       rating,
     });

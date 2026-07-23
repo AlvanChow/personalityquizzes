@@ -34,9 +34,6 @@ const ALLOWED_EVENTS = new Set([
   'circle_request_declined',
   'circle_viewed',
   'circle_member_removed',
-  // Email capture (free-product growth)
-  'email_captured',
-  'email_capture_dismissed',
 ]);
 
 // ─── Session ID ──────────────────────────────────────────────────────────────
@@ -44,6 +41,32 @@ const ALLOWED_EVENTS = new Set([
 // A new tab or a fresh browser open creates a new session.
 // A same-tab page refresh preserves the session.
 const SESSION_KEY = 'pq_session_id';
+const DEVICE_SENT_KEY = 'pq_device_sent';
+const ANALYTICS_OPT_OUT_KEY = 'pq_analytics_opt_out';
+
+export function isAnalyticsOptedOut() {
+  try {
+    return localStorage.getItem(ANALYTICS_OPT_OUT_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function setAnalyticsOptOut(optedOut) {
+  try {
+    if (optedOut) localStorage.setItem(ANALYTICS_OPT_OUT_KEY, '1');
+    else localStorage.removeItem(ANALYTICS_OPT_OUT_KEY);
+  } catch {
+    // Storage can be unavailable in private browsing. The privacy control
+    // reports the current persisted state, so a failed write never lies.
+  }
+
+  // Send fresh device metadata only if analytics is later re-enabled.
+  if (!optedOut) {
+    try { sessionStorage.removeItem(DEVICE_SENT_KEY); } catch { /* ignore */ }
+  }
+  return isAnalyticsOptedOut();
+}
 
 export function getSessionId() {
   try {
@@ -112,7 +135,7 @@ function detectOS(ua) {
 // any metric that must be tamper-proof has to be emitted from a trusted server
 // context (edge function with the service role), not from here.
 export function track(event, properties = {}, userId = null) {
-  if (!supabase) return;
+  if (!supabase || isAnalyticsOptedOut()) return;
 
   // Drop events that aren't in the allowlist to keep analytics clean and to
   // avoid hitting the DB-level event_format CHECK constraint.
@@ -139,7 +162,6 @@ export function track(event, properties = {}, userId = null) {
   const sessionId = getSessionId();
 
   // Attach device info to the first SUCCESSFULLY-inserted event of the session.
-  const DEVICE_SENT_KEY = 'pq_device_sent';
   let includeDevice = true;
   try { includeDevice = !sessionStorage.getItem(DEVICE_SENT_KEY); } catch { includeDevice = true; }
   const finalProperties = includeDevice ? { ...getDeviceInfo(), ...sanitizedProps } : sanitizedProps;

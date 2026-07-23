@@ -1,7 +1,8 @@
 /* global HTMLRewriter */
 import { DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_ANON_KEY } from '../src/config/supabase';
+import { isKnownAppPath } from '../src/config/publicRoutes';
 
-const SHARE_ID_RE = /^(?:[a-f0-9]{8}|[a-f0-9]{32})$/;
+const SHARE_ID_RE = /^[a-f0-9]{32}$/;
 const SITE_NAME = 'My Personality Quizzes';
 const DEFAULT_DESCRIPTION = 'A friend shared a personality result with you. See their result and discover your own type.';
 
@@ -56,9 +57,17 @@ async function fetchSharedResult(shareId) {
     body: JSON.stringify({ p_id: shareId }),
     signal: AbortSignal.timeout(1800),
   });
-  if (!response.ok) return null;
+  if (!response.ok) {
+    throw new Error(`Share service returned HTTP ${response.status}`);
+  }
   const payload = await response.json();
   return Array.isArray(payload) ? (payload[0] ?? null) : payload;
+}
+
+function withStatus(response, status, cacheControl) {
+  const headers = new Headers(response.headers);
+  headers.set('cache-control', cacheControl);
+  return new Response(response.body, { status, headers });
 }
 
 function applyMetadata(response, metadata) {
@@ -84,23 +93,42 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const match = url.pathname.match(/^\/s\/([^/]+)\/?$/);
-    if (request.method !== 'GET' || !match || !SHARE_ID_RE.test(match[1])) {
-      return env.ASSETS.fetch(request);
+    if (request.method !== 'GET') return env.ASSETS.fetch(request);
+
+    if (match && SHARE_ID_RE.test(match[1])) {
+      const canonicalUrl = `https://mypersonalityquizzes.com/s/${match[1]}`;
+      const shellPromise = env.ASSETS.fetch(request);
+      let shared;
+      try {
+        shared = await fetchSharedResult(match[1]);
+      } catch {
+        return new Response('Shared results are temporarily unavailable.', {
+          status: 503,
+          headers: {
+            'cache-control': 'no-store',
+            'content-type': 'text/plain; charset=UTF-8',
+            'retry-after': '30',
+          },
+        });
+      }
+
+      const shell = await shellPromise;
+      if (!shell.ok || !shell.headers.get('content-type')?.includes('text/html')) return shell;
+
+      const status = shared ? 200 : 404;
+      const html = withStatus(
+        shell,
+        status,
+        shared ? 'public, max-age=300' : 'no-store',
+      );
+      return applyMetadata(html, buildShareMetadata(shared, canonicalUrl));
     }
 
-    const canonicalUrl = `https://mypersonalityquizzes.com/s/${match[1]}`;
-    const [shell, shared] = await Promise.all([
-      // Pass the original share URL through the SPA asset fallback. Asking the
-      // asset binding for /index.html directly can return Cloudflare's
-      // canonical redirect to /, which destroys the share route in the browser.
-      env.ASSETS.fetch(request),
-      fetchSharedResult(match[1]).catch(() => null),
-    ]);
-    if (!shell.ok || !shell.headers.get('content-type')?.includes('text/html')) return shell;
-
-    const headers = new Headers(shell.headers);
-    headers.set('cache-control', 'public, max-age=300');
-    const html = new Response(shell.body, { status: shell.status, headers });
-    return applyMetadata(html, buildShareMetadata(shared, canonicalUrl));
+    const assetResponse = await env.ASSETS.fetch(request);
+    const isHtml = assetResponse.headers.get('content-type')?.includes('text/html');
+    if (isHtml && !isKnownAppPath(url.pathname)) {
+      return withStatus(assetResponse, 404, 'no-store');
+    }
+    return assetResponse;
   },
 };

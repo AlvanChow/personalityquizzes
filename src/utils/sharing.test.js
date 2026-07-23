@@ -1,12 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { buildShareSnapshot, generateShareId } from './sharing.js';
+import { buildShareSnapshot, generateShareId, getShareResultKey } from './sharing.js';
 import { mbtiResults } from '../data/mbtiResults.js';
 import { enneagramResults } from '../data/enneagramResults.js';
 import { cakeResults } from '../data/cakeResults.js';
 
-// The DB INSERT policy caps result_data at 4096 bytes of jsonb text. jsonb's
-// text form adds separators/spaces, so keep compact-JSON snapshots well under
-// the cap to leave headroom.
+// The server catalog caps result_data at 4096 bytes of jsonb text. jsonb's text
+// form adds separators/spaces, so keep snapshots under the same budget.
 const SNAPSHOT_BYTE_BUDGET = 3500;
 
 const SAMPLE_SCORES = {
@@ -69,11 +68,20 @@ describe('generateShareId', () => {
     }
   });
 
-  it('can produce a legacy 32-bit token during a safe database rollout', () => {
-    expect(generateShareId(4)).toMatch(/^[a-f0-9]{8}$/);
+  it('refuses legacy 32-bit tokens', () => {
+    expect(() => generateShareId(4)).toThrow(RangeError);
   });
 
   it('rejects unsafe token sizes', () => {
     expect(() => generateShareId(3)).toThrow(RangeError);
+  });
+});
+
+describe('getShareResultKey', () => {
+  it('uses server-catalog keys for special result shapes', () => {
+    expect(getShareResultKey('big5', { name: 'Anything' })).toBe('profile');
+    expect(getShareResultKey('enneagram', { typeNumber: '7', name: 'Type 7' })).toBe('7');
+    expect(getShareResultKey('naruto', { key: 'shikamaru', name: 'Shikamaru Nara' })).toBe('shikamaru');
+    expect(getShareResultKey('mbti', { name: 'INTJ' })).toBe('INTJ');
   });
 });

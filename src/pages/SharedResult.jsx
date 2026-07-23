@@ -62,9 +62,8 @@ const QUIZ_META = {
 
 const OTHER_QUIZZES = Object.entries(QUIZ_META).map(([key, meta]) => ({ key, ...meta }));
 
-// result_data comes from an anonymously-writable table, so nothing in it can
-// be trusted — especially not values that end up inside className. Only allow
-// the exact utility-class shapes our own palette uses; fall back otherwise.
+// Public copy now comes from the database-owned result catalog. Keep strict
+// class allowlists as defense in depth because old rows predate that catalog.
 const SAFE_GRADIENT_RE = /^from-[a-z]+-(?:50|100|200|300|400|500) to-[a-z]+-(?:50|100|200|300|400|500)$/;
 const SAFE_ACCENT_RE = /^text-[a-z]+-(?:400|500|600|700|800|900)$/;
 
@@ -76,21 +75,13 @@ function safeAccent(value) {
   return typeof value === 'string' && SAFE_ACCENT_RE.test(value) ? value : 'text-gray-800';
 }
 
-// Fetch a share row. Prefers the token-gated RPC (added in the hardening
-// migration); falls back to a direct select so the page keeps working if the
-// client ships before the migration is applied.
+// The token-gated RPC is the only public read path. A direct-table fallback
+// would weaken the rollout by hiding a missing migration.
 async function fetchSharedResult(shareId) {
   const rpc = await supabase.rpc('get_shared_result', { p_id: shareId });
   if (!rpc.error && Array.isArray(rpc.data)) return rpc.data[0] ?? null;
   if (!rpc.error && rpc.data) return rpc.data;
-
-  const { data, error } = await supabase
-    .from('shared_results')
-    .select('*')
-    .eq('id', shareId)
-    .maybeSingle();
-  if (error) throw error;
-  return data;
+  throw rpc.error;
 }
 
 // ─── Compatibility card ─────────────────────────────────────────────────────
