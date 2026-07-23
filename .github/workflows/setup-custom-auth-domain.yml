@@ -220,8 +220,22 @@ jobs:
             exit 1
           fi
 
+          token_verify_code="$(curl -q -sS -o /tmp/cloudflare-token.json -w "%{http_code}" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "https://api.cloudflare.com/client/v4/user/tokens/verify")"
+          if [ "$token_verify_code" = "200" ]; then
+            token_id="$(jq -r '.result.id // empty' /tmp/cloudflare-token.json)"
+            token_status="$(jq -r '.result.status // empty' /tmp/cloudflare-token.json)"
+            echo "GitHub CLOUDFLARE_API_TOKEN id=$token_id status=$token_status"
+            if [ -n "$token_id" ]; then
+              token_details_code="$(curl -q -sS -o /tmp/cloudflare-token-details.json -w "%{http_code}" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "https://api.cloudflare.com/client/v4/user/tokens/$token_id")"
+              if [ "$token_details_code" = "200" ]; then
+                token_name="$(jq -r '.result.name // empty' /tmp/cloudflare-token-details.json)"
+                echo "GitHub CLOUDFLARE_API_TOKEN name=$token_name"
+              fi
+            fi
+          fi
+
           # Keep this request on one shell line so command substitution receives the full curl command.
-          cf_code="$(curl -sS -o /tmp/cloudflare-zones.json -w "%{http_code}" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "https://api.cloudflare.com/client/v4/zones?name=$ROOT_DOMAIN&status=active")"
+          cf_code="$(curl -q -sS -o /tmp/cloudflare-zones.json -w "%{http_code}" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "https://api.cloudflare.com/client/v4/zones?name=$ROOT_DOMAIN&status=active")"
           if [ "$cf_code" != "200" ]; then
             echo "::error::Cloudflare zone lookup returned HTTP $cf_code. The token needs Zone:Read and DNS:Edit access to $ROOT_DOMAIN."
             jq . /tmp/cloudflare-zones.json 2>/dev/null || true
