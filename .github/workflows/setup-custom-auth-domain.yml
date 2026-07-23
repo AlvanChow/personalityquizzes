@@ -1,0 +1,227 @@
+name: Prepare branded Supabase auth domain
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/setup-custom-auth-domain.yml
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Custom-domain operation
+        required: true
+        default: prepare
+        type: choice
+        options:
+          - prepare
+          - status
+          - activate
+
+concurrency:
+  group: production-custom-auth-domain
+  cancel-in-progress: false
+
+jobs:
+  custom-domain:
+    name: ${{ inputs.mode || 'prepare' }} auth.mypersonalityquizzes.com
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      PROJECT_REF: ivptkiuhxzdhjnslzalv
+      ROOT_DOMAIN: mypersonalityquizzes.com
+      CUSTOM_HOSTNAME: auth.mypersonalityquizzes.com
+      INITIAL_CNAME_TARGET: ivptkiuhxzdhjnslzalv.supabase.co
+      MODE: ${{ inputs.mode || 'prepare' }}
+
+    steps:
+      - name: Validate credentials
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "::error::SUPABASE_ACCESS_TOKEN is missing"; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::CLOUDFLARE_API_TOKEN is missing"; exit 1; }
+
+      - name: Configure custom auth domain
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sb_call() {
+            local method="$1"
+            local path="$2"
+            local output="$3"
+            local body="${4:-}"
+            local args=(
+              -sS
+              -o "$output"
+              -w "%{http_code}"
+              -X "$method"
+              -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN"
+              -H "Content-Type: application/json"
+              "https://api.supabase.com$path"
+            )
+            if [ -n "$body" ]; then
+              args+=(--data "$body")
+            fi
+            curl "${args[@]}"
+          }
+
+          require_http() {
+            local code="$1"
+            local output="$2"
+            shift 2
+            for allowed in "$@"; do
+              if [ "$code" = "$allowed" ]; then
+                return 0
+              fi
+            done
+            echo "::error::Unexpected HTTP $code"
+            jq . "$output" 2>/dev/null || sed -n '1,80p' "$output"
+            return 1
+          }
+
+          cf_response="$(curl -fsS             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"             -H "Content-Type: application/json"             "https://api.cloudflare.com/client/v4/zones?name=$ROOT_DOMAIN&status=active")"
+          ZONE_ID="$(jq -r '.result[0].id // empty' <<<"$cf_response")"
+          test -n "$ZONE_ID" || { echo "::error::Cloudflare zone not found"; exit 1; }
+
+          upsert_dns() {
+            local type="$1"
+            local name="$2"
+            local content="$3"
+            local query existing payload response
+
+            query="$(curl -fsS               -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"               -H "Content-Type: application/json"               --get               --data-urlencode "type=$type"               --data-urlencode "name=$name"               "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records")"
+            existing="$(jq -r '.result[0].id // empty' <<<"$query")"
+
+            if [ "$type" = "CNAME" ]; then
+              payload="$(jq -cn                 --arg type "$type"                 --arg name "$name"                 --arg content "$content"                 '{type:$type,name:$name,content:$content,ttl:300,proxied:false}')"
+            else
+              payload="$(jq -cn                 --arg type "$type"                 --arg name "$name"                 --arg content "$content"                 '{type:$type,name:$name,content:$content,ttl:300}')"
+            fi
+
+            if [ -n "$existing" ]; then
+              response="$(curl -fsS -X PUT                 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"                 -H "Content-Type: application/json"                 --data "$payload"                 "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$existing")"
+            else
+              response="$(curl -fsS -X POST                 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"                 -H "Content-Type: application/json"                 --data "$payload"                 "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records")"
+            fi
+
+            jq -e '.success == true' >/dev/null <<<"$response"
+            echo "Configured $type record: $name"
+          }
+
+          configure_dns_from_domain_response() {
+            local response_file="$1"
+            local origin ownership_type ownership_name ownership_value
+
+            origin="$(jq -r '.data.result.custom_origin_server // empty' "$response_file")"
+            if [ -n "$origin" ]; then
+              upsert_dns CNAME "$CUSTOM_HOSTNAME" "$origin"
+            fi
+
+            ownership_type="$(jq -r '.data.result.ownership_verification.type // empty' "$response_file")"
+            ownership_name="$(jq -r '.data.result.ownership_verification.name // empty' "$response_file")"
+            ownership_value="$(jq -r '.data.result.ownership_verification.value // empty' "$response_file")"
+            if [ -n "$ownership_type" ] && [ -n "$ownership_name" ] && [ -n "$ownership_value" ]; then
+              upsert_dns "$ownership_type" "$ownership_name" "$ownership_value"
+            fi
+
+            while IFS= read -r record; do
+              local txt_name txt_value
+              txt_name="$(jq -r '.txt_name // empty' <<<"$record")"
+              txt_value="$(jq -r '.txt_value // empty' <<<"$record")"
+              if [ -n "$txt_name" ] && [ -n "$txt_value" ]; then
+                upsert_dns TXT "$txt_name" "$txt_value"
+              fi
+            done < <(jq -c '.data.result.ssl.validation_records[]?' "$response_file")
+          }
+
+          get_code="$(sb_call GET "/v1/projects/$PROJECT_REF/custom-hostname" /tmp/domain.json)"
+          if [ "$MODE" = "status" ]; then
+            require_http "$get_code" /tmp/domain.json 200
+            jq '{status, custom_hostname, result_status:.data.result.status, ssl_status:.data.result.ssl.status}' /tmp/domain.json
+            exit 0
+          fi
+
+          if [ "$MODE" = "activate" ]; then
+            require_http "$get_code" /tmp/domain.json 200
+            current_status="$(jq -r '.status // empty' /tmp/domain.json)"
+            if [ "$current_status" != "4_origin_setup_completed" ] && [ "$current_status" != "5_services_reconfigured" ]; then
+              echo "::error::Domain is not ready for activation. Current status: $current_status"
+              exit 1
+            fi
+            if [ "$current_status" != "5_services_reconfigured" ]; then
+              activate_code="$(sb_call POST "/v1/projects/$PROJECT_REF/custom-hostname/activate" /tmp/domain.json)"
+              require_http "$activate_code" /tmp/domain.json 200 201
+            fi
+            final_status="$(jq -r '.status // empty' /tmp/domain.json)"
+            echo "Activated $CUSTOM_HOSTNAME with status $final_status"
+            {
+              echo "### Branded auth domain activated"
+              echo ""
+              echo "- Hostname: `$CUSTOM_HOSTNAME`"
+              echo "- Supabase status: `$final_status`"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          upsert_dns CNAME "$CUSTOM_HOSTNAME" "$INITIAL_CNAME_TARGET"
+
+          if [ "$get_code" = "404" ]; then
+            create_body="$(jq -cn --arg hostname "$CUSTOM_HOSTNAME" '{custom_hostname:$hostname}')"
+            create_code="$(sb_call POST "/v1/projects/$PROJECT_REF/custom-hostname/initialize" /tmp/domain.json "$create_body")"
+            require_http "$create_code" /tmp/domain.json 200 201
+          else
+            require_http "$get_code" /tmp/domain.json 200
+            configured_hostname="$(jq -r '.custom_hostname // empty' /tmp/domain.json)"
+            if [ "$configured_hostname" != "$CUSTOM_HOSTNAME" ]; then
+              echo "::error::A different Supabase custom hostname is already configured: $configured_hostname"
+              exit 1
+            fi
+          fi
+
+          configure_dns_from_domain_response /tmp/domain.json
+
+          ready=false
+          for attempt in $(seq 1 60); do
+            if [ "$attempt" -gt 1 ]; then
+              sleep 30
+            fi
+
+            reverify_code="$(sb_call POST "/v1/projects/$PROJECT_REF/custom-hostname/reverify" /tmp/reverify.json)"
+            if [ "$reverify_code" = "200" ] || [ "$reverify_code" = "201" ]; then
+              mv /tmp/reverify.json /tmp/domain.json
+              configure_dns_from_domain_response /tmp/domain.json
+              current_status="$(jq -r '.status // empty' /tmp/domain.json)"
+              ssl_status="$(jq -r '.data.result.ssl.status // empty' /tmp/domain.json)"
+              echo "Verification attempt $attempt: status=$current_status ssl=$ssl_status"
+              if [ "$current_status" = "4_origin_setup_completed" ] || [ "$current_status" = "5_services_reconfigured" ]; then
+                ready=true
+                break
+              fi
+            else
+              echo "Verification attempt $attempt returned HTTP $reverify_code; retrying."
+            fi
+          done
+
+          current_status="$(jq -r '.status // empty' /tmp/domain.json)"
+          ssl_status="$(jq -r '.data.result.ssl.status // empty' /tmp/domain.json)"
+          {
+            echo "### Branded auth domain prepared"
+            echo ""
+            echo "- Hostname: `$CUSTOM_HOSTNAME`"
+            echo "- Supabase status: `$current_status`"
+            echo "- SSL status: `$ssl_status`"
+            echo "- Google callback to add before activation:"
+            echo "  `https://$CUSTOM_HOSTNAME/auth/v1/callback`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$ready" != "true" ]; then
+            echo "::error::Domain verification did not finish within 30 minutes. Re-run this workflow in prepare mode."
+            exit 1
+          fi
+
+          echo "Domain is verified and ready for activation. Activation was intentionally skipped."
