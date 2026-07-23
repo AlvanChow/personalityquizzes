@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   custom-domain:
-    name: ${{ inputs.mode || 'prepare' }} auth.mypersonalityquizzes.com
+    name: ${{ inputs.mode || 'activate' }} auth.mypersonalityquizzes.com
     runs-on: ubuntu-latest
     timeout-minutes: 35
     permissions:
@@ -36,7 +36,7 @@ jobs:
       ROOT_DOMAIN: mypersonalityquizzes.com
       CUSTOM_HOSTNAME: auth.mypersonalityquizzes.com
       INITIAL_CNAME_TARGET: ivptkiuhxzdhjnslzalv.supabase.co
-      MODE: ${{ inputs.mode || 'prepare' }}
+      MODE: ${{ inputs.mode || 'activate' }}
 
     steps:
       - name: Validate credentials
