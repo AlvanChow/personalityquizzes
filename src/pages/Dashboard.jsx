@@ -10,8 +10,7 @@ import AuthNudgeBanner from '../components/AuthNudgeBanner';
 import { track } from '../utils/analytics';
 import lifeAnalysis from '../data/lifeAnalysis';
 import { getCompletedCount, QUIZ_ORDER } from '../utils/quizProgression';
-import { getQuizzesByCategory, getQuizPath, isQuizCompleted, storageKeyFor } from '../data/quizzes';
-import { safeLocalStorageRead } from '../utils/security';
+import { getCompletedResultTiles } from '../utils/dashboardResults';
 
 const traitOrder = ['O', 'C', 'E', 'A', 'N'];
 
@@ -164,69 +163,25 @@ const traitData = {
 };
 
 
-// Catalog-driven sections: introspective assessments and pop-culture matches.
-const catalogSections = [
-  {
-    key: 'know',
-    heading: 'Know Yourself',
-    blurb: 'Famous introspective exercises and assessments — deeper self-knowledge, one quiz at a time.',
-    quizzes: getQuizzesByCategory('know'),
-  },
-  {
-    key: 'pop',
-    heading: 'Pop Culture Matches',
-    blurb: 'Find your fictional (and legendary) twins across sports, anime, film, and TV.',
-    quizzes: getQuizzesByCategory('pop'),
-  },
-];
-
 function getRange(data, score) {
   return data.ranges.find((r) => score <= r.max) ?? data.ranges[data.ranges.length - 1];
 }
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { scores, hasCompleted, loading } = useBigFive();
+  const { scores, hasCompleted, loading, quizResults = {} } = useBigFive();
   const { user } = useAuth();
 
   const [copied, setCopied] = useState(false);
   const [expandedTrait, setExpandedTrait] = useState(null);
   const [expandedSections, setExpandedSections] = useState(() => new Set(['careers']));
 
-  const completedCount = useMemo(() => getCompletedCount(), []);
-
   // Everything the visitor has finished, as one shelf of result tiles.
-  const completedTiles = useMemo(() => {
-    const tiles = [];
-    const core = [
-      { key: 'mbti', emoji: '🧠', title: 'MBTI', to: '/quiz/mbti/result' },
-      { key: 'enneagram', emoji: '✳️', title: 'Enneagram', to: '/quiz/enneagram/result' },
-      { key: 'cake', emoji: '🍰', title: 'Cake', to: '/quiz/cake/result' },
-      // house is a vector quiz with no catalog entry, so it isn't covered by the
-      // catalogSections loop below — list it here or a completed House result
-      // never appears on the shelf even though it counts toward the badge.
-      { key: 'house', emoji: '🪄', title: 'Wizarding House', to: '/quiz/house/result' },
-    ];
-    for (const c of core) {
-      const stored = safeLocalStorageRead(`personalens_${c.key}`, null);
-      if (stored?.result) tiles.push({ ...c, resultName: stored.result.name ?? '', resultEmoji: stored.result.emoji ?? c.emoji });
-    }
-    for (const section of catalogSections) {
-      for (const q of section.quizzes) {
-        if (!isQuizCompleted(q.key)) continue;
-        const stored = safeLocalStorageRead(storageKeyFor(q.key), null);
-        tiles.push({
-          key: q.key,
-          emoji: q.emoji,
-          title: q.title,
-          to: q.custom ? getQuizPath(q) : `/quiz/${q.key}/result`,
-          resultName: stored?.result?.name ?? '',
-          resultEmoji: stored?.result?.emoji ?? q.emoji,
-        });
-      }
-    }
-    return tiles;
-  }, []);
+  const completedTiles = useMemo(() => getCompletedResultTiles(quizResults), [quizResults]);
+  const completedCount = useMemo(
+    () => Math.max(getCompletedCount(), completedTiles.length + (hasCompleted ? 1 : 0)),
+    [completedTiles.length, hasCompleted],
+  );
 
   function toggleSection(key) {
     setExpandedSections(prev => {
@@ -247,10 +202,6 @@ export default function Dashboard() {
   useEffect(() => {
     document.title = 'Dashboard — My Personality Quizzes';
   }, []);
-
-  useEffect(() => {
-    if (!loading && !hasCompleted) navigate('/');
-  }, [loading, hasCompleted, navigate]);
 
   async function handleShare() {
     const lines = traitOrder.map((t) => `${traitData[t].label} ${scores[t]}`).join('\n');
@@ -273,14 +224,14 @@ export default function Dashboard() {
       <div className="w-7 h-7 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
     </div>
   );
-  if (!hasCompleted) return null;
-
   return (
     <div className="min-h-screen bg-cream-50">
       <main className="px-6 py-10 max-w-4xl mx-auto">
 
-        {/* ── Header ── */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+        {hasCompleted ? (
+          <>
+            {/* ── Big Five profile ── */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
           <div className="flex items-start justify-between gap-4 mb-1">
             <div>
               <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">Your Personality Profile</h1>
@@ -369,10 +320,10 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-        </motion.div>
+            </motion.div>
 
-        {/* ── Life Analysis ── */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }}>
+            {/* ── Life Analysis ── */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.1 }}>
           <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">Life Analysis</h2>
           <p className="text-gray-500 mb-5">How your personality plays out across major areas of life.</p>
 
@@ -438,46 +389,79 @@ export default function Dashboard() {
               );
             })}
           </div>
-        </motion.div>
+            </motion.div>
+          </>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="mb-10"
+          >
+            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">My Results</h1>
+            <p className="text-gray-500 mt-1">
+              Your saved quiz results live here. Take the Big Five whenever you want to build a full personality profile.
+            </p>
+          </motion.div>
+        )}
 
         {/* ── Your results shelf ── */}
-        {completedTiles.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15 }}>
-            <div className="flex items-end justify-between mb-1">
-              <h2 className="text-xl md:text-2xl font-extrabold text-gray-900">Your Results</h2>
-              <button
-                onClick={() => navigate('/')}
-                className="text-xs font-bold text-coral-500 hover:text-coral-600 flex items-center gap-1"
-              >
-                Browse all tests <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
-            <p className="text-gray-500 mb-5">Everything you&apos;ve unlocked so far — tap to revisit.</p>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15 }}>
+          <div className="flex items-end justify-between mb-1">
+            <h2 className="text-xl md:text-2xl font-extrabold text-gray-900">Your Results</h2>
+            <button
+              onClick={() => navigate('/')}
+              className="text-xs font-bold text-coral-500 hover:text-coral-600 flex items-center gap-1"
+            >
+              Browse all tests <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+          <p className="text-gray-500 mb-5">
+            {completedTiles.length > 0
+              ? 'Everything you’ve unlocked so far.'
+              : 'Complete a quiz and your result will appear here.'}
+          </p>
+          {completedTiles.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-12">
               {completedTiles.map((t) => (
                 <button
                   key={t.key}
+                  disabled={!t.canRevisit}
                   onClick={() => {
+                    if (!t.canRevisit) return;
                     track('quiz_card_clicked', { quiz: t.key, from: 'dashboard_results' }, user?.id ?? null);
                     navigate(t.to);
                   }}
-                  className="text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-coral-300 transition-all"
+                  className={`text-left p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm transition-all ${
+                    t.canRevisit ? 'hover:shadow-md hover:border-coral-300' : 'cursor-default'
+                  }`}
                 >
                   <span className="text-2xl block mb-1.5">{t.resultEmoji}</span>
                   <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{t.title}</p>
                   <p className="text-sm font-extrabold text-gray-800 truncate">{t.resultName || 'View result'}</p>
+                  {!t.canRevisit && <p className="text-[10px] font-semibold text-gray-400 mt-1">Saved result</p>}
                 </button>
               ))}
             </div>
-          </motion.div>
-        )}
+          ) : (
+            <div className="rounded-xl border border-dashed border-gray-300 bg-white/70 p-8 text-center mb-12">
+              <p className="text-sm font-semibold text-gray-500">No results yet.</p>
+              <button
+                onClick={() => navigate('/')}
+                className="mt-3 text-sm font-bold text-coral-500 hover:text-coral-600"
+              >
+                Browse quizzes
+              </button>
+            </div>
+          )}
+        </motion.div>
 
         {/* ── One clear next step ── */}
-        <NextQuizBanner currentQuizKey="big5" />
+        <NextQuizBanner currentQuizKey={hasCompleted ? 'big5' : ''} />
 
         <div className="mb-12">
-          <FeedbackWidget quizKey="big5" delay={0.2} />
-          <AuthNudgeBanner quiz="big5" delay={0.3} />
+          {hasCompleted && <FeedbackWidget quizKey="big5" delay={0.2} />}
+          <AuthNudgeBanner quiz={hasCompleted ? 'big5' : 'results'} delay={0.3} />
         </div>
       </main>
     </div>

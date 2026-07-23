@@ -90,7 +90,10 @@ export default {
 
     const canonicalUrl = `https://mypersonalityquizzes.com/s/${match[1]}`;
     const [shell, shared] = await Promise.all([
-      env.ASSETS.fetch(new Request(new URL('/index.html', request.url), request)),
+      // Pass the original share URL through the SPA asset fallback. Asking the
+      // asset binding for /index.html directly can return Cloudflare's
+      // canonical redirect to /, which destroys the share route in the browser.
+      env.ASSETS.fetch(request),
       fetchSharedResult(match[1]).catch(() => null),
     ]);
     if (!shell.ok || !shell.headers.get('content-type')?.includes('text/html')) return shell;
