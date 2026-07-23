@@ -1,5 +1,9 @@
-import { describe, expect, it } from 'vitest';
-import { buildShareMetadata } from './index';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import worker, { buildShareMetadata } from './index';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('buildShareMetadata', () => {
   it('builds result-specific social metadata', () => {
@@ -24,5 +28,37 @@ describe('buildShareMetadata', () => {
       const code = character.charCodeAt(0);
       return code >= 32 && code !== 127;
     })).toBe(true);
+  });
+});
+
+describe('share route handling', () => {
+  it('serves the SPA shell without redirecting the original share URL', async () => {
+    const shareUrl = 'https://mypersonalityquizzes.com/s/01234567';
+    let assetRequestUrl = null;
+
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([]), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })));
+    vi.stubGlobal('HTMLRewriter', class {
+      on() { return this; }
+      transform(response) { return response; }
+    });
+
+    const response = await worker.fetch(new Request(shareUrl), {
+      ASSETS: {
+        fetch: async (request) => {
+          assetRequestUrl = request.url;
+          return new Response('<!doctype html><html><head><title>App</title></head></html>', {
+            status: 200,
+            headers: { 'content-type': 'text/html; charset=UTF-8' },
+          });
+        },
+      },
+    });
+
+    expect(assetRequestUrl).toBe(shareUrl);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('location')).toBeNull();
   });
 });

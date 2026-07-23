@@ -53,7 +53,7 @@ function clampScores(scores) {
  * the same normalized shape written by the quiz completion handlers.
  */
 async function syncGuestQuizResults(userId, remoteResults) {
-  if (!supabase) return;
+  if (!supabase) return remoteResults;
   const pendingResults = {};
 
   const cakeData = readLocalJson('personalens_cake');
@@ -129,7 +129,7 @@ async function syncGuestQuizResults(userId, remoteResults) {
     };
   }
 
-  if (Object.keys(pendingResults).length === 0) return;
+  if (Object.keys(pendingResults).length === 0) return remoteResults;
 
   async function retry(operation) {
     let lastError = null;
@@ -155,14 +155,15 @@ async function syncGuestQuizResults(userId, remoteResults) {
     p_user_id: userId,
     p_results: pendingResults,
   }));
-  if (bulk.ok) return;
+  if (bulk.ok) return { ...remoteResults, ...pendingResults };
 
   const missingBulkRpc = bulk.error?.code === 'PGRST202' || bulk.error?.code === '42883';
   if (!missingBulkRpc) {
     console.error('Failed to bulk-sync guest quiz results to Supabase:', bulk.error);
-    return;
+    return remoteResults;
   }
 
+  const mergedResults = { ...remoteResults };
   for (const [quizKey, result] of Object.entries(pendingResults)) {
     const fallback = await retry(() => supabase.rpc('upsert_quiz_result', {
       p_user_id: userId,
@@ -171,8 +172,11 @@ async function syncGuestQuizResults(userId, remoteResults) {
     }));
     if (!fallback.ok) {
       console.error(`Failed to sync guest quiz result "${quizKey}" to Supabase:`, fallback.error);
+    } else {
+      mergedResults[quizKey] = result;
     }
   }
+  return mergedResults;
 }
 
 // localStorage keys holding personal quiz data, cleared on sign-out so the
@@ -194,6 +198,7 @@ export function BigFiveProvider({ children }) {
   const { user } = useAuth();
   const [scores, setScores] = useState(readLocal);
   const [hasCompleted, setHasCompleted] = useState(readLocalCompleted);
+  const [quizResults, setQuizResults] = useState({});
   const [contextLoading, setContextLoading] = useState(true);
   const hasCompletedRef = useRef(hasCompleted);
   // Tracks the live scores value so callbacks don't close over stale state.
@@ -215,6 +220,7 @@ export function BigFiveProvider({ children }) {
       } catch { /* storage unavailable */ }
       setScores(defaultScores);
       setHasCompleted(false);
+      setQuizResults({});
     }
   }, [user]);
 
@@ -287,8 +293,13 @@ export function BigFiveProvider({ children }) {
           }
         }
 
-        // Upload any quiz results completed as a guest that aren't yet in Supabase.
-        await syncGuestQuizResults(user.id, data?.quiz_results || {});
+        const remoteResults = isPlainObject(data?.quiz_results) ? data.quiz_results : {};
+        setQuizResults(remoteResults);
+
+        // Upload any quiz results completed as a guest that aren't yet in
+        // Supabase, then expose the merged summaries to My Results immediately.
+        const mergedResults = await syncGuestQuizResults(user.id, remoteResults);
+        if (!cancelled) setQuizResults(mergedResults);
       } finally {
         if (!cancelled) setContextLoading(false);
       }
@@ -322,8 +333,16 @@ export function BigFiveProvider({ children }) {
   }, [syncToSupabase, user?.id]);
 
   const value = useMemo(
-    () => ({ scores, hasCompleted, loading: contextLoading, updateScores, completeBaseline, resetBaseline }),
-    [scores, hasCompleted, contextLoading, updateScores, completeBaseline, resetBaseline],
+    () => ({
+      scores,
+      hasCompleted,
+      quizResults,
+      loading: contextLoading,
+      updateScores,
+      completeBaseline,
+      resetBaseline,
+    }),
+    [scores, hasCompleted, quizResults, contextLoading, updateScores, completeBaseline, resetBaseline],
   );
 
   return (

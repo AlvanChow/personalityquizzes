@@ -287,7 +287,7 @@ export default function VectorQuizExperience({ def }) {
   if (screen === 'intro') {
     body = (
       <section className="intro">
-        <div className="seal-mark"><span className="ring" /><span className="ring r2" /><span className="kanji">{def.seal.char}</span></div>
+        <div className="seal-mark" aria-hidden="true"><span className="ring" /><span className="ring r2" /><span className="kanji">{def.seal.char}</span></div>
         <p className="eyebrow solo">{def.eyebrow}</p>
         <h1>{def.title.pre}<span className="em">{def.title.em}</span>{def.title.post}</h1>
         <p className="lede">{def.lede}</p>
@@ -375,6 +375,7 @@ export default function VectorQuizExperience({ def }) {
             <span className="match"><b>{match}%</b> alignment</span>
           </div>
           <div className="res-card">
+            <span className="result-seal" aria-hidden="true">{def.seal.char}</span>
             <p className="res-desc">{top.desc}</p>
             <div className="traits">{top.traits.map((t) => <span className="chip" key={t}>{t}</span>)}</div>
             <div className="relations">
@@ -493,6 +494,7 @@ export default function VectorQuizExperience({ def }) {
           </div>
           <div className="res-meta"><TierBadge tier={c.tier} labels={tierLabels} /></div>
           <div className="res-card">
+            <span className="result-seal" aria-hidden="true">{def.seal.char}</span>
             <p className="res-desc">{c.desc}</p>
             <div className="traits">{c.traits.map((t) => <span className="chip" key={t}>{t}</span>)}</div>
             <div className="relations">

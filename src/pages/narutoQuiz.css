@@ -118,7 +118,7 @@
 .nq .match{font-family:var(--disp); font-weight:700; font-size:.92rem; color:var(--paper-dim); display:flex; align-items:center; gap:.5em;}
 .nq .match b{color:var(--aura); font-size:1.15rem;}
 .nq .res-card{background:linear-gradient(180deg, var(--paper), var(--washi-2)); color:var(--ink-on-paper); border-radius:var(--r); padding:clamp(24px,5vw,36px); margin-top:30px; box-shadow:0 24px 60px -24px rgba(0,0,0,.7), inset 0 0 0 1px rgba(0,0,0,.06); position:relative; overflow:hidden;}
-.nq .res-card::before{content:"忍"; position:absolute; right:-8px; bottom:-30px; font-family:var(--brush); font-size:13rem; line-height:1; color:var(--aura); opacity:.08; pointer-events:none;}
+.nq .result-seal{position:absolute; right:-8px; bottom:-30px; font-family:var(--brush); font-size:13rem; line-height:1; color:var(--aura); opacity:.08; pointer-events:none; user-select:none;}
 .nq .res-desc{font-size:clamp(1rem,2.6vw,1.12rem); line-height:1.7; margin:0; position:relative;}
 .nq .traits{display:flex; flex-wrap:wrap; gap:9px; margin-top:22px; position:relative;}
 .nq .chip{font-size:.82rem; font-weight:700; letter-spacing:.02em; padding:.5em .95em; border-radius:99px; background:color-mix(in srgb, var(--aura) 16%, #fff); color:color-mix(in srgb, var(--aura) 62%, var(--ink-on-paper)); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--aura) 30%, transparent);}
