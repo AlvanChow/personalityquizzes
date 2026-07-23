@@ -220,7 +220,7 @@ jobs:
             exit 1
           fi
 
-          cf_code="$(curl -sS -o /tmp/cloudflare-zones.json -w "%{http_code}" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "https://api.cloudflare.com/client/v4/zones?name=$ROOT_DOMAIN&status=active")"
+          # Keep this request on one shell line so command substitution receives the full curl command.\n          cf_code="$(curl -sS -o /tmp/cloudflare-zones.json -w "%{http_code}" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "https://api.cloudflare.com/client/v4/zones?name=$ROOT_DOMAIN&status=active")"
           if [ "$cf_code" != "200" ]; then
             echo "::error::Cloudflare zone lookup returned HTTP $cf_code. The token needs Zone:Read and DNS:Edit access to $ROOT_DOMAIN."
             jq . /tmp/cloudflare-zones.json 2>/dev/null || true
