@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, Link, Check, X, ImageDown, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
 import {
   createShareableLink,
+  getShareSnapshotKey,
   getShareText,
   openTwitterShare,
   openWhatsAppShare,
@@ -50,17 +51,23 @@ export default function SharePanel({ quizType, result, scores = null, scoreMeta 
   const [storyNote, setStoryNote] = useState(null);
   const sheetRef = useRef(null);
   const lastFocusedRef = useRef(null);
+  const shareSnapshotKey = useMemo(
+    () => getShareSnapshotKey(quizType, result, scores, user?.id ?? null),
+    [quizType, result, scores, user?.id],
+  );
+  const activeShareUrl = shareUrl?.snapshotKey === shareSnapshotKey ? shareUrl.url : null;
 
   async function openPanel() {
     setIsOpen(true);
-    if (shareUrl) return; // already created in this session
+    if (activeShareUrl) return; // already created for this exact result snapshot
 
     setCreating(true);
+    setCopied(false);
     setError(null);
     try {
       const url = await createShareableLink(quizType, result, scores, user?.id ?? null);
       if (url) {
-        setShareUrl(url);
+        setShareUrl({ snapshotKey: shareSnapshotKey, url });
         track('share_link_created', { quiz: quizType }, user?.id ?? null);
       } else {
         setError('Could not create share link. Try copying the page URL instead.');
@@ -112,7 +119,7 @@ export default function SharePanel({ quizType, result, scores = null, scoreMeta 
     setStoryBusy(true);
     setStoryNote(null);
     try {
-      const outcome = await shareResultStory(quizType, result, scores, shareUrl, scoreMeta);
+      const outcome = await shareResultStory(quizType, result, scores, activeShareUrl, scoreMeta);
       if (outcome === 'downloaded') {
         setStoryNote('Image saved! Add it to your story 📲');
       }
@@ -128,9 +135,9 @@ export default function SharePanel({ quizType, result, scores = null, scoreMeta 
   }
 
   async function handleCopy() {
-    if (!shareUrl) return;
+    if (!activeShareUrl) return;
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(activeShareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       track('share_button_clicked', { quiz: quizType, platform: 'copy' }, user?.id ?? null);
@@ -141,15 +148,15 @@ export default function SharePanel({ quizType, result, scores = null, scoreMeta 
   }
 
   function handleTwitter() {
-    if (!shareUrl) return;
-    const text = getShareText('twitter', result, shareUrl, quizType);
+    if (!activeShareUrl) return;
+    const text = getShareText('twitter', result, activeShareUrl, quizType);
     openTwitterShare(text);
     track('share_button_clicked', { quiz: quizType, platform: 'twitter' }, user?.id ?? null);
   }
 
   function handleWhatsApp() {
-    if (!shareUrl) return;
-    const text = getShareText('whatsapp', result, shareUrl, quizType);
+    if (!activeShareUrl) return;
+    const text = getShareText('whatsapp', result, activeShareUrl, quizType);
     openWhatsAppShare(text);
     track('share_button_clicked', { quiz: quizType, platform: 'whatsapp' }, user?.id ?? null);
   }
@@ -232,10 +239,10 @@ export default function SharePanel({ quizType, result, scores = null, scoreMeta 
                     <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
                     <span className="ml-2 text-sm text-gray-400">Creating your link…</span>
                   </div>
-                ) : shareUrl ? (
+                ) : activeShareUrl ? (
                   <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5 mb-5">
                     <Link className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                    <span className="text-xs text-gray-500 truncate flex-1 font-mono">{shareUrl}</span>
+                    <span className="text-xs text-gray-500 truncate flex-1 font-mono">{activeShareUrl}</span>
                   </div>
                 ) : error ? (
                   <p className="text-xs text-red-500 mb-5 text-center">{error}</p>
@@ -270,7 +277,7 @@ export default function SharePanel({ quizType, result, scores = null, scoreMeta 
                   {/* Copy link */}
                   <button
                     onClick={handleCopy}
-                    disabled={!shareUrl}
+                    disabled={!activeShareUrl}
                     className="flex flex-col items-center gap-2 py-3.5 rounded-xl border-2 border-gray-100 hover:border-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {copied
@@ -283,7 +290,7 @@ export default function SharePanel({ quizType, result, scores = null, scoreMeta 
                   {/* Twitter/X */}
                   <button
                     onClick={handleTwitter}
-                    disabled={!shareUrl}
+                    disabled={!activeShareUrl}
                     className="flex flex-col items-center gap-2 py-3.5 rounded-xl border-2 border-gray-100 hover:border-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <XIcon className="w-5 h-5 text-gray-800" />
@@ -293,7 +300,7 @@ export default function SharePanel({ quizType, result, scores = null, scoreMeta 
                   {/* WhatsApp */}
                   <button
                     onClick={handleWhatsApp}
-                    disabled={!shareUrl}
+                    disabled={!activeShareUrl}
                     className="flex flex-col items-center gap-2 py-3.5 rounded-xl border-2 border-gray-100 hover:border-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <WhatsAppIcon className="w-5 h-5 text-emerald-500" />
