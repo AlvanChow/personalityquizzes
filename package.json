@@ -13,7 +13,8 @@
     "preview": "npm run build && wrangler dev",
     "test": "vitest run",
     "check": "npm run lint && npm test && npm run build && npm audit --omit=dev --audit-level=high",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "smoke:production": "node scripts/smoke-production.mjs"
   },
   "dependencies": {
     "@fontsource-variable/nunito": "^5.3.0",
