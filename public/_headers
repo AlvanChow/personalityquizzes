@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-AOU0X5EUzgvNXAbwtH0JW2mnEo51tbWnZ17dvE1thu4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://ivptkiuhxzdhjnslzalv.supabase.co wss://ivptkiuhxzdhjnslzalv.supabase.co; img-src 'self' data: https://*.googleusercontent.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-AOU0X5EUzgvNXAbwtH0JW2mnEo51tbWnZ17dvE1thu4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://auth.mypersonalityquizzes.com wss://auth.mypersonalityquizzes.com https://ivptkiuhxzdhjnslzalv.supabase.co wss://ivptkiuhxzdhjnslzalv.supabase.co; img-src 'self' data: https://*.googleusercontent.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
