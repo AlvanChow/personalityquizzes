@@ -54,35 +54,36 @@ If your site is showing a GoDaddy parking/landing page instead of your app, the 
 
 ### Step 3 — Ensure your Cloudflare API token has the right permissions
 
-The GitHub Actions deployment uses the `CLOUDFLARE_API_TOKEN` secret to register the custom domain. This token must have **all** of the following permissions:
+The GitHub Actions deployment uses the `CLOUDFLARE_API_TOKEN` secret to upload
+the Worker and register its custom domains. Create a dedicated token from the
+**Edit Cloudflare Workers** template and restrict it to the production
+Cloudflare account and the `mypersonalityquizzes.com` zone.
 
 - **Account** → Workers Scripts → Edit
-- **Zone** → Zone → Read
-- **Zone** → DNS → Edit
 
-If your token only has "Edit Workers" permission, the custom domain (`mypersonalityquizzes.com`) won't be wired up even if the Worker code deploys successfully.
+Do not add Zone Read or DNS Edit to the deployment token. Workers Custom
+Domains create the required DNS records and certificates through the Workers
+API. Keep one token for deployment and use a separate, temporary token for any
+future DNS administration.
 
-To create or update the token: Cloudflare dashboard → **My Profile → API Tokens → Create Token** (use the "Edit Cloudflare Workers" template, then add Zone Read + DNS Edit for your zone).
+Store the token and account ID as the `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID` GitHub Actions secrets. Rotate the deployment token
+after any one-time DNS setup.
 
 ### Step 4 — Trigger a fresh deployment
 
-Once your domain is active in Cloudflare (email confirmed) and your API token has the right permissions, trigger a new deployment. You have two options:
-
-**Option A — GitHub Actions (recommended):**
-Go to your repository on GitHub → **Actions → Deploy to Cloudflare Workers → Run workflow**.
-This re-runs the full build + deploy pipeline including custom domain registration.
-
-**Option B — deploy locally:**
-```bash
-npm run build
-npx wrangler deploy
-```
+Once your domain is active in Cloudflare and the GitHub secrets are configured,
+go to **GitHub → Actions → Deploy to Cloudflare Workers → Run workflow**. The
+workflow runs the full quality gate, deploys the Worker, and then smoke-tests
+the apex domain, `www`, the share Worker route, and the branded auth domain.
 
 Wrangler will use the custom-domain entries under `routes` in `wrangler.jsonc`
 to wire up `mypersonalityquizzes.com` and `www.mypersonalityquizzes.com` to the
 Worker.
 
-> **Important:** The automatic deployment on push to `main` runs *before* you complete the Cloudflare setup. You must trigger a **new** deployment after the domain is active — otherwise the custom domain registration step is skipped.
+> **Important:** GitHub Actions is the only production deployment authority.
+> Keep Cloudflare Workers Builds disconnected for this repository so a second
+> build token cannot create duplicate deployments or conflicting checks.
 
 ---
 
@@ -99,8 +100,11 @@ Create a `.env` file based on `.env.example` and fill in your Supabase credentia
 
 ```bash
 npm run check
-npx wrangler deploy
+npx wrangler deploy --dry-run
 ```
+
+Push or merge to `main` to deploy production through GitHub Actions. Do not
+deploy production locally or connect Cloudflare Workers Builds.
 
 Apply new files in `supabase/migrations/` to the production Supabase project in
 filename order before deploying frontend features that depend on them. The app
