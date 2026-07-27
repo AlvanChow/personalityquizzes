@@ -109,5 +109,28 @@ deploy production locally or connect Cloudflare Workers Builds.
 Apply new files in `supabase/migrations/` to the production Supabase project in
 filename order before deploying frontend features that depend on them. The app
 degrades safely during a rolling deployment, but the migrations are required
-for hardened share tokens, admin account-email access, and atomic guest-result
-sync.
+for hardened share tokens, admin account-email access, atomic guest-result
+sync, and the security event log behind the admin dashboard's Security panel.
+
+### Share proxy secret (optional but recommended)
+
+The Worker renders Open Graph metadata for `/s/:id` by calling Supabase
+server-to-server, so without this secret Supabase sees the Worker's own egress
+address and every visitor shares one per-IP rate-limit bucket. Setting it lets
+the Worker forward the real visitor IP, which the database accepts only when
+the accompanying secret matches.
+
+```bash
+# 1. Generate a secret
+openssl rand -hex 32
+
+# 2. Store it in Supabase (SQL editor)
+#    UPDATE public.edge_config SET share_proxy_secret = '<the value>';
+
+# 3. Store the same value in Cloudflare
+npx wrangler secret put SHARE_PROXY_SECRET
+```
+
+Both halves must match. With neither set — the default after migrating — the
+Worker sends no forwarding headers and the database ignores them, so behaviour
+is unchanged. Rotate by updating the database first, then Cloudflare.

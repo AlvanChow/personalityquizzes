@@ -16,6 +16,7 @@ import {
 } from '../utils/compatibility';
 import { shareCompatStory } from '../utils/storyCard';
 import BigFiveScoreCard from '../components/BigFiveScoreCard';
+import { devError } from '../utils/devLog';
 
 const QUIZ_META = {
   mbti: {
@@ -123,7 +124,7 @@ function CompatibilityCard({ shared, quizMeta }) {
         track('share_button_clicked', { quiz: shared.quiz_type, platform: 'compat_story', outcome }, null);
       }
     } catch (err) {
-      console.error('[SharedResult] compat story share failed:', err);
+      devError('[SharedResult] compat story share failed:', err);
       setShareNote('Could not create the image on this device.');
     } finally {
       setShareBusy(false);
@@ -245,7 +246,7 @@ function CircleCTA({ shared }) {
         track('circle_request_sent', { quiz: shared.quiz_type }, user.id);
       }
     } catch (err) {
-      console.error('[SharedResult] circle request failed:', err);
+      devError('[SharedResult] circle request failed:', err);
       setNote(err?.message?.includes('Too many') ? 'Too many requests — try again in a minute.' : 'Could not send the request. Please try again.');
     } finally {
       setBusy(false);

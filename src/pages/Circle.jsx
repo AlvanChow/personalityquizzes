@@ -8,6 +8,7 @@ import { track } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { getMyResultFor, computeCompatibility } from '../utils/compatibility';
 import { cakeResults } from '../data/cakeResults';
+import { devError } from '../utils/devLog';
 
 const FRAMEWORKS = [
   { key: 'mbti', label: 'MBTI' },
@@ -96,7 +97,7 @@ export default function Circle() {
     if (!supabase || !user) return;
     const { data, error: err } = await supabase.rpc('list_circle');
     if (err) {
-      console.error('[circle] list failed:', err);
+      devError('[circle] list failed:', err);
       setError('Could not load your circle. Please try again.');
       setRows([]);
       return;
@@ -129,7 +130,7 @@ export default function Circle() {
       track(accept ? 'circle_request_accepted' : 'circle_request_declined', {}, user.id);
       await load();
     } catch (err) {
-      console.error('[circle] respond failed:', err);
+      devError('[circle] respond failed:', err);
       setError('Something went wrong. Please try again.');
     } finally {
       setBusyId(null);
@@ -147,7 +148,7 @@ export default function Circle() {
       setConfirmRemove(null);
       await load();
     } catch (err) {
-      console.error('[circle] remove failed:', err);
+      devError('[circle] remove failed:', err);
       setError('Something went wrong. Please try again.');
     } finally {
       setBusyId(null);
@@ -166,7 +167,10 @@ export default function Circle() {
           Sign in to keep your matches — see how you and your friends compare, all in one place.
         </p>
         <button
-          onClick={() => signInWithGoogle('/circle').catch((e) => setError(e?.message ?? 'Sign-in failed.'))}
+          onClick={() => signInWithGoogle('/circle').catch((e) => {
+            devError('[circle] sign-in failed:', e);
+            setError('Sign-in failed. Please try again.');
+          })}
           className="px-6 py-3 rounded-xl bg-coral-500 hover:bg-coral-600 text-white font-bold shadow-md transition-colors"
         >
           Sign in with Google

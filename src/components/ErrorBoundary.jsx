@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { devError } from '../utils/devLog';
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -11,11 +12,9 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    // Only log full error details in development to avoid leaking stack
-    // traces or internal paths to the browser console in production.
-    if (import.meta.env.DEV) {
-      console.error('ErrorBoundary caught an error:', error, info);
-    }
+    // devError only reaches the console in development, so stack traces and
+    // internal paths never surface in a production browser.
+    devError('ErrorBoundary caught an error:', error, info);
   }
 
   render() {

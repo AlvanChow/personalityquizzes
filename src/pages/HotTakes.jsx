@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { track, getSessionId } from '../utils/analytics';
 import { safeLocalStorageRead, safeLocalStorageWrite } from '../utils/security';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { devError } from '../utils/devLog';
 
 const VOTES_KEY = 'personalens_hottakes';
 
@@ -167,7 +168,7 @@ export default function HotTakes() {
         }
       } catch (err) {
         if (err?.name !== 'AbortError') {
-          console.error('Share failed:', err);
+          devError('Share failed:', err);
         }
       }
     }

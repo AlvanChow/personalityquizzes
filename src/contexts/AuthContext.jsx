@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowAuth } from '../utils/rateLimiter';
+import { devError } from '../utils/devLog';
 
 const AuthContext = createContext(null);
 
@@ -17,7 +18,7 @@ export function AuthProvider({ children }) {
         setUser(session?.user ?? null);
       })
       .catch((err) => {
-        if (import.meta.env.DEV) console.error('[auth] getSession failed:', err);
+        devError('[auth] getSession failed:', err);
       })
       .finally(() => {
         setLoading(false);

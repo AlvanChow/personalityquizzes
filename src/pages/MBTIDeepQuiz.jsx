@@ -12,6 +12,7 @@ import { safeJsonParse, safeLocalStorageWrite } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
 import { getQuizFactsLine } from '../data/quizInfo';
 import './narutoQuiz.css';
+import { devError } from '../utils/devLog';
 
 // Presentation-only rebuild: the OEJTS forced-choice instrument now renders
 // through the ink-scroll (.nq) design system used by the vector quizzes.
@@ -145,7 +146,7 @@ export default function MBTIDeepQuiz() {
         });
         if (error) throw error;
       } catch (err) {
-        console.error('Failed to save MBTI deep quiz result:', err);
+        devError('Failed to save MBTI deep quiz result:', err);
       }
     }
 

@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase';
 import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
 import { safeLocalStorageWrite } from '../utils/security';
+import { devError } from '../utils/devLog';
 
 function Spinner() {
   return (
@@ -86,7 +87,7 @@ export default function CatalogQuiz() {
         });
         if (error) throw error;
       } catch (err) {
-        console.error(`Failed to save ${quiz.key} quiz result:`, err);
+        devError(`Failed to save ${quiz.key} quiz result:`, err);
       }
     }
 

@@ -46,14 +46,29 @@ export function buildShareMetadata(shared, canonicalUrl) {
   };
 }
 
-async function fetchSharedResult(shareId) {
+async function fetchSharedResult(shareId, request, env) {
+  const headers = {
+    apikey: DEFAULT_SUPABASE_ANON_KEY,
+    authorization: `Bearer ${DEFAULT_SUPABASE_ANON_KEY}`,
+    'content-type': 'application/json',
+  };
+
+  // This call is server-to-server, so Supabase's edge sees this Worker's egress
+  // address rather than the visitor's — which would put every visitor to every
+  // share link in a single per-IP rate-limit bucket. Forward the real address,
+  // authenticated with a shared secret so the database can tell an edge-supplied
+  // header apart from a client-supplied one (see request_client_ip). Without
+  // SHARE_PROXY_SECRET configured on both sides, nothing is sent and the
+  // database ignores the headers entirely.
+  const clientIp = request.headers.get('cf-connecting-ip');
+  if (env.SHARE_PROXY_SECRET && clientIp) {
+    headers['x-edge-proxy-secret'] = env.SHARE_PROXY_SECRET;
+    headers['x-edge-client-ip'] = clientIp;
+  }
+
   const response = await fetch(`${DEFAULT_SUPABASE_URL}/rest/v1/rpc/get_shared_result`, {
     method: 'POST',
-    headers: {
-      apikey: DEFAULT_SUPABASE_ANON_KEY,
-      authorization: `Bearer ${DEFAULT_SUPABASE_ANON_KEY}`,
-      'content-type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ p_id: shareId }),
     signal: AbortSignal.timeout(1800),
   });
@@ -99,21 +114,28 @@ export default {
       const canonicalUrl = `https://mypersonalityquizzes.com/s/${match[1]}`;
       const shellPromise = env.ASSETS.fetch(request);
       let shared;
+      let lookupFailed = false;
       try {
-        shared = await fetchSharedResult(match[1]);
+        shared = await fetchSharedResult(match[1], request, env);
       } catch {
-        return new Response('Shared results are temporarily unavailable.', {
-          status: 503,
-          headers: {
-            'cache-control': 'no-store',
-            'content-type': 'text/plain; charset=UTF-8',
-            'retry-after': '30',
-          },
-        });
+        // Rate limit, timeout, or a Supabase outage. A failed lookup is not
+        // proof the share is missing, so serve the app shell with generic
+        // metadata instead of failing the request: the SPA repeats the lookup
+        // from the visitor's own browser and renders either the result or its
+        // own not-found state. Only a *successful* empty lookup is a 404.
+        lookupFailed = true;
+        shared = null;
       }
 
       const shell = await shellPromise;
       if (!shell.ok || !shell.headers.get('content-type')?.includes('text/html')) return shell;
+
+      if (lookupFailed) {
+        return applyMetadata(
+          withStatus(shell, 200, 'no-store'),
+          buildShareMetadata(null, canonicalUrl),
+        );
+      }
 
       const status = shared ? 200 : 404;
       const html = withStatus(

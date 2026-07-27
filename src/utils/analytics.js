@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { allowAnalytics } from './rateLimiter';
+import { devWarn } from './devLog';
 
 // ─── Allowed event names ──────────────────────────────────────────────────────
 // Must stay in sync with the analytics_events_event_format DB constraint
@@ -140,13 +141,13 @@ export function track(event, properties = {}, userId = null) {
   // Drop events that aren't in the allowlist to keep analytics clean and to
   // avoid hitting the DB-level event_format CHECK constraint.
   if (!ALLOWED_EVENTS.has(event)) {
-    if (import.meta.env.DEV) console.warn('[analytics] unknown event dropped:', event);
+    devWarn('[analytics] unknown event dropped:', event);
     return;
   }
 
   // Rate limit: prevent runaway event flooding (max 30 events / 60s).
   if (!allowAnalytics()) {
-    if (import.meta.env.DEV) console.warn('[analytics] rate-limited, dropping:', event);
+    devWarn('[analytics] rate-limited, dropping:', event);
     return;
   }
 
@@ -176,7 +177,7 @@ export function track(event, properties = {}, userId = null) {
     })
     .then(({ error }) => {
       if (error) {
-        if (import.meta.env.DEV) console.warn('[analytics] insert failed:', event, error);
+        devWarn('[analytics] insert failed:', event, error);
         return;
       }
       // Mark device info delivered only after a confirmed insert, so a failed

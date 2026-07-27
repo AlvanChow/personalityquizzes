@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../utils/analytics';
+import { devError } from '../utils/devLog';
 
 export default function AuthNudgeBanner({ quiz, delay = 0.75 }) {
   const location = useLocation();
@@ -28,8 +29,8 @@ export default function AuthNudgeBanner({ quiz, delay = 0.75 }) {
       // local storage and are synced to the authenticated profile after OAuth.
       await signInWithGoogle(`${location.pathname}${location.search}${location.hash}`);
     } catch (err) {
-      console.error('Sign in failed:', err);
-      setError(err?.message || 'Sign-in failed. Please try again.');
+      devError('Sign in failed:', err);
+      setError('Sign-in failed. Please try again.');
       clearTimeout(errorTimerRef.current);
       errorTimerRef.current = setTimeout(() => setError(null), 8000);
       setBusy(false);

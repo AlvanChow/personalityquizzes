@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { allowShare } from './rateLimiter';
 import { getQuizMeta } from '../data/quizzes';
+import { devWarn } from './devLog';
 
 const BASE_URL = 'https://mypersonalityquizzes.com';
 
@@ -78,7 +79,7 @@ export async function createShareableLink(quizType, result, scores, ownerId = nu
 
   // Rate limit: max 5 share links per 60 seconds.
   if (!allowShare()) {
-    if (import.meta.env.DEV) console.warn('[sharing] rate-limited');
+    devWarn('[sharing] rate-limited');
     return null;
   }
 
@@ -90,7 +91,7 @@ export async function createShareableLink(quizType, result, scores, ownerId = nu
   });
 
   if (error || typeof data !== 'string' || !/^[a-f0-9]{32}$/.test(data)) {
-    if (import.meta.env.DEV) console.warn('[sharing] createShareableLink failed:', error ?? data);
+    devWarn('[sharing] createShareableLink failed:', error ?? data);
     return null;
   }
 

@@ -91,15 +91,54 @@ describe('share route handling', () => {
     expect(response.headers.get('cache-control')).toBe('no-store');
   });
 
-  it('returns 503 when the share service fails', async () => {
+  it('degrades to the app shell when the share service fails', async () => {
+    // A failed lookup is not proof the share is missing, so the visitor must
+    // still get a working page rather than a 503 or a wrong 404.
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('failed', { status: 500 })));
+    stubRewriter();
 
     const response = await worker.fetch(new Request(shareUrl), {
       ASSETS: htmlAssets(),
     });
 
-    expect(response.status).toBe(503);
-    expect(response.headers.get('retry-after')).toBe('30');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+  });
+
+  it('forwards the visitor IP to the share RPC when the edge secret is set', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(new Response(JSON.stringify([]), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }));
+    vi.stubGlobal('fetch', fetchSpy);
+    stubRewriter();
+
+    await worker.fetch(
+      new Request(shareUrl, { headers: { 'cf-connecting-ip': '203.0.113.7' } }),
+      { ASSETS: htmlAssets(), SHARE_PROXY_SECRET: 'x'.repeat(48) },
+    );
+
+    const { headers } = fetchSpy.mock.calls[0][1];
+    expect(headers['x-edge-client-ip']).toBe('203.0.113.7');
+    expect(headers['x-edge-proxy-secret']).toBe('x'.repeat(48));
+  });
+
+  it('sends no edge headers when the secret is not configured', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(new Response(JSON.stringify([]), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }));
+    vi.stubGlobal('fetch', fetchSpy);
+    stubRewriter();
+
+    await worker.fetch(
+      new Request(shareUrl, { headers: { 'cf-connecting-ip': '203.0.113.7' } }),
+      { ASSETS: htmlAssets() },
+    );
+
+    const { headers } = fetchSpy.mock.calls[0][1];
+    expect(headers['x-edge-client-ip']).toBeUndefined();
+    expect(headers['x-edge-proxy-secret']).toBeUndefined();
   });
 
   it('returns a real 404 for an unknown SPA route', async () => {

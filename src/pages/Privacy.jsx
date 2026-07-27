@@ -33,7 +33,7 @@ export default function Privacy() {
             <ShieldCheck className="w-6 h-6" />
           </div>
           <h1 className="text-3xl font-black text-gray-900">Privacy &amp; data</h1>
-          <p className="text-sm text-gray-500 mt-2">Last updated July 23, 2026</p>
+          <p className="text-sm text-gray-500 mt-2">Last updated July 27, 2026</p>
         </div>
 
         <Section title="What the site collects">
@@ -51,6 +51,13 @@ export default function Privacy() {
             Product analytics can include a random session ID, pages and buttons used, quiz lifecycle
             events, browser, operating system, language, time zone, viewport and screen dimensions, and
             your user ID when signed in. The site does not use analytics for advertising.
+          </p>
+          <p>
+            Separately from analytics, the site keeps a short security record of blocked requests —
+            rate-limit rejections and refused attempts to reach another account&rsquo;s data. Those entries
+            can include your IP address, the time, and which operation was refused. They exist to detect
+            and investigate abuse, are never used for analytics or advertising, and are not covered by the
+            analytics preference below: switching analytics off does not switch off security records.
           </p>
         </Section>
 
@@ -80,7 +87,8 @@ export default function Privacy() {
             Account information and saved quiz results remain until the account or associated data is
             deleted. Public shares remain available until they are removed. Raw product analytics and quiz
             ratings are kept for product improvement and are deleted or aggregated after 12 months.
-            Security rate-limit records expire after they are no longer needed.
+            Security records of blocked requests are deleted after 90 days, and the short-lived counters
+            behind rate limiting expire within minutes.
           </p>
           <p>
             Browser storage holds guest results, theme preference, analytics preference, and authentication

@@ -6,9 +6,11 @@ import { useAdmin } from '../hooks/useAdmin';
 import { allowAdminFetch } from '../utils/rateLimiter';
 import UserMenu from '../components/UserMenu';
 import { accountsToCsv } from '../utils/csv';
+import { devError } from '../utils/devLog';
 import {
   Users, Activity, BarChart2, CheckCircle,
   RefreshCw, ChevronLeft, Shield, Star, Share2, Eye, Mail, Download,
+  ShieldAlert, KeyRound,
 } from 'lucide-react';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -45,6 +47,10 @@ const EVENT_COLORS = {
   auth_sign_out: 'bg-gray-100 text-gray-600',
   hero_cta_clicked: 'bg-orange-100 text-orange-700',
   quiz_retaken: 'bg-pink-100 text-pink-700',
+  // Security events — deliberately loud.
+  authz_denied: 'bg-red-100 text-red-700',
+  rate_limit_hit: 'bg-amber-100 text-amber-700',
+  admin_data_access: 'bg-violet-100 text-violet-700',
 };
 
 function EventBadge({ event }) {
@@ -88,6 +94,9 @@ export default function AdminDashboard() {
   const [shares, setShares] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [accountsWarning, setAccountsWarning] = useState(null);
+  const [securityEvents, setSecurityEvents] = useState([]);
+  const [authAudit, setAuthAudit] = useState([]);
+  const [securityWarning, setSecurityWarning] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastRefresh, setLastRefresh] = useState(null);
@@ -115,6 +124,8 @@ export default function AdminDashboard() {
         feedbackRes,
         sharesRes,
         accountsRes,
+        securityRes,
+        auditRes,
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
         supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', todayStr),
@@ -127,6 +138,15 @@ export default function AdminDashboard() {
         supabase.from('quiz_feedback').select('quiz_key, rating, created_at').order('created_at', { ascending: false }).limit(2000),
         supabase.from('shared_results').select('id, quiz_type, result_key, result_name, view_count, created_at').order('created_at', { ascending: false }).limit(1000),
         supabase.rpc('admin_list_auth_users'),
+        // Server-authoritative denial trail. Unlike analytics_events these rows
+        // cannot be written by a client, so they are the one place an attack in
+        // progress shows up honestly.
+        supabase.from('security_events')
+          .select('id, event, actor, client_ip, detail, created_at')
+          .order('created_at', { ascending: false })
+          .limit(200),
+        // Failed sign-ins live in GoTrue's own audit log, not in this schema.
+        supabase.rpc('admin_list_auth_audit', { p_limit: 200 }),
       ]);
 
       const failedQuery = [
@@ -140,6 +160,12 @@ export default function AdminDashboard() {
       // missing/failed account-email RPC instead of showing a false zero.
       setAccountsWarning(accountsRes.error
         ? 'Signed-in account emails are unavailable until the admin auth migration is applied.'
+        : null);
+
+      // Same rollout tolerance as the account list: a missing security-logging
+      // migration must read as "not deployed yet", never as "no attacks".
+      setSecurityWarning(securityRes.error || auditRes.error
+        ? 'Security logging is unavailable until the security-event migration is applied. An empty list here does not mean there were no events.'
         : null);
 
       // Compute active users today from recent events
@@ -168,9 +194,14 @@ export default function AdminDashboard() {
       setFeedback(feedbackRes.data ?? []);
       setShares(sharesRes.data ?? []);
       setAccounts(accountsRes.error ? [] : (accountsRes.data ?? []));
+      setSecurityEvents(securityRes.error ? [] : (securityRes.data ?? []));
+      setAuthAudit(auditRes.error ? [] : (auditRes.data ?? []));
       setLastRefresh(new Date());
     } catch (err) {
-      setError(err.message ?? 'Failed to load dashboard data.');
+      // err.message here is raw PostgREST/Postgres text — SQLSTATE, hints,
+      // constraint names. Keep it in the dev console, not on screen.
+      devError('[admin] dashboard load failed:', err);
+      setError('Failed to load dashboard data.');
     } finally {
       setLoading(false);
     }
@@ -571,6 +602,98 @@ export default function AdminDashboard() {
                       <span className="font-medium text-gray-800 truncate max-w-[220px]">{s.email}</span>
                       <span className="flex items-center gap-2 shrink-0 ml-2 text-gray-400">
                         <span>{fmtTime(s.created_at)}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Security events — the server-authoritative trail */}
+        <section>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
+            Security
+            <span className="ml-1 font-normal normal-case text-gray-400">
+              (server-recorded — unlike analytics, a client cannot write or suppress these)
+            </span>
+          </h2>
+          {securityWarning && (
+            <p className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold px-4 py-3 rounded-xl mb-4" role="status">
+              {securityWarning}
+            </p>
+          )}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+            <StatCard
+              icon={ShieldAlert}
+              label="Authorization denials"
+              value={securityEvents.filter(e => e.event === 'authz_denied').length}
+              sub="last 200 events"
+              color="bg-red-50 text-red-500"
+            />
+            <StatCard
+              icon={Activity}
+              label="Rate-limit hits"
+              value={securityEvents.filter(e => e.event === 'rate_limit_hit').length}
+              sub="deduped per actor/minute"
+              color="bg-amber-50 text-amber-500"
+            />
+            <StatCard
+              icon={KeyRound}
+              label="Failed sign-ins"
+              value={authAudit.filter(e => /fail|invalid|denied/i.test(e.action ?? '')).length}
+              sub="from the auth audit log"
+              color="bg-violet-50 text-violet-500"
+            />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                Recent security events
+              </p>
+              {securityEvents.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">
+                  {securityWarning ? 'Unavailable.' : 'No security events recorded.'}
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {securityEvents.slice(0, 10).map((e) => (
+                    <div key={e.id} className="flex items-start justify-between gap-2 text-xs">
+                      <span className="min-w-0">
+                        <EventBadge event={e.event} />
+                        <span className="text-gray-500 ml-1.5 break-all">
+                          {e.detail?.fn ?? e.detail?.action ?? ''}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right text-gray-400">
+                        <span className="block font-mono">{e.client_ip ?? '—'}</span>
+                        <span className="block">{fmtTime(e.created_at)}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                Recent auth activity
+              </p>
+              {authAudit.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">
+                  {securityWarning ? 'Unavailable.' : 'No auth activity recorded.'}
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {authAudit.slice(0, 10).map((e) => (
+                    <div key={e.id} className="flex items-start justify-between gap-2 text-xs">
+                      <span className="min-w-0">
+                        <EventBadge event={e.action ?? 'unknown'} />
+                        <span className="text-gray-500 ml-1.5 truncate">{e.actor_username ?? ''}</span>
+                      </span>
+                      <span className="shrink-0 text-right text-gray-400">
+                        <span className="block font-mono">{e.ip_address ?? '—'}</span>
+                        <span className="block">{fmtTime(e.created_at)}</span>
                       </span>
                     </div>
                   ))}
