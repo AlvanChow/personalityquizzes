@@ -13,6 +13,7 @@ import { getQuizFactsLine } from '../data/quizInfo';
 import CoreIntroBreakdown from '../components/CoreIntroBreakdown';
 import { safeJsonParse, safeLocalStorageWrite } from '../utils/security';
 import './narutoQuiz.css';
+import { devError } from '../utils/devLog';
 
 // Presentation-only restyle: the Enneagram flow now renders through the
 // site's immersive .nq ink-scroll design system — intro screen, one question
@@ -124,7 +125,7 @@ export default function EnneagramQuiz() {
         });
         if (error) throw error;
       } catch (err) {
-        console.error('Failed to save Enneagram quiz result:', err);
+        devError('Failed to save Enneagram quiz result:', err);
       }
     }
 

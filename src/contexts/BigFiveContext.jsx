@@ -10,6 +10,7 @@ import {
   isPlainObject,
 } from '../utils/security';
 import { QUIZ_CATALOG, storageKeyFor } from '../data/quizzes';
+import { devError, devWarn } from '../utils/devLog';
 
 const STORAGE_KEY = 'personalens_bigfive';
 const defaultScores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
@@ -159,7 +160,7 @@ async function syncGuestQuizResults(userId, remoteResults) {
 
   const missingBulkRpc = bulk.error?.code === 'PGRST202' || bulk.error?.code === '42883';
   if (!missingBulkRpc) {
-    console.error('Failed to bulk-sync guest quiz results to Supabase:', bulk.error);
+    devError('Failed to bulk-sync guest quiz results to Supabase:', bulk.error);
     return remoteResults;
   }
 
@@ -171,7 +172,7 @@ async function syncGuestQuizResults(userId, remoteResults) {
       p_result: result,
     }));
     if (!fallback.ok) {
-      console.error(`Failed to sync guest quiz result "${quizKey}" to Supabase:`, fallback.error);
+      devError(`Failed to sync guest quiz result "${quizKey}" to Supabase:`, fallback.error);
     } else {
       mergedResults[quizKey] = result;
     }
@@ -238,7 +239,7 @@ export function BigFiveProvider({ children }) {
     if (!user || !supabase) return;
     // Rate limit profile syncs to prevent excessive DB writes
     if (!allowProfileSync()) {
-      if (import.meta.env.DEV) console.warn('[bigfive] profile sync rate-limited');
+      devWarn('[bigfive] profile sync rate-limited');
       return;
     }
     const update = { big5_scores: clampScores(newScores), baseline_completed: completed };
@@ -247,7 +248,7 @@ export function BigFiveProvider({ children }) {
       .from('profiles')
       .update(update)
       .eq('id', user.id);
-    if (error) console.error('Failed to sync Big Five scores to Supabase:', error);
+    if (error) devError('Failed to sync Big Five scores to Supabase:', error);
   }, [user]);
 
   useEffect(() => {
@@ -269,7 +270,7 @@ export function BigFiveProvider({ children }) {
         if (cancelled) return;
 
         if (error) {
-          if (import.meta.env.DEV) console.error('[bigfive] profile fetch failed:', error);
+          devError('[bigfive] profile fetch failed:', error);
           return;
         }
 
@@ -289,7 +290,7 @@ export function BigFiveProvider({ children }) {
                 baseline_completed: true,
               })
               .eq('id', user.id);
-            if (uploadError) console.error('[bigfive] failed to sync local baseline to Supabase:', uploadError);
+            if (uploadError) devError('[bigfive] failed to sync local baseline to Supabase:', uploadError);
           }
         }
 

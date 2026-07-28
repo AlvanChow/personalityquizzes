@@ -4,6 +4,7 @@ import { Star } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { track, getSessionId } from '../utils/analytics';
+import { devWarn } from '../utils/devLog';
 
 const RATED_PREFIX = 'pq_rated_';
 
@@ -45,7 +46,7 @@ export default function FeedbackWidget({ quizKey, delay = 0.7 }) {
     });
     // A duplicate (already rated this session) or rate-limit drop is fine —
     // the thank-you state is the right UI either way.
-    if (error && import.meta.env.DEV) console.warn('[feedback] insert failed:', error);
+    if (error && import.meta.env.DEV) devWarn('[feedback] insert failed:', error);
   }
 
   return (

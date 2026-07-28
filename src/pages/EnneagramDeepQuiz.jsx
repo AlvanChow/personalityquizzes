@@ -12,6 +12,7 @@ import { safeJsonParse, safeLocalStorageWrite } from '../utils/security';
 import { lighten } from '../utils/vectorQuiz';
 import { getQuizFactsLine } from '../data/quizInfo';
 import './narutoQuiz.css';
+import { devError } from '../utils/devLog';
 
 // Presentation-only restyle: the 36-item inventory now renders through the
 // site's immersive .nq (ink-scroll) design system — ambient aura background,
@@ -132,7 +133,7 @@ export default function EnneagramDeepQuiz() {
         });
         if (error) throw error;
       } catch (err) {
-        console.error('Failed to save Enneagram deep quiz result:', err);
+        devError('Failed to save Enneagram deep quiz result:', err);
       }
     }
 

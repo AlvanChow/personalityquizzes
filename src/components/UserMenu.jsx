@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAdmin } from '../hooks/useAdmin';
 import { LogOut, User, UserCircle, Shield, Users } from 'lucide-react';
+import { devError } from '../utils/devLog';
 
 function GoogleIcon() {
   return (
@@ -82,8 +83,8 @@ export default function UserMenu() {
             try {
               await signInWithGoogle();
             } catch (err) {
-              console.error('Sign in failed:', err);
-              setSignInError(err?.message || 'Sign-in failed. Please try again.');
+              devError('Sign in failed:', err);
+              setSignInError('Sign-in failed. Please try again.');
               clearTimeout(errorTimerRef.current);
               errorTimerRef.current = setTimeout(() => setSignInError(null), 8000);
             }
@@ -180,7 +181,7 @@ export default function UserMenu() {
               try {
                 await signOut();
               } catch (err) {
-                console.error('Sign out failed:', err);
+                devError('Sign out failed:', err);
               }
             }}
             className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-100 transition-colors border-t border-gray-200"

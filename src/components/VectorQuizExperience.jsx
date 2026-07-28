@@ -15,6 +15,7 @@ import { track } from '../utils/analytics';
 import { allowQuizSave } from '../utils/rateLimiter';
 import { safeLocalStorageRead, safeLocalStorageWrite } from '../utils/security';
 import '../pages/narutoQuiz.css';
+import { devError } from '../utils/devLog';
 
 // The shared five-screen vector-quiz experience: seal intro → auto-advancing
 // Likert dots → aura-themed result (emblem, tier badge, match %, spectra,
@@ -236,7 +237,7 @@ export default function VectorQuizExperience({ def }) {
         });
         if (error) throw error;
       } catch (err) {
-        console.error(`Failed to save ${QUIZ_KEY} quiz result:`, err);
+        devError(`Failed to save ${QUIZ_KEY} quiz result:`, err);
       }
     }
 

@@ -13,6 +13,7 @@ import { lighten } from '../utils/vectorQuiz';
 import { getQuizFactsLine } from '../data/quizInfo';
 import CoreIntroBreakdown from '../components/CoreIntroBreakdown';
 import './narutoQuiz.css';
+import { devError } from '../utils/devLog';
 
 // Presentation-only rebuild: the MBTI instrument now renders through the
 // ink-scroll (.nq) design system used by the vector quizzes. Question data,
@@ -144,7 +145,7 @@ export default function MBTIQuiz() {
         });
         if (error) throw error;
       } catch (err) {
-        console.error('Failed to save MBTI quiz result:', err);
+        devError('Failed to save MBTI quiz result:', err);
       }
     }
 

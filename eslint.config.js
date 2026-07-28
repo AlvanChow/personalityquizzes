@@ -29,6 +29,16 @@ export default defineConfig([
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^_', argsIgnorePattern: '^_' }],
       'react/jsx-uses-vars': 'error',
+      // Raw Supabase errors carry SQLSTATE codes, constraint names, and hints.
+      // Route diagnostics through src/utils/devLog.js so they are stripped from
+      // the production bundle instead of printed in a visitor's console.
+      'no-console': ['error', { allow: ['info'] }],
     },
+  },
+  {
+    // The dev-only logger and the Node-side build/verification scripts are the
+    // legitimate console callers.
+    files: ['src/utils/devLog.js', 'scripts/**/*.mjs', 'worker/**/*.js'],
+    rules: { 'no-console': 'off' },
   },
 ])

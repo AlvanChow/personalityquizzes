@@ -11,6 +11,7 @@ import {
   openWhatsAppShare,
 } from '../utils/sharing';
 import { shareResultStory } from '../utils/storyCard';
+import { devError } from '../utils/devLog';
 
 // Twitter/X SVG icon (lucide doesn't have one post-rebrand)
 function XIcon({ className }) {
@@ -73,7 +74,7 @@ export default function SharePanel({ quizType, result, scores = null, scoreMeta 
         setError('Could not create share link. Try copying the page URL instead.');
       }
     } catch (err) {
-      console.error('[SharePanel] createShareableLink threw:', err);
+      devError('[SharePanel] createShareableLink threw:', err);
       setError('Could not create share link.');
     } finally {
       setCreating(false);
@@ -127,7 +128,7 @@ export default function SharePanel({ quizType, result, scores = null, scoreMeta 
         track('share_button_clicked', { quiz: quizType, platform: 'story', outcome }, user?.id ?? null);
       }
     } catch (err) {
-      console.error('[SharePanel] story share failed:', err);
+      devError('[SharePanel] story share failed:', err);
       setStoryNote('Could not create the image on this device.');
     } finally {
       setStoryBusy(false);
