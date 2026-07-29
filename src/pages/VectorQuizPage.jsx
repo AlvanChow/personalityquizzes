@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import VectorQuizExperience from '../components/VectorQuizExperience';
 import { VECTOR_QUIZ_LOADERS } from '../data/vectorQuizzes/registry';
 

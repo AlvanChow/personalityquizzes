@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 import { Sparkles, Users, Moon, Sun } from 'lucide-react';
 import UserMenu from './UserMenu';
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { motion } from 'framer-motion';
 import QuizShell from '../components/QuizShell';
 import QuizInfoPanel from '../components/QuizInfoPanel';

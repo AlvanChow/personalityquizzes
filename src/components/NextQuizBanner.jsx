@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { getNextQuiz, getCompletedCount, QUIZ_ORDER } from '../utils/quizProgression';
 import QuizGlyph, { hasGlyph } from './QuizGlyph';

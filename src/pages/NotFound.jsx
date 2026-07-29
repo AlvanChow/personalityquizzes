@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { motion } from 'framer-motion';
 import { Activity, Brain, CircleDashed, ArrowRight } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';

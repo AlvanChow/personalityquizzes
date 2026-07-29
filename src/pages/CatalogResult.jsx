@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Sparkles, TrendingUp, Heart, Trophy } from 'lucide-react';
 import SharePanel from '../components/SharePanel';
