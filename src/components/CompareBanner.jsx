@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ArrowRight, Users } from 'lucide-react';
 import { getPendingCompare, clearPendingCompare } from '../utils/compatibility';
 

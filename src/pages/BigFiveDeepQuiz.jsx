@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { bigFiveDeepQuestions, likertOptions } from '../data/bigFiveDeepQuestions';
 import { useBigFive } from '../contexts/BigFiveContext';

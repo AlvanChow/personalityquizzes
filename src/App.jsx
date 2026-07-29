@@ -1,5 +1,5 @@
 import { useEffect, useRef, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router';
 import { MotionConfig } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
 import { BigFiveProvider } from './contexts/BigFiveContext';

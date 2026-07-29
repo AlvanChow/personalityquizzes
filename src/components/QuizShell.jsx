@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ArrowLeft, X, List, ChevronRight } from 'lucide-react';
 import { track } from '../utils/analytics';
 import { safeJsonParse } from '../utils/security';

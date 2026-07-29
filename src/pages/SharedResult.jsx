@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { motion } from 'framer-motion';
 import { ArrowRight, Brain, Sparkles, Cake, Star, Share2, Swords, Wand2, UserPlus, Users, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';

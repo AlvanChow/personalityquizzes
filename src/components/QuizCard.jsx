@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Lock, CheckCircle2 } from 'lucide-react';
 import QuizGlyph, { hasGlyph } from './QuizGlyph';
 

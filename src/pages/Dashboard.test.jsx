@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
   sharePanelProps: [],
 }));
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useNavigate: () => mocks.navigate,
 }));
 vi.mock('../contexts/BigFiveContext', () => ({

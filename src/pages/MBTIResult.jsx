@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Briefcase, Users, Star, ShieldAlert, Sparkles, TrendingUp, Zap, AlertTriangle, ChevronDown, Layers, ArrowRight } from 'lucide-react';
 import SharePanel from '../components/SharePanel';

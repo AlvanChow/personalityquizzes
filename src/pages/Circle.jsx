@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Users, Check, X, Share2, Trash2, Clock } from 'lucide-react';
 import { supabase } from '../lib/supabase';

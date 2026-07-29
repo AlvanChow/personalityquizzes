@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { mbtiQuestions } from '../data/mbtiQuestions';
 import { getMBTIResult } from '../data/mbtiResults';
 import { computeMBTIScores } from '../utils/scoring';

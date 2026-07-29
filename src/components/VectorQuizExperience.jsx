@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 import SharePanel from './SharePanel';
 import FeedbackWidget from './FeedbackWidget';
 import AuthNudgeBanner from './AuthNudgeBanner';

@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { enneagramDeepQuestions } from '../data/enneagramDeepQuestions';
 import { getEnneagramResult } from '../data/enneagramResults';
 import { computeEnneagramDeepScores } from '../utils/scoring';
