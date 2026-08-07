@@ -3,12 +3,14 @@ import { useNavigate, useLocation } from 'react-router';
 import { Sparkles, Users, Moon, Sun, LayoutGrid, ChartColumn } from 'lucide-react';
 import UserMenu from './UserMenu';
 
-// Every item carries an icon because below `sm` the labels are hidden and the
+// Every item carries an icon because below `md` the labels are hidden and the
 // icon is the whole control: signed out, the row also has to fit two sign-in
-// buttons, and with labels shown it overflowed a 375pt screen far enough to
-// push "Sign in with Apple" off the edge entirely. That is a layout bug on
-// mobile web and an App Store Review 4.8 problem in the iOS shell, where an
-// Apple option has to be offered as prominently as Google's.
+// buttons, and with labels shown it overflowed far enough to push "Sign in
+// with Apple" off the right edge entirely — by 65px at 375pt (iPhone) and 63px
+// at 640pt (iPad Split View). That is a layout bug on mobile web and an App
+// Store Review 4.8 problem in the iOS shell, where an Apple option has to be
+// offered as prominently as Google's. The labelled row needs ~703px, so `md`
+// (768px) is the first breakpoint that can afford it.
 const NAV = [
   { label: 'Quizzes', to: '/', match: (p) => p === '/', icon: LayoutGrid },
   { label: 'How it works', to: '/how-it-works', match: (p) => p.startsWith('/how-it-works'), desktopOnly: true },
@@ -63,10 +65,10 @@ export default function SiteHeader() {
           aria-label="My Personality Quizzes home"
         >
           <Sparkles className="w-5 h-5 text-coral-500" />
-          <span className="text-lg font-bold tracking-tight text-gray-900 hidden md:inline">
+          <span className="text-lg font-bold tracking-tight text-gray-900 hidden lg:inline">
             My Personality Quizzes
           </span>
-          <span className="text-lg font-bold tracking-tight text-gray-900 hidden sm:inline md:hidden">MPQ</span>
+          <span className="text-lg font-bold tracking-tight text-gray-900 hidden sm:inline lg:hidden">MPQ</span>
         </button>
 
         <nav aria-label="Primary" className="flex items-center gap-0.5 sm:gap-2">
@@ -78,14 +80,14 @@ export default function SiteHeader() {
                 onClick={() => navigate(to)}
                 aria-current={active ? 'page' : undefined}
                 aria-label={label}
-                className={`${desktopOnly ? 'hidden sm:flex' : 'flex'} whitespace-nowrap px-2 sm:px-3 py-2 rounded-lg text-sm font-semibold transition-colors items-center gap-1.5 ${
+                className={`${desktopOnly ? 'hidden md:flex' : 'flex'} whitespace-nowrap px-2 sm:px-3 py-2 rounded-lg text-sm font-semibold transition-colors items-center gap-1.5 ${
                   active
                     ? 'text-gray-900 bg-gray-900/5'
                     : 'text-gray-500 hover:text-gray-900 hover:bg-gray-900/5'
                 }`}
               >
                 {Icon && <Icon className="w-4 h-4" />}
-                <span className={Icon ? 'hidden sm:inline' : ''}>{label}</span>
+                <span className={Icon ? 'hidden md:inline' : ''}>{label}</span>
               </button>
             );
           })}
