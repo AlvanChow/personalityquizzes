@@ -159,3 +159,64 @@ describe('share route handling', () => {
     expect(response.status).toBe(200);
   });
 });
+
+describe('apple-app-site-association', () => {
+  const AASA = 'https://mypersonalityquizzes.com/.well-known/apple-app-site-association';
+
+  function htmlAssets() {
+    return {
+      fetch: async () => new Response('<!doctype html><html><head></head><body></body></html>', {
+        headers: { 'content-type': 'text/html' },
+      }),
+    };
+  }
+
+  it('serves the association as JSON when the app id is configured', async () => {
+    const response = await worker.fetch(
+      new Request(AASA),
+      { ASSETS: htmlAssets(), IOS_APP_ID: 'ABCDE12345.com.mypersonalityquizzes.app' },
+    );
+
+    expect(response.status).toBe(200);
+    // iOS rejects the association outright if this is not application/json.
+    expect(response.headers.get('content-type')).toBe('application/json');
+
+    const body = await response.json();
+    expect(body.applinks.details[0].appIDs).toEqual(['ABCDE12345.com.mypersonalityquizzes.app']);
+    expect(body.applinks.details[0].components.map((c) => c['/'])).toContain('/s/*');
+  });
+
+  it('404s while no app id is configured, rather than claiming links', async () => {
+    for (const env of [{}, { IOS_APP_ID: '' }, { IOS_APP_ID: '   ' }]) {
+      const response = await worker.fetch(
+        new Request(AASA),
+        { ASSETS: htmlAssets(), ...env },
+      );
+      expect(response.status).toBe(404);
+    }
+  });
+
+  // iOS caches a bad association for days, so a typo must fail closed.
+  it('404s on a malformed app id instead of publishing it', async () => {
+    for (const id of [
+      'com.mypersonalityquizzes.app',          // no team prefix
+      'TOOSHORT.com.mypersonalityquizzes.app', // team id is not 10 chars
+      'ABCDE12345.com.my quizzes',             // space in the bundle id
+    ]) {
+      const response = await worker.fetch(
+        new Request(AASA),
+        { ASSETS: htmlAssets(), IOS_APP_ID: id },
+      );
+      expect(response.status).toBe(404);
+    }
+  });
+
+  it('does not claim the whole site', async () => {
+    const response = await worker.fetch(
+      new Request(AASA),
+      { ASSETS: htmlAssets(), IOS_APP_ID: 'ABCDE12345.com.mypersonalityquizzes.app' },
+    );
+    const paths = (await response.json()).applinks.details[0].components.map((c) => c['/']);
+    expect(paths).not.toContain('/*');
+  });
+});

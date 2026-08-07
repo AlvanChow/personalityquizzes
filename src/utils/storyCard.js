@@ -8,6 +8,7 @@
  */
 
 import { getQuizMeta } from '../data/quizzes';
+import { isNativeApp, nativeShare } from '../lib/native';
 
 const W = 1080;
 const H = 1920;
@@ -378,6 +379,19 @@ async function shareCanvas(canvas, filename, shareText, shareUrl) {
       if (err?.name === 'AbortError') return 'cancelled';
       // fall through to download on any other share failure
     }
+  }
+
+  // The download fallback below is meaningless inside the iOS shell — an
+  // <a download> in a WKWebView produces no file and no visible feedback. Hand
+  // the text and link to the iOS share sheet instead, so the user still gets
+  // somewhere even when the image itself could not be attached.
+  if (isNativeApp()) {
+    const shared = await nativeShare({
+      title: 'My Personality Quizzes',
+      text: shareText,
+      url: shareUrl,
+    });
+    if (shared) return 'shared';
   }
 
   const url = URL.createObjectURL(blob);

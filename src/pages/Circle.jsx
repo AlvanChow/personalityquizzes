@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Users, Check, X, Share2, Trash2, Clock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import SignInButtons from '../components/SignInButtons';
 import { track } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { getMyResultFor, computeCompatibility } from '../utils/compatibility';
@@ -86,7 +87,7 @@ function TypeBadges({ friendTypes }) {
 export default function Circle() {
   usePageTitle('My Circle — My Personality Quizzes');
   const navigate = useNavigate();
-  const { user, loading: authLoading, signInWithGoogle } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [rows, setRows] = useState(null);   // null = loading
   const [error, setError] = useState(null);
   const [busyId, setBusyId] = useState(null);
@@ -166,16 +167,7 @@ export default function Circle() {
         <p className="text-sm text-gray-500 mb-6 max-w-xs">
           Sign in to keep your matches — see how you and your friends compare, all in one place.
         </p>
-        <button
-          onClick={() => signInWithGoogle('/circle').catch((e) => {
-            devError('[circle] sign-in failed:', e);
-            setError('Sign-in failed. Please try again.');
-          })}
-          className="px-6 py-3 rounded-xl bg-coral-500 hover:bg-coral-600 text-white font-bold shadow-md transition-colors"
-        >
-          Sign in with Google
-        </button>
-        {error && <p className="text-xs text-red-500 mt-3" role="alert">{error}</p>}
+        <SignInButtons redirectPath="/circle" className="w-full max-w-xs" />
         <button onClick={() => navigate('/')} className="mt-6 text-sm font-semibold text-gray-400 hover:text-gray-600">
           ← Back to quizzes
         </button>

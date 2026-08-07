@@ -8,6 +8,7 @@ import AuthNudgeBanner from './AuthNudgeBanner';
 const auth = vi.hoisted(() => ({
   user: null,
   signInWithGoogle: vi.fn(),
+  signInWithApple: vi.fn(),
 }));
 
 vi.mock('../contexts/AuthContext', () => ({
@@ -21,6 +22,7 @@ vi.mock('../utils/analytics', () => ({
 beforeEach(() => {
   auth.user = null;
   auth.signInWithGoogle.mockReset().mockResolvedValue(undefined);
+  auth.signInWithApple.mockReset().mockResolvedValue(undefined);
 });
 
 afterEach(cleanup);
@@ -45,8 +47,23 @@ describe('AuthNudgeBanner', () => {
       </MemoryRouter>,
     );
 
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.click(screen.getByRole('button', { name: /sign in with google/i }));
     expect(auth.signInWithGoogle).toHaveBeenCalledWith('/quiz/mbti/result?from=share#details');
+  });
+
+  // App Store Review Guideline 4.8: wherever a third-party login is offered,
+  // an equivalent privacy-preserving option must be too.
+  it('offers Sign in with Apple alongside Google, with the same return path', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={['/quiz/mbti/result']}>
+        <AuthNudgeBanner quiz="mbti" delay={0} />
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole('button', { name: /sign in with apple/i }));
+    expect(auth.signInWithApple).toHaveBeenCalledWith('/quiz/mbti/result');
+    expect(auth.signInWithGoogle).not.toHaveBeenCalled();
   });
 
   it('does not render for signed-in users', () => {

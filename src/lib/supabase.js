@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_ANON_KEY } from '../config/supabase';
+import { isNativeApp } from './native';
 
 // Public project configuration.
 //
@@ -15,5 +16,13 @@ import { DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_ANON_KEY } from '../config/supab
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
+// The iOS shell signs in through the system browser and comes back via a
+// custom-scheme deep link, so it needs the PKCE flow (which yields a `code` to
+// exchange) and must not try to read a session out of its own URL — there is
+// never one there. The website keeps Supabase's defaults untouched.
+const authOptions = isNativeApp()
+  ? { auth: { flowType: 'pkce', detectSessionInUrl: false } }
+  : undefined;
+
 export const supabase =
-  supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+  supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey, authOptions) : null;

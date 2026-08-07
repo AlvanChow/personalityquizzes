@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { ArrowLeft, X, List, ChevronRight } from 'lucide-react';
 import { track } from '../utils/analytics';
 import { safeJsonParse } from '../utils/security';
+import { tapFeedback } from '../lib/native';
 
 const slideVariants = {
   enter: (dir) => ({ opacity: 0, x: dir > 0 ? 24 : -24 }),
@@ -76,6 +77,10 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
   }, [quizKey, localAnswers, page]);
 
   const handleAnswer = useCallback((question, value) => {
+    // A light tick on every answer. Answering is the one gesture this app is
+    // built around, and it is the difference between the iOS build feeling
+    // native and feeling like a web page. No-op in a browser.
+    tapFeedback();
     setLocalAnswers(prev => ({
       ...prev,
       [question.id]: { trait: question.trait, value },
@@ -169,7 +174,7 @@ function PagedQuestionsView({ questions, answers: initialAnswers, onComplete, re
       </div>
 
       {/* Bottom bar with progress and next/submit button */}
-      <div className="fixed bottom-0 inset-x-0 bg-cream-50 border-t border-gray-200 px-6 py-4 z-20">
+      <div className="fixed bottom-0 inset-x-0 bg-cream-50 border-t border-gray-200 px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-20">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-sky-500">
@@ -212,6 +217,7 @@ function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions, quiz
   }, [quizKey, localAnswers]);
 
   const handleAnswer = useCallback((question, value) => {
+    tapFeedback();
     setLocalAnswers(prev => ({
       ...prev,
       [question.id]: { trait: question.trait, value },
@@ -260,7 +266,7 @@ function AllQuestionsView({ questions, answers, onAnswerAll, renderOptions, quiz
       </div>
 
       {allAnswered && (
-        <div className="fixed bottom-6 inset-x-0 flex justify-center px-6 z-20">
+        <div className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] inset-x-0 flex justify-center px-6 z-20">
           <button
             onClick={handleSubmit}
             className="bg-sky-500 hover:bg-sky-600 text-white font-bold px-8 py-4 rounded-lg text-base transition-all shadow-md flex items-center gap-2"

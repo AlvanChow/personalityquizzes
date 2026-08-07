@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Brain, Sparkles, Cake, Star, Share2, Swords, Wand2, UserPlus, Users, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import SignInButtons from '../components/SignInButtons';
 import { track } from '../utils/analytics';
 import { allowViewIncrement } from '../utils/rateLimiter';
 import { isValidShareId, isPlainObject, sanitizeString } from '../utils/security';
@@ -223,7 +224,7 @@ function CompatibilityCard({ shared, quizMeta }) {
 
 function CircleCTA({ shared }) {
   const navigate = useNavigate();
-  const { user, signInWithGoogle } = useAuth();
+  const { user } = useAuth();
   // connection_status from the RPC reflects the viewer at fetch time; local
   // state lets the button flip to "sent" without a refetch.
   const [status, setStatus] = useState(shared.connection_status ?? null);
@@ -253,15 +254,6 @@ function CircleCTA({ shared }) {
     }
   }
 
-  async function handleSignIn() {
-    setNote(null);
-    try {
-      await signInWithGoogle(`/s/${shared.id}`);
-    } catch (err) {
-      setNote(err?.message ?? 'Sign-in failed. Please try again.');
-    }
-  }
-
   let body;
   if (!user) {
     body = (
@@ -269,13 +261,7 @@ function CircleCTA({ shared }) {
         <p className="text-xs text-gray-400 mb-3">
           Sign in to save this match and see how you compare over time.
         </p>
-        <button
-          onClick={handleSignIn}
-          className="w-full py-3 rounded-xl bg-white border border-gray-300 hover:border-gray-400 text-sm font-bold text-gray-700 shadow-sm flex items-center justify-center gap-2 transition-colors"
-        >
-          <UserPlus className="w-4 h-4" />
-          Sign in to save this match
-        </button>
+        <SignInButtons redirectPath={`/s/${shared.id}`} />
       </>
     );
   } else if (status === 'accepted') {

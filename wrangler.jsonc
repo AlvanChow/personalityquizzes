@@ -6,6 +6,9 @@
   "observability": {
     "enabled": true
   },
+  "vars": {
+    "IOS_APP_ID": ""
+  },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

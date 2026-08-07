@@ -49,7 +49,7 @@ export default function SiteHeader() {
   if (HIDDEN_PREFIXES.some((p) => pathname.startsWith(p))) return null;
 
   return (
-    <header className="sticky top-0 z-40 px-4 sm:px-6 py-3 border-b border-gray-200 bg-white/85 backdrop-blur-md">
+    <header className="sticky top-0 z-40 px-4 sm:px-6 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] border-b border-gray-200 bg-white/85 backdrop-blur-md">
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
         <button
           onClick={() => navigate('/')}

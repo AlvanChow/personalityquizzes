@@ -1,0 +1,22 @@
+{
+  "appId": "com.mypersonalityquizzes.app",
+  "appName": "My Personality Quizzes",
+  "webDir": "../dist",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#15141dff",
+    "limitsNavigationsToAppBoundDomains": false,
+    "preferredContentMode": "mobile"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false,
+      "backgroundColor": "#15141d",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "overlaysWebView": true,
+      "style": "LIGHT"
+    }
+  }
+}
