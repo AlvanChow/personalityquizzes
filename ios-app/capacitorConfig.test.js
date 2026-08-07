@@ -16,17 +16,29 @@ const readJson = (p) => JSON.parse(read(p));
 
 const capacitorConfig = readJson('./capacitor.config.json');
 const iosPackage = readJson('./package.json');
+const iosLock = readJson('./package-lock.json');
 const webPackage = readJson('../package.json');
 const infoPlist = read('./ios/App/App/Info.plist');
+const entitlements = read('./ios/App/App/App.entitlements');
+const privacyManifest = read('./ios/App/App/PrivacyInfo.xcprivacy');
+const pbxproj = read('./ios/App/App.xcodeproj/project.pbxproj');
 const deepLinkSource = read('../src/utils/deepLink.js');
 
-/** Pull the string values of a plist <array> keyed by `key`. */
-function plistArray(key) {
-  const match = infoPlist.match(
+/** Pull the string values of a plist <array> keyed by `key`, from any plist. */
+function plistArrayIn(source, key) {
+  const match = source.match(
     new RegExp(`<key>${key}</key>\\s*<array>([\\s\\S]*?)</array>`),
   );
   if (!match) return [];
   return [...match[1].matchAll(/<string>(.*?)<\/string>/g)].map((m) => m[1]);
+}
+
+const plistArray = (key) => plistArrayIn(infoPlist, key);
+
+/** Every value assigned to an Xcode build setting, one entry per config. */
+function buildSetting(name) {
+  return [...pbxproj.matchAll(new RegExp(`\\n\\s*${name} = ([^;]+);`, 'g'))]
+    .map((m) => m[1].trim());
 }
 
 describe('capacitor config', () => {
@@ -77,10 +89,53 @@ describe('Info.plist submission requirements', () => {
 
   it('locks iPhone to portrait', () => {
     // The web layout is mobile-first; landscape on a phone just stretches it.
-    // iPad keeps every orientation.
     expect(plistArray('UISupportedInterfaceOrientations'))
       .toEqual(['UIInterfaceOrientationPortrait']);
-    expect(plistArray('UISupportedInterfaceOrientations~ipad').length).toBeGreaterThan(1);
+  });
+
+  it('ships as a universal app, as approved', () => {
+    // 1.0 (build 7) was approved on the App Store as iPhone + iPad. Dropping
+    // iPad now would remove the app from devices it already runs on, so the
+    // shipped "1,2" is pinned here — changing it is a product call.
+    const families = buildSetting('TARGETED_DEVICE_FAMILY');
+    expect(families.length).toBe(2);          // Debug + Release
+    expect(new Set(families)).toEqual(new Set(['"1,2"']));
+
+    // Shipping an iPad target without all four orientations fails validation
+    // with ITMS-90474.
+    expect(plistArray('UISupportedInterfaceOrientations~ipad').length).toBe(4);
+  });
+
+  it('carries an app-target privacy manifest', () => {
+    // Capacitor's own manifest covers the framework, not the binary. Apple
+    // aggregates both into the privacy report and emails ITMS-91053 when the
+    // app target has none.
+    expect(pbxproj).toMatch(/PrivacyInfo\.xcprivacy in Resources/);
+    expect(privacyManifest).toMatch(/<key>NSPrivacyTracking<\/key>\s*<false\/>/);
+    // Declaring nothing collected would be inaccurate — sign-in takes an email
+    // and a name, and analytics are linked to the account.
+    expect(plistArrayIn(privacyManifest, 'NSPrivacyCollectedDataTypePurposes').length)
+      .toBeGreaterThan(0);
+  });
+});
+
+describe('Universal Links', () => {
+  const claimed = plistArrayIn(entitlements, 'com.apple.developer.associated-domains');
+
+  it('declares the associated domains in a committed entitlements file', () => {
+    // Added by hand in Xcode, this survives only in one developer's checkout
+    // and silently disappears on a fresh clone. In the project it is reviewable.
+    expect(claimed.length).toBeGreaterThan(0);
+    expect(buildSetting('CODE_SIGN_ENTITLEMENTS'))
+      .toEqual(['App/App.entitlements', 'App/App.entitlements']);
+  });
+
+  it('claims exactly the hosts the web app deep-links back into', () => {
+    // SITE_HOSTS is what parseDeepLink() will accept as a route. A host claimed
+    // here but missing there opens the app and then dead-ends on it.
+    const hosts = deepLinkSource.match(/SITE_HOSTS = \[([^\]]+)\]/)?.[1] ?? '';
+    const declared = [...hosts.matchAll(/'([^']+)'/g)].map((m) => m[1]);
+    expect(claimed).toEqual(declared.map((h) => `applinks:${h}`));
   });
 });
 
@@ -103,5 +158,15 @@ describe('Capacitor plugin versions', () => {
     for (const name of shared) {
       expect(iosPackage.dependencies).toHaveProperty(name);
     }
+  });
+
+  it('has a lockfile that still matches package.json', () => {
+    // A lockfile generated from an older package.json installs fine with
+    // `npm install` (which quietly reconciles it) and fails outright under
+    // `npm ci`, so the drift is invisible until CI or a clean checkout.
+    const root = iosLock.packages[''];
+    expect(iosLock.name).toBe(iosPackage.name);
+    expect(root.dependencies).toEqual(iosPackage.dependencies);
+    expect(root.devDependencies).toEqual(iosPackage.devDependencies);
   });
 });

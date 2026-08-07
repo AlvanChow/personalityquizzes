@@ -30,7 +30,7 @@ step and no `Podfile`.
 cd ios-app
 npm install
 npm run sync      # builds ../dist, then copies it into ios/ and updates plugins
-npm run open      # opens ios/App/App.xcworkspace in Xcode
+npm run open      # opens ios/App/App.xcodeproj in Xcode
 ```
 
 In Xcode: select the **App** target → **Signing & Capabilities** → set your
@@ -42,7 +42,7 @@ team. Pick a simulator and hit ⌘R.
 |---|---|
 | `npm run sync` | Rebuild the web app, copy it in, refresh native plugins. **Run this after any change under `../src`** |
 | `npm run copy` | Same, but skips the plugin refresh — faster when only web code changed |
-| `npm run open` | Open the Xcode workspace |
+| `npm run open` | Open the Xcode project. Not `cap open ios` — that resolves `App.xcworkspace`, which only exists for CocoaPods builds and which `cap sync` deletes on an SPM project like this one |
 | `npm run assets` | Re-render the app icon and splash from `brand/*.svg` |
 | `npm run doctor` | Capacitor's environment diagnostic |
 
@@ -122,21 +122,24 @@ look for it. Without the migration the button is there and fails.
 Without this, a shared `/s/:id` link opens Safari even for someone who has the
 app installed — so an invited friend never lands in the app.
 
+The app half is already in the project: `ios/App/App/App.entitlements` declares
+both `applinks:` domains and is wired to both build configurations via
+`CODE_SIGN_ENTITLEMENTS`. Automatic signing enables the Associated Domains
+capability on the App ID when Xcode sees it, so there is nothing to add by hand.
+What is left is the server half:
+
 1. Set `IOS_APP_ID` in `../wrangler.jsonc` to `<TeamID>.com.mypersonalityquizzes.app`
    and redeploy the worker. It then serves
    `/.well-known/apple-app-site-association`; until it is set, that path 404s
    deliberately rather than publishing a claim iOS would cache for days.
-2. In Xcode → **Signing & Capabilities** → **+ Capability** → **Associated
-   Domains**, add:
-   ```
-   applinks:mypersonalityquizzes.com
-   applinks:www.mypersonalityquizzes.com
-   ```
-3. Verify: `curl https://mypersonalityquizzes.com/.well-known/apple-app-site-association`
+2. Verify: `curl https://mypersonalityquizzes.com/.well-known/apple-app-site-association`
    must return `application/json` with no redirect.
 
 Claimed paths are `/`, `/s/*`, `/quiz/*`, `/circle`, `/exercise/*` — the things
-people actually share. The whole site is deliberately not claimed.
+people actually share. The whole site is deliberately not claimed. The claimed
+hosts must stay equal to `SITE_HOSTS` in `../src/utils/deepLink.js`, or a link
+opens the app and then dead-ends on a route it refuses to navigate to;
+`capacitorConfig.test.js` fails if they diverge.
 
 ### 6. App Store Connect
 
@@ -150,8 +153,11 @@ Create the app record, then prepare:
 - **Privacy policy URL** — `https://mypersonalityquizzes.com/privacy` (exists)
 - **App Privacy questionnaire** — declare what is collected. Today that is:
   email address and name (from the OAuth provider), quiz results, and usage
-  analytics, all linked to identity. See `../src/utils/analytics.js` for the
-  exact event set.
+  analytics, all linked to identity, none used for tracking. See
+  `../src/utils/analytics.js` for the exact event set. The same four categories
+  are declared in `ios/App/App/PrivacyInfo.xcprivacy`; Apple aggregates that into
+  a privacy report but the questionnaire is what is authoritative, so the two
+  must say the same thing.
 - **Age rating** — 4+. The quizzes contain no objectionable content.
 - **Export compliance** — already answered in Info.plist
   (`ITSAppUsesNonExemptEncryption = false`), so builds will not stop for the
@@ -216,6 +222,9 @@ blank web view while the bundle boots.
 
 - **Landscape on iPhone**: `Info.plist` → `UISupportedInterfaceOrientations`
   currently lists portrait only. Add the two landscape values back to allow it.
+- **iPad**: on (`TARGETED_DEVICE_FAMILY = "1,2"`), as shipped in 1.0.
+  `UISupportedInterfaceOrientations~ipad` lists all four orientations, which is
+  what keeps validation from failing with ITMS-90474.
 - **Icon and splash**: edit `brand/icon.svg` / `brand/splash.svg`, then
   `npm run assets`. The generator flattens alpha, which App Store Connect
   rejects icons for having.

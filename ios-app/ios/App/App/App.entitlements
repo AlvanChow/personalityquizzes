@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Universal Links. The matching claim is served from
+	     /.well-known/apple-app-site-association by worker/index.js, which stays
+	     a deliberate 404 until IOS_APP_ID is set in wrangler.jsonc. Declaring
+	     the domains here is harmless while that is unset: iOS simply finds no
+	     association and never claims the links.
+
+	     Xcode enables the Associated Domains capability on the App ID for us
+	     because the target uses automatic signing (CODE_SIGN_STYLE = Automatic).
+	     SceneDelegate already forwards `continue userActivity` to Capacitor, so
+	     nothing else is needed to receive the link. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:mypersonalityquizzes.com</string>
+		<string>applinks:www.mypersonalityquizzes.com</string>
+	</array>
+</dict>
+</plist>
