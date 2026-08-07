@@ -150,8 +150,11 @@ export default function EnneagramResult() {
   const rightScore = Math.max(0, scores[adj2] ?? 0);
   const leftPct = Math.round((leftScore / (leftScore + rightScore || 1)) * 100);
 
+  // `font-display` sits on the root so the serif runs through the whole
+  // result, body copy included — the report reads in one voice instead of
+  // switching typeface halfway down. Nunito still owns the rest of the app.
   return (
-    <div className="min-h-screen bg-cream-50 px-6 py-8">
+    <div className="min-h-screen bg-cream-50 px-6 py-8 font-display">
       <div className="max-w-xl mx-auto">
         <button onClick={() => navigate('/')} aria-label="Back to all quizzes"
           className="flex items-center gap-2 text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors mb-10">
