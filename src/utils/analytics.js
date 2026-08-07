@@ -20,6 +20,7 @@ const ALLOWED_EVENTS = new Set([
   'auth_sign_out',
   // Auth
   'auth_nudge_clicked',
+  'account_delete_requested',
   // Sharing / virality
   'share_link_created',
   'share_button_clicked',

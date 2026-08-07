@@ -12,7 +12,7 @@
     "build:web": "npm --prefix .. run build",
     "sync": "npm run build:web && cap sync ios",
     "copy": "npm run build:web && cap copy ios",
-    "open": "cap open ios",
+    "open": "open ios/App/App.xcodeproj",
     "doctor": "cap doctor ios"
   },
   "dependencies": {
