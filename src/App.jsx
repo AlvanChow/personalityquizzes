@@ -36,6 +36,7 @@ const CatalogQuiz = lazy(() => import('./pages/CatalogQuiz'));
 const CatalogResult = lazy(() => import('./pages/CatalogResult'));
 const FlowerPetal = lazy(() => import('./pages/FlowerPetal'));
 const Privacy = lazy(() => import('./pages/Privacy'));
+const Support = lazy(() => import('./pages/Support'));
 
 // Tracks page_view on every route change. Must live inside BrowserRouter and
 // AuthProvider so it can access both useLocation and useAuth.
@@ -115,6 +116,8 @@ function AppRoutes() {
           <Route path="/s/:shareId" element={<SharedResult />} />
           <Route path="/circle" element={<Circle />} />
           <Route path="/privacy" element={<Privacy />} />
+          {/* App Store Connect requires a reachable Support URL, not a mailto:. */}
+          <Route path="/support" element={<Support />} />
           {/* Feature was briefly live as "Crew" — keep old links working. */}
           <Route path="/crew" element={<Navigate to="/circle" replace />} />
           <Route path="*" element={<NotFound />} />

@@ -73,11 +73,17 @@ below need it.
 Sign-in happens in a system browser and returns through a custom URL scheme, so
 Supabase has to be told that scheme is legitimate.
 
-**Supabase → Authentication → URL Configuration → Redirect URLs**, add:
+**Supabase → Authentication → URL Configuration → Redirect URLs**, add **both**:
 
 ```
 com.mypersonalityquizzes.app://auth-callback
+com.mypersonalityquizzes.app://auth-callback?**
 ```
+
+The second is not redundant. `AuthContext.signIn()` appends `?next=<path>`
+whenever sign-in starts from somewhere that has to be returned to — a share
+page, most importantly — so the URL that actually comes back usually carries a
+query string, and an exact-match entry alone can reject it.
 
 Leave the existing `https://mypersonalityquizzes.com/**` entries alone — the
 website still uses them.
@@ -98,9 +104,17 @@ equal prominence, everywhere sign-in appears). What is missing is the provider:
 
 1. Apple Developer portal → **Keys** → create a key with **Sign in with Apple**
    enabled. Download the `.p8` — Apple lets you download it exactly once.
-2. Create a **Services ID** (e.g. `com.mypersonalityquizzes.web`) and configure
-   its return URL as your Supabase callback:
-   `https://<project>.supabase.co/auth/v1/callback`
+2. Create a **Services ID** (e.g. `com.mypersonalityquizzes.web`), enable Sign in
+   with Apple on it, and configure it against the App ID from step 1 with:
+   - Domain: `auth.mypersonalityquizzes.com`
+   - Return URL: `https://auth.mypersonalityquizzes.com/auth/v1/callback`
+
+   Note this is **not** the `<project>.supabase.co` form. This project reaches
+   Supabase through a branded auth domain (`DEFAULT_SUPABASE_URL` in
+   `../src/config/supabase.js`), and the return URL has to match the domain the
+   callback is actually served from. Cross-check it against the callback URL
+   Supabase prints on its own Apple provider page and copy that verbatim — a
+   mismatch here fails with `invalid_client`, which says nothing useful.
 3. Supabase → **Authentication → Providers → Apple**: enable it and fill in the
    Services ID, Team ID, Key ID, and the `.p8` contents.
 
@@ -151,6 +165,8 @@ Create the app record, then prepare:
   `xcrun simctl io booted screenshot shot.png`. A 13" iPad set is required too
   for as long as the target builds for iPad — see `TARGETED_DEVICE_FAMILY`
 - **Privacy policy URL** — `https://mypersonalityquizzes.com/privacy` (exists)
+- **Support URL** — `https://mypersonalityquizzes.com/support` (exists). Apple
+  requires a reachable page here, not a `mailto:`.
 - **App Privacy questionnaire** — declare what is collected. Today that is:
   email address and name (from the OAuth provider), quiz results, and usage
   analytics, all linked to identity, none used for tracking. See
@@ -228,3 +244,13 @@ blank web view while the bundle boots.
 - **Icon and splash**: edit `brand/icon.svg` / `brand/splash.svg`, then
   `npm run assets`. The generator flattens alpha, which App Store Connect
   rejects icons for having.
+
+---
+
+## Submission paperwork
+
+The App Store Connect form answers — App Privacy questionnaire, App Review
+notes, age rating, screenshot list — are written out in
+[`APP_STORE_SUBMISSION.md`](./APP_STORE_SUBMISSION.md). They have to agree with
+`ios/App/App/PrivacyInfo.xcprivacy` and with the privacy policy, so they live
+next to the code rather than being reconstructed at submission time.
