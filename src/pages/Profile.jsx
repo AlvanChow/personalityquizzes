@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { motion } from 'framer-motion';
 import { User, ArrowLeft, LogOut, Calendar, ChevronRight, Trophy, Sparkles, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import DeleteAccountPanel from '../components/DeleteAccountPanel';
 import { useBigFive } from '../contexts/BigFiveContext';
 import { supabase } from '../lib/supabase';
 import { cakeResults } from '../data/cakeResults';
@@ -386,6 +387,10 @@ export default function Profile() {
             <LogOut className="w-4 h-4" />
             Sign Out
           </button>
+
+          <div className="mt-3">
+            <DeleteAccountPanel />
+          </div>
         </motion.div>
       </main>
     </div>

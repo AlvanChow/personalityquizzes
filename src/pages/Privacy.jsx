@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { ShieldCheck } from 'lucide-react';
 import { isAnalyticsOptedOut, setAnalyticsOptOut } from '../utils/analytics';
 
@@ -89,6 +90,14 @@ export default function Privacy() {
             ratings are kept for product improvement and are deleted or aggregated after 12 months.
             Security records of blocked requests are deleted after 90 days, and the short-lived counters
             behind rate limiting expire within minutes.
+          </p>
+          <p>
+            You can delete your account yourself at any time from{' '}
+            <Link className="font-bold text-sky-700 hover:underline" to="/profile">your profile</Link>.
+            That permanently removes your account, profile, saved quiz results, Circle connections, and any
+            share links you created — share links you have already sent will stop working. Product analytics
+            and quiz ratings are kept but are unlinked from you, and security records of blocked requests are
+            retained without an account to attach them to until they age out.
           </p>
           <p>
             Browser storage holds guest results, theme preference, analytics preference, and authentication

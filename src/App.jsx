@@ -9,6 +9,7 @@ import SiteFooter from './components/SiteFooter';
 import { useAuth } from './contexts/AuthContext';
 import { track } from './utils/analytics';
 import { isVectorQuiz } from './data/vectorQuizzes/registry';
+import { useNativeShell } from './hooks/useNativeShell';
 
 // Landing is loaded eagerly since it's the entry point for most users.
 import Landing from './pages/Landing';
@@ -69,6 +70,7 @@ function QuizDispatch({ kind }) {
 
 function AppRoutes() {
   const { loading } = useAuth();
+  useNativeShell();
 
   if (loading) {
     return (

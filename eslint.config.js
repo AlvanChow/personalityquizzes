@@ -6,7 +6,9 @@ import reactPlugin from 'eslint-plugin-react'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // `ios-app/ios` is the generated Xcode project; `cap sync` copies the built
+  // web bundle into it, so linting it means linting dist/ a second time.
+  globalIgnores(['dist', 'ios-app/ios']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [

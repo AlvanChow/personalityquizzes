@@ -104,11 +104,61 @@ function applyMetadata(response, metadata) {
     .transform(response);
 }
 
+// ─── Universal Links ────────────────────────────────────────────────────────
+//
+// iOS fetches this file once at install time to decide which https links the
+// app in `ios-app/` is allowed to open. Without it, a shared /s/:id link opens
+// Safari even for someone who has the app — which breaks the loop the whole
+// product runs on (share → friend opens → friend takes the quiz).
+//
+// Gated on IOS_APP_ID ("<TeamID>.com.mypersonalityquizzes.app", set in
+// wrangler.jsonc once the app exists in App Store Connect). Unset, this route
+// falls through and 404s exactly as it did before the app existed — serving a
+// malformed or placeholder association would make iOS cache a broken claim.
+const APPLE_APP_SITE_ASSOCIATION = '/.well-known/apple-app-site-association';
+
+// Only the paths people actually share. Claiming /* would mean every link to
+// the site — including ones a user deliberately opened in a browser — gets
+// yanked into the app.
+const UNIVERSAL_LINK_PATHS = ['/', '/s/*', '/quiz/*', '/circle', '/exercise/*'];
+
+// A Team ID is 10 alphanumerics; the bundle id is reverse-DNS. Validated
+// rather than trusted so a typo fails closed instead of publishing a claim iOS
+// will cache and refuse to re-read for days.
+const APP_ID_RE = /^[A-Z0-9]{10}\.[A-Za-z0-9.-]{1,150}$/;
+
+function appSiteAssociation(appId) {
+  return {
+    applinks: {
+      details: [
+        {
+          appIDs: [appId],
+          components: UNIVERSAL_LINK_PATHS.map((path) => ({ '/': path })),
+        },
+      ],
+    },
+  };
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const match = url.pathname.match(/^\/s\/([^/]+)\/?$/);
     if (request.method !== 'GET') return env.ASSETS.fetch(request);
+
+    if (url.pathname === APPLE_APP_SITE_ASSOCIATION) {
+      const appId = env.IOS_APP_ID?.trim();
+      if (appId && APP_ID_RE.test(appId)) {
+        // Must be application/json, served over https, with no redirect —
+        // iOS rejects the association on any of those and gives no feedback.
+        return new Response(JSON.stringify(appSiteAssociation(appId)), {
+          headers: {
+            'content-type': 'application/json',
+            'cache-control': 'public, max-age=3600',
+          },
+        });
+      }
+    }
 
     if (match && SHARE_ID_RE.test(match[1])) {
       const canonicalUrl = `https://mypersonalityquizzes.com/s/${match[1]}`;

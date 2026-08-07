@@ -1,3 +1,5 @@
+import plugin from 'tailwindcss/plugin';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
@@ -31,5 +33,25 @@ export default {
       }
     },
   },
-  plugins: [],
+  plugins: [
+    // Safe-area insets for the iOS shell (see ios-app/). These resolve to 0 in
+    // every browser that has not opted into `viewport-fit=cover`, which the
+    // website deliberately has not — only the native shell sets it, at runtime
+    // (src/hooks/useNativeShell.js). So these are inert on the web.
+    //
+    // Each utility SETS the padding rather than adding to it, so only put one
+    // on an element that has no competing padding utility on the same side.
+    // Where an element already has padding (a header's py-3, say), write the
+    // sum inline instead: pt-[calc(0.75rem+env(safe-area-inset-top))].
+    plugin(({ addUtilities }) => {
+      addUtilities({
+        '.pt-safe': { paddingTop: 'env(safe-area-inset-top)' },
+        '.pb-safe': { paddingBottom: 'env(safe-area-inset-bottom)' },
+        '.pl-safe': { paddingLeft: 'env(safe-area-inset-left)' },
+        '.pr-safe': { paddingRight: 'env(safe-area-inset-right)' },
+        '.mt-safe': { marginTop: 'env(safe-area-inset-top)' },
+        '.mb-safe': { marginBottom: 'env(safe-area-inset-bottom)' },
+      });
+    }),
+  ],
 }

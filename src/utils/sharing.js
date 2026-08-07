@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 import { allowShare } from './rateLimiter';
 import { getQuizMeta } from '../data/quizzes';
 import { devWarn } from './devLog';
+import { isNativeApp, openExternalUrl } from '../lib/native';
 
 const BASE_URL = 'https://mypersonalityquizzes.com';
 
@@ -131,12 +132,27 @@ export function getShareText(platform, result, shareUrl, quizType) {
 }
 
 // ─── Platform openers ───────────────────────────────────────────────────────
+//
+// Inside the iOS shell a `window.open(url, '_blank')` goes nowhere: WKWebView
+// has no tabs to open into, so the share silently does nothing. Native hands
+// the URL to the system browser instead, which is also what lets iOS deep-link
+// on to the installed X / WhatsApp app. `isNativeApp()` is checked
+// synchronously so the web path keeps its user activation and is not eaten by
+// the popup blocker.
+function openShareUrl(url, windowFeatures) {
+  if (isNativeApp()) {
+    openExternalUrl(url);
+    return;
+  }
+  window.open(url, '_blank', windowFeatures);
+}
+
 export function openTwitterShare(text) {
   const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-  window.open(url, '_blank', 'noopener,noreferrer,width=600,height=450');
+  openShareUrl(url, 'noopener,noreferrer,width=600,height=450');
 }
 
 export function openWhatsAppShare(text) {
   const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  window.open(url, '_blank', 'noopener,noreferrer');
+  openShareUrl(url, 'noopener,noreferrer');
 }

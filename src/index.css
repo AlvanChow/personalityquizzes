@@ -345,3 +345,42 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .hero-orbit .orb { animation: none; }
 }
+
+/* ═══ Native shell (ios-app/) ═══════════════════════════════════════════════
+   Only applies inside the packaged iOS app: `native-app` is added to <html> by
+   useNativeShell, which also opts the web view into `viewport-fit=cover`. The
+   website never gets this class, so none of it can affect browser visitors.
+
+   Safe-area padding itself lives on the components (SiteHeader, SiteFooter,
+   QuizShell) as calc()'d Tailwind classes — those are inert on the web because
+   env(safe-area-inset-*) is 0 without viewport-fit=cover. What is left here is
+   the handful of rules that make a web view stop feeling like a browser. ═══ */
+
+/* Rubber-band scrolling past the top of a quiz reveals the bare window and
+   reads as a rendering bug in a native app. */
+.native-app, .native-app body {
+  overscroll-behavior: none;
+}
+
+/* No blue flash on tap, and no iOS text-selection/callout on chrome the user
+   is meant to press rather than read. Quiz copy and results stay selectable so
+   answers can still be copied out. */
+.native-app {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.native-app button,
+.native-app a,
+.native-app [role="button"] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* The ambient dark-mode glows are position:fixed and sized in vmax, so they
+   already bleed under the notch and home indicator once the web view goes
+   edge-to-edge. The gradient on <body> needs the same treatment or it stops
+   at the safe area and leaves a seam. */
+.native-app body {
+  min-height: 100dvh;
+}

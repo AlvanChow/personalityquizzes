@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 
 export default function SiteFooter() {
   return (
-    <footer className="border-t border-gray-200 bg-white px-6 py-6">
+    <footer className="border-t border-gray-200 bg-white px-6 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
         <p>© {new Date().getFullYear()} My Personality Quizzes</p>
         <nav aria-label="Footer" className="flex items-center gap-5">

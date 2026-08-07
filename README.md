@@ -7,6 +7,8 @@ Endless personality quizzes — discover who you really are.
 - **Frontend**: React + Vite + Tailwind CSS
 - **Backend**: Supabase (auth + database)
 - **Hosting**: Cloudflare Workers
+- **iOS app**: Capacitor shell in [`ios-app/`](./ios-app/README.md) — same bundle,
+  no second codebase
 
 ## Adding a New Quiz
 
@@ -26,6 +28,27 @@ rendering, sharing, dashboard/landing cards, and the next-quiz journey all
 pick the quiz up from the catalog automatically. Database saves require the
 quiz key to match `^[a-z][a-z0-9_]{1,31}$` (enforced by
 `supabase/migrations/20260720000004_expand_quiz_catalog.sql`).
+
+---
+
+## iOS App
+
+The App Store build lives in [`ios-app/`](./ios-app/README.md). It is a
+Capacitor shell around this same web bundle — there is no separate app
+codebase, and native behaviour is a handful of branches in `src/` guarded by
+`isNativeApp()` (`src/lib/native.js`), all inert in a browser.
+
+```bash
+cd ios-app && npm install && npm run sync && npm run open   # macOS + Xcode only
+```
+
+Anything under `src/` reaches the app on the next `npm run sync`. Three account-
+level steps must be done before it can be submitted — the native OAuth redirect
+in Supabase, the Sign in with Apple provider, and applying
+`supabase/migrations/20260807000001_add_account_deletion.sql`. `ios-app/README.md`
+walks through each. `ios-app/capacitorConfig.test.js` runs in the normal
+`npm test` and fails if the app id, URL scheme, and plugin versions drift apart
+across the config, the Xcode plist, and `src/utils/deepLink.js`.
 
 ---
 
