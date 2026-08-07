@@ -101,18 +101,49 @@ export async function closeExternalBrowser() {
 /**
  * Subscribe to deep links (custom scheme + universal links). Returns a cleanup
  * function; safe to call on web, where it subscribes to nothing.
+ *
+ * Covers both ways a link arrives, which are genuinely different events:
+ *
+ *   - `appUrlOpen` fires when the app is already running. This is the OAuth
+ *     callback's path, since SFSafariViewController keeps the app alive.
+ *   - `getLaunchUrl()` is the *cold start* — someone tapped a shared /s/:id
+ *     link with the app not running, which is the common case for a share.
+ *     There is no listener registered yet when that happens, so the URL has to
+ *     be pulled rather than pushed.
+ *
+ * A launch URL is sometimes *also* delivered as `appUrlOpen`, depending on iOS
+ * version and whether the app was suspended or terminated, so consecutive
+ * duplicates are dropped — handling an auth code twice would make the second
+ * exchange fail and log a spurious error.
  */
 export async function onDeepLink(handler) {
   const mod = await loadPlugin(() => import('@capacitor/app'));
   if (!mod) return () => {};
+
+  let lastUrl = null;
+  let cancelled = false;
+  const deliver = (url) => {
+    if (cancelled || !url || url === lastUrl) return;
+    lastUrl = url;
+    handler(url);
+  };
+
+  let sub;
   try {
-    const sub = await mod.App.addListener('appUrlOpen', (event) => {
-      if (event?.url) handler(event.url);
-    });
-    return () => { sub.remove(); };
+    sub = await mod.App.addListener('appUrlOpen', (event) => deliver(event?.url));
   } catch {
     return () => {};
   }
+
+  try {
+    const launch = await mod.App.getLaunchUrl();
+    deliver(launch?.url);
+  } catch { /* no launch URL — the app was opened from the home screen */ }
+
+  return () => {
+    cancelled = true;
+    sub.remove();
+  };
 }
 
 /**
