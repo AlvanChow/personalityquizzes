@@ -120,6 +120,17 @@ npm run dev
 
 Create a `.env` file based on `.env.example` and fill in your Supabase credentials.
 
+### Claude Code permissions
+
+`.claude/settings.json` pre-approves this repo's routine commands — npm, local
+git, `xcodebuild`, `xcrun simctl` — so a session is not stopped for each one
+during a build. Two things are explicitly denied rather than merely unlisted:
+`wrangler deploy`, because GitHub Actions is the only production deployment
+authority for this repo, and force-pushing.
+
+Anything touching Supabase, the Apple Developer account, or `git push` still
+asks. Adjust the lists there rather than turning permissions off wholesale.
+
 ## Build & Deploy
 
 ```bash
