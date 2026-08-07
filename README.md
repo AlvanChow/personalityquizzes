@@ -44,11 +44,12 @@ cd ios-app && npm install && npm run sync && npm run open   # macOS + Xcode only
 
 Anything under `src/` reaches the app on the next `npm run sync`. Three account-
 level steps must be done before it can be submitted — the native OAuth redirect
-in Supabase, the Sign in with Apple provider, and applying
-`supabase/migrations/20260807000001_add_account_deletion.sql`. `ios-app/README.md`
-walks through each. `ios-app/capacitorConfig.test.js` runs in the normal
-`npm test` and fails if the app id, URL scheme, and plugin versions drift apart
-across the config, the Xcode plist, and `src/utils/deepLink.js`.
+in Supabase, the Sign in with Apple provider, and applying the migrations in
+`supabase/migrations/` dated `20260807*`. `ios-app/README.md` walks through each.
+`ios-app/capacitorConfig.test.js` runs in the normal `npm test` and fails if the
+app id, URL scheme, claimed Universal Link hosts, device family, plugin
+versions, or the `ios-app` lockfile drift apart across the config, the Xcode
+project, the entitlements, and `src/utils/deepLink.js`.
 
 ---
 
@@ -119,6 +120,17 @@ npm run dev
 
 Create a `.env` file based on `.env.example` and fill in your Supabase credentials.
 
+### Claude Code permissions
+
+`.claude/settings.json` pre-approves this repo's routine commands — npm, local
+git, `xcodebuild`, `xcrun simctl` — so a session is not stopped for each one
+during a build. Two things are explicitly denied rather than merely unlisted:
+`wrangler deploy`, because GitHub Actions is the only production deployment
+authority for this repo, and force-pushing.
+
+Anything touching Supabase, the Apple Developer account, or `git push` still
+asks. Adjust the lists there rather than turning permissions off wholesale.
+
 ## Build & Deploy
 
 ```bash
@@ -133,7 +145,9 @@ Apply new files in `supabase/migrations/` to the production Supabase project in
 filename order before deploying frontend features that depend on them. The app
 degrades safely during a rolling deployment, but the migrations are required
 for hardened share tokens, admin account-email access, atomic guest-result
-sync, and the security event log behind the admin dashboard's Security panel.
+sync, the security event log behind the admin dashboard's Security panel, and
+in-app account deletion (`delete_my_account`, which the App Store build cannot
+ship without).
 
 ### Share proxy secret (optional but recommended)
 
