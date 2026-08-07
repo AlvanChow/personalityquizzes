@@ -87,8 +87,14 @@ export default function Landing() {
   ];
   const totalTests = SECTIONS.reduce((n, s) => n + s.tests.length, 0);
 
+  // The root clips horizontally. Both hero auras are absolutely positioned with
+  // negative offsets (-140px / -120px), so on a phone they reach past each edge
+  // and make the document wider than the viewport — the whole app then pans
+  // sideways. Clipping here rather than on <body> keeps the sticky site header
+  // working, since that renders outside this route, and this element is
+  // content-height so the implicit overflow-y never becomes a nested scroller.
   return (
-    <div className="min-h-screen flex flex-col bg-[#FBFAF9]">
+    <div className="min-h-screen flex flex-col bg-[#FBFAF9] overflow-x-hidden">
 
       <main className="flex-1 flex flex-col items-center px-6 pb-24">
 
