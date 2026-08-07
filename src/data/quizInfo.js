@@ -41,8 +41,6 @@ export const QUIZ_INFO = {
   cake:              { basedOn: 'a playful work-style match', tier: 'fun', format: 'Pick a side' },
 
   // ── Pop culture character matches — all just for fun ────────────────────────
-  nba:               { basedOn: 'an NBA-legend personality match', tier: 'fun', format: 'Pick a side' },
-  soccer:            { basedOn: 'a soccer-icon personality match', tier: 'fun', format: 'Pick a side' },
   naruto:            { basedOn: 'a Naruto-character alignment match', tier: 'fun', format: 'Agree/disagree, 1–5' },
   onepiece:          { basedOn: 'a One Piece crew match', tier: 'fun', format: 'Pick a side' },
   starwars:          { basedOn: 'a Star Wars character match', tier: 'fun', format: 'Pick a side' },

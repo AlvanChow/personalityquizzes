@@ -176,26 +176,6 @@ const GLYPHS = {
   ),
 
   // ── Pop Culture ───────────────────────────────────────────────────────────
-  nba: (
-    <>
-      {/* basketball */}
-      <circle cx="12" cy="12" r="8.6" fill={C.amber} fillOpacity=".25" stroke={C.amber} strokeWidth="1.5" />
-      <line x1="12" y1="3.4" x2="12" y2="20.6" stroke={C.amber} strokeWidth="1.3" />
-      <line x1="3.4" y1="12" x2="20.6" y2="12" stroke={C.amber} strokeWidth="1.3" />
-      <path d="M5.9 5.9 A12 12 0 0 1 5.9 18.1 M18.1 5.9 A12 12 0 0 0 18.1 18.1" fill="none" stroke={C.amber} strokeWidth="1.3" />
-    </>
-  ),
-  soccer: (
-    <>
-      {/* soccer ball */}
-      <circle cx="12" cy="12" r="8.6" fill="none" stroke={C.ink} strokeWidth="1.5" />
-      <polygon points="12,8.6 15.23,10.95 14,14.75 10,14.75 8.77,10.95" fill={C.ink} />
-      {[[12, 3.4], [20.18, 9.34], [17.06, 18.96], [6.94, 18.96], [3.82, 9.34]].map(([x, y], i) => {
-        const inner = [[12, 8.6], [15.23, 10.95], [14, 14.75], [10, 14.75], [8.77, 10.95]][i];
-        return <line key={i} x1={inner[0]} y1={inner[1]} x2={x} y2={y} stroke={C.ink} strokeWidth="1.2" />;
-      })}
-    </>
-  ),
   naruto: (
     <>
       {/* uzumaki spiral */}
