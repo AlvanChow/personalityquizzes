@@ -12,6 +12,10 @@ export default {
       fontFamily: {
         sans: ['"Nunito Variable"', 'Nunito', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         nunito: ['"Nunito Variable"', 'Nunito', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // Editorial serif for result headlines. Deliberately a system stack:
+        // the iOS shell bundles its content and must render identically with
+        // no network, so a webfont here would be a regression.
+        display: ['ui-serif', 'Georgia', 'Cambria', '"Times New Roman"', 'serif'],
       },
       keyframes: {
         shake: {
