@@ -30,6 +30,13 @@ export function AppleIcon({ size = 18, className = '' }) {
  * the other. Presenting the same pair on the website keeps the two builds
  * identical, which is what makes `ios-app/` a pure shell.
  *
+ * The `inline` layout keeps both buttons icon-only until `xl`. The site header
+ * is the only caller, and with the nav labels also showing it needs ~1110px
+ * before two labelled auth buttons fit — so at iPad widths the labels would
+ * push "Sign in with Apple" off the right edge, which is the 4.8 problem this
+ * component exists to avoid. Icon-only keeps the pair equally prominent; the
+ * sr-only spans keep them named.
+ *
  * @param redirectPath same-site path to land on afterwards (see safeRedirectPath)
  * @param layout       'stacked' full-width column, or 'inline' for tight chrome
  * @param onStart      notified before a provider is invoked (for analytics)
@@ -84,10 +91,10 @@ export default function SignInButtons({
           className={`${base} bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md text-gray-700`}
         >
           <GoogleIcon />
-          <span className={inline ? 'hidden md:inline' : ''}>
+          <span className={inline ? 'hidden xl:inline' : ''}>
             {busy === 'google' ? 'Opening…' : 'Sign in with Google'}
           </span>
-          {inline && <span className="md:hidden sr-only">Sign in with Google</span>}
+          {inline && <span className="xl:hidden sr-only">Sign in with Google</span>}
         </button>
 
         <button
@@ -97,10 +104,10 @@ export default function SignInButtons({
           className={`${base} bg-black border border-black hover:bg-gray-800 text-white`}
         >
           <AppleIcon />
-          <span className={inline ? 'hidden md:inline' : ''}>
+          <span className={inline ? 'hidden xl:inline' : ''}>
             {busy === 'apple' ? 'Opening…' : 'Sign in with Apple'}
           </span>
-          {inline && <span className="md:hidden sr-only">Sign in with Apple</span>}
+          {inline && <span className="xl:hidden sr-only">Sign in with Apple</span>}
         </button>
       </div>
       {error && (
