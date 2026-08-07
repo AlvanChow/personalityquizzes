@@ -163,26 +163,14 @@ export const QUIZ_CATALOG = [
   },
 
   // ── Pop Culture ────────────────────────────────────────────────────────────
-  {
-    key: 'nba',
-    title: 'Which NBA Legend Are You?',
-    quizName: 'NBA Legend Quiz',
-    emoji: '🏀',
-    category: 'pop',
-    description: 'Clutch assassin, joyful shooter, relentless workhorse — find the basketball great who plays like you live.',
-    time: '~3 min',
-    gradient: 'from-orange-500 to-amber-600',
-  },
-  {
-    key: 'soccer',
-    title: 'Which Soccer Icon Are You?',
-    quizName: 'Soccer Icon Quiz',
-    emoji: '⚽',
-    category: 'pop',
-    description: 'Quiet genius or showstopper? Find the football legend whose game matches your personality.',
-    time: '~3 min',
-    gradient: 'from-emerald-500 to-green-600',
-  },
+  //
+  // No quizzes built on real, identifiable people. Fictional characters raise
+  // copyright and trademark questions that nominative fair use answers fairly
+  // well — plain names, no artwork, an unofficial-and-unaffiliated disclaimer
+  // on every result. Real people raise right of publicity instead, which has
+  // no equivalent doctrine, runs state by state, and survives death in
+  // California. That is a different kind of exposure, so the NBA and soccer
+  // quizzes were removed rather than shipped.
   {
     key: 'naruto',
     title: 'Which Naruto Character Are You?',

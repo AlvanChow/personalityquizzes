@@ -116,7 +116,7 @@ export default function Landing() {
               <QuizGlyph quizKey="naruto" size={30} />
             </span>
             <span className="orb" style={{ transform: 'translate(-415px, 117px)', animationDelay: '-1.8s' }}>
-              <QuizGlyph quizKey="nba" size={30} />
+              <QuizGlyph quizKey="values" size={30} />
             </span>
             <span className="orb" style={{ transform: 'translate(-436px, 94px)', animationDelay: '-3.6s' }}>
               <QuizGlyph quizKey="pokemon" size={30} />
