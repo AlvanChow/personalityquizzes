@@ -69,7 +69,7 @@ export default function Landing() {
     {
       key: 'pop',
       heading: 'Pop Culture Zone',
-      blurb: 'Which NBA legend, anime hero, or sitcom character are you? Find your famous twin',
+      blurb: 'Which anime hero, wizard, or sitcom character are you? Find your fictional twin',
       icon: Popcorn,
       tests: getQuizzesByCategory('pop').map(fromCatalog),
     },
