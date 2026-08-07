@@ -9,6 +9,9 @@ export default function SiteFooter() {
           <Link to="/privacy" className="font-semibold hover:text-gray-900 transition-colors">
             Privacy &amp; data
           </Link>
+          <Link to="/support" className="font-semibold hover:text-gray-900 transition-colors">
+            Support
+          </Link>
           <a
             href="mailto:privacy@mypersonalityquizzes.com"
             className="font-semibold hover:text-gray-900 transition-colors"
