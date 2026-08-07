@@ -1,14 +1,20 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { Sparkles, Users, Moon, Sun } from 'lucide-react';
+import { Sparkles, Users, Moon, Sun, LayoutGrid, ChartColumn } from 'lucide-react';
 import UserMenu from './UserMenu';
 
+// Every item carries an icon because below `sm` the labels are hidden and the
+// icon is the whole control: signed out, the row also has to fit two sign-in
+// buttons, and with labels shown it overflowed a 375pt screen far enough to
+// push "Sign in with Apple" off the edge entirely. That is a layout bug on
+// mobile web and an App Store Review 4.8 problem in the iOS shell, where an
+// Apple option has to be offered as prominently as Google's.
 const NAV = [
-  { label: 'Quizzes', to: '/', match: (p) => p === '/' },
+  { label: 'Quizzes', to: '/', match: (p) => p === '/', icon: LayoutGrid },
   { label: 'How it works', to: '/how-it-works', match: (p) => p.startsWith('/how-it-works'), desktopOnly: true },
   { label: 'Circle', to: '/circle', match: (p) => p.startsWith('/circle'), icon: Users },
   // Hot Takes lives as a card in the catalog, not a top-level destination.
-  { label: 'My Results', to: '/dashboard', match: (p) => p.startsWith('/dashboard') },
+  { label: 'My Results', to: '/dashboard', match: (p) => p.startsWith('/dashboard'), icon: ChartColumn },
 ];
 
 // Global top bar. Quiz-taking routes keep their own minimal chrome so the
@@ -71,6 +77,7 @@ export default function SiteHeader() {
                 key={to}
                 onClick={() => navigate(to)}
                 aria-current={active ? 'page' : undefined}
+                aria-label={label}
                 className={`${desktopOnly ? 'hidden sm:flex' : 'flex'} whitespace-nowrap px-2 sm:px-3 py-2 rounded-lg text-sm font-semibold transition-colors items-center gap-1.5 ${
                   active
                     ? 'text-gray-900 bg-gray-900/5'
@@ -78,7 +85,7 @@ export default function SiteHeader() {
                 }`}
               >
                 {Icon && <Icon className="w-4 h-4" />}
-                {label}
+                <span className={Icon ? 'hidden sm:inline' : ''}>{label}</span>
               </button>
             );
           })}

@@ -142,7 +142,11 @@ people actually share. The whole site is deliberately not claimed.
 
 Create the app record, then prepare:
 
-- **Screenshots** — 6.7" iPhone is the only required size now
+- **Screenshots** — 6.9" iPhone (1320 × 2868) is the required size; App Store
+  Connect scales it down for the smaller iPhones. An iPhone 17 Pro Max
+  simulator screenshots at exactly that size:
+  `xcrun simctl io booted screenshot shot.png`. A 13" iPad set is required too
+  for as long as the target builds for iPad — see `TARGETED_DEVICE_FAMILY`
 - **Privacy policy URL** — `https://mypersonalityquizzes.com/privacy` (exists)
 - **App Privacy questionnaire** — declare what is collected. Today that is:
   email address and name (from the OAuth provider), quiz results, and usage
