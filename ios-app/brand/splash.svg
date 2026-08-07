@@ -8,23 +8,27 @@
     middle third — everything outside it gets cropped on tall phones.
 
     The background matches `ios.backgroundColor` in capacitor.config.json and
-    the dark-mode <body> gradient, so there is no seam when the splash hands
-    over to the web view.
+    the light-mode <body> gradient in src/index.css, so there is no seam when
+    the splash hands over to the web view. Light is the app's default theme; a
+    dark splash here would flash the wrong colour on every cold start.
+
+    The two ambient glows carry less opacity than the dark version used: on a
+    near-white ground the same values read as dirty smudges rather than light.
   -->
   <defs>
     <linearGradient id="ground" x1="0" y1="0" x2="0.55" y2="1">
-      <stop offset="0%"   stop-color="#15141d"/>
-      <stop offset="45%"  stop-color="#181624"/>
-      <stop offset="100%" stop-color="#1a1730"/>
+      <stop offset="0%"   stop-color="#FFF8F5"/>
+      <stop offset="45%"  stop-color="#FDF5F3"/>
+      <stop offset="100%" stop-color="#F9F0F8"/>
     </linearGradient>
     <radialGradient id="coralGlow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0%"   stop-color="#FF8A5C" stop-opacity="0.30"/>
-      <stop offset="70%"  stop-color="#FF8A5C" stop-opacity="0.04"/>
+      <stop offset="0%"   stop-color="#FF8A5C" stop-opacity="0.16"/>
+      <stop offset="70%"  stop-color="#FF8A5C" stop-opacity="0.03"/>
       <stop offset="100%" stop-color="#FF8A5C" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="skyGlow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0%"   stop-color="#3B9AE5" stop-opacity="0.26"/>
-      <stop offset="70%"  stop-color="#3B9AE5" stop-opacity="0.04"/>
+      <stop offset="0%"   stop-color="#3B9AE5" stop-opacity="0.12"/>
+      <stop offset="70%"  stop-color="#3B9AE5" stop-opacity="0.02"/>
       <stop offset="100%" stop-color="#3B9AE5" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="sparkMain" x1="0" y1="0" x2="1" y2="1">

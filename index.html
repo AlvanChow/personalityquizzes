@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -32,19 +32,20 @@
          (see src/main.jsx). The Naruto vector quiz additionally loads a Google
          Fonts CJK face at runtime, which is why the CSP allows fonts.g*.com. -->
     <script data-cfasync="false">
-      // Dark is the default and is set statically via <html class="dark"> above,
-      // so the site stays dark even if this script is deferred (e.g. by a CDN
-      // script optimizer) or if storage is unavailable (in-app browsers, blocked
-      // cookies, privacy modes). Here we ONLY opt out to light when the visitor
-      // explicitly chose light under the CURRENT preference scheme; any older or
-      // stale preference is ignored so returning visitors re-land in dark.
+      // Light is the default, and it is the absence of a class rather than a
+      // class of its own, so it survives this script never running at all — a
+      // deferred/stripped script or unavailable storage (in-app browsers,
+      // blocked cookies, privacy modes) lands on light rather than a flash of
+      // the wrong theme. We ONLY opt in to dark when the visitor explicitly
+      // chose it under the CURRENT preference scheme; an older or stale
+      // preference is ignored so returning visitors re-land on the default.
       (function () {
         try {
           if (localStorage.getItem('pq_theme_v') === '2' &&
-              localStorage.getItem('pq_theme') === 'light') {
-            document.documentElement.classList.remove('dark');
+              localStorage.getItem('pq_theme') === 'dark') {
+            document.documentElement.classList.add('dark');
           }
-        } catch (e) { /* storage unavailable -> stay dark */ }
+        } catch (e) { /* storage unavailable -> stay light */ }
       })();
     </script>
   </head>
