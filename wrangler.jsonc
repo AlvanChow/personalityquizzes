@@ -7,7 +7,7 @@
     "enabled": true
   },
   "vars": {
-    "IOS_APP_ID": ""
+    "IOS_APP_ID": "HQZMK27YH9.com.mypersonalityquizzes.app"
   },
   "assets": {
     "directory": "./dist",
