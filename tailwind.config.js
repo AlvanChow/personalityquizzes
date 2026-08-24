@@ -16,6 +16,9 @@ export default {
         // the iOS shell bundles its content and must render identically with
         // no network, so a webfont here would be a regression.
         display: ['ui-serif', 'Georgia', 'Cambria', '"Times New Roman"', 'serif'],
+        // Chunky rounded display face for the landing hero and marquee.
+        // Self-hosted like Nunito so the iOS shell renders it offline.
+        fredoka: ['"Fredoka Variable"', 'Fredoka', '"Nunito Variable"', 'Nunito', 'ui-rounded', 'sans-serif'],
       },
       keyframes: {
         shake: {

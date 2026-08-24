@@ -384,3 +384,17 @@ body {
 .native-app body {
   min-height: 100dvh;
 }
+
+/* ── Landing "sticker sheet" hero ─────────────────────────────────────────
+   The marquee band scrolls a doubled track one full copy to the left, so the
+   loop point is invisible. Reduced-motion users get a static band. */
+@keyframes marquee-scroll {
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: inline-flex;
+  animation: marquee-scroll 32s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
