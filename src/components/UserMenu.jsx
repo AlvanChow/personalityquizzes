@@ -66,10 +66,10 @@ export default function UserMenu() {
           onClick={() => setOpen(!open)}
           aria-haspopup="menu"
           aria-expanded={open}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200 text-sm font-semibold text-gray-900 whitespace-nowrap"
+          aria-label="Sign in"
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200 text-gray-900"
         >
           <UserCircle className="w-5 h-5" />
-          Sign in
         </button>
         {open && (
           <div role="menu" aria-label="Sign in" className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-md border border-gray-200 p-3 z-50">
