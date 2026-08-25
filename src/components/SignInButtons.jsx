@@ -30,20 +30,15 @@ export function AppleIcon({ size = 18, className = '' }) {
  * the other. Presenting the same pair on the website keeps the two builds
  * identical, which is what makes `ios-app/` a pure shell.
  *
- * The `inline` layout keeps both buttons icon-only until `xl`. The site header
- * is the only caller, and with the nav labels also showing it needs ~1110px
- * before two labelled auth buttons fit — so at iPad widths the labels would
- * push "Sign in with Apple" off the right edge, which is the 4.8 problem this
- * component exists to avoid. Icon-only keeps the pair equally prominent; the
- * sr-only spans keep them named.
+ * Always the stacked full-width pair: the header shows a single "Sign in"
+ * button (UserMenu) whose popover renders this component, so both providers
+ * stay equally prominent without crowding the chrome.
  *
  * @param redirectPath same-site path to land on afterwards (see safeRedirectPath)
- * @param layout       'stacked' full-width column, or 'inline' for tight chrome
  * @param onStart      notified before a provider is invoked (for analytics)
  */
 export default function SignInButtons({
   redirectPath = '',
-  layout = 'stacked',
   onStart,
   className = '',
 }) {
@@ -76,14 +71,11 @@ export default function SignInButtons({
     }
   }
 
-  const inline = layout === 'inline';
-  const base = inline
-    ? 'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-200 disabled:opacity-60'
-    : 'w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 disabled:opacity-60';
+  const base = 'w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 disabled:opacity-60';
 
   return (
     <div className={className}>
-      <div className={inline ? 'flex items-center gap-1.5' : 'flex flex-col gap-2'}>
+      <div className="flex flex-col gap-2">
         <button
           type="button"
           onClick={() => start('google', signInWithGoogle)}
@@ -91,10 +83,7 @@ export default function SignInButtons({
           className={`${base} bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md text-gray-700`}
         >
           <GoogleIcon />
-          <span className={inline ? 'hidden xl:inline' : ''}>
-            {busy === 'google' ? 'Opening…' : 'Sign in with Google'}
-          </span>
-          {inline && <span className="xl:hidden sr-only">Sign in with Google</span>}
+          <span>{busy === 'google' ? 'Opening…' : 'Sign in with Google'}</span>
         </button>
 
         <button
@@ -104,10 +93,7 @@ export default function SignInButtons({
           className={`${base} bg-black border border-black hover:bg-gray-800 text-white`}
         >
           <AppleIcon />
-          <span className={inline ? 'hidden xl:inline' : ''}>
-            {busy === 'apple' ? 'Opening…' : 'Sign in with Apple'}
-          </span>
-          {inline && <span className="xl:hidden sr-only">Sign in with Apple</span>}
+          <span>{busy === 'apple' ? 'Opening…' : 'Sign in with Apple'}</span>
         </button>
       </div>
       {error && (

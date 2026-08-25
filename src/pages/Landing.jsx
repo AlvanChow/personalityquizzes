@@ -64,6 +64,7 @@ export default function Landing() {
         { key: 'house', emoji: '🪄', title: 'Wizarding House', description: 'Gryffindor, Hufflepuff, Ravenclaw or Slytherin — where do you belong?', time: '~3 min', to: '/quiz/house' },
         { key: 'hot_takes', emoji: '🌭', title: 'Hot Takes: Great Debates', description: 'Is the dress blue? Are tennis balls green? Is a hotdog a sandwich? Pick your side.', time: '8 debates · ~2 min', to: '/hot-takes' },
         { key: 'cake', emoji: '🍰', title: 'What Cake Are You?', description: 'Your work superpower, served as dessert. Find your professional flavor.', time: '~2 min', to: '/quiz/cake' },
+        ...getQuizzesByCategory('fun').map(fromCatalog),
       ],
     },
     {
@@ -164,7 +165,7 @@ export default function Landing() {
               {hasCompleted ? 'See my results' : loading ? 'Take the Big 5' : 'Take your first quiz'}
               <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1 transition-transform duration-200" />
             </button>
-            <p className="text-xs font-bold text-gray-500">First 3 tests free · no account needed</p>
+            <p className="text-xs font-bold text-gray-500">Free results · no account required</p>
           </motion.div>
         </div>
 

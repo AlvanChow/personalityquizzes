@@ -8,6 +8,7 @@ import { safeLocalStorageRead } from './security';
 
 const catalogSections = [
   getQuizzesByCategory('know'),
+  getQuizzesByCategory('fun'),
   getQuizzesByCategory('pop'),
 ];
 

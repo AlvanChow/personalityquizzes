@@ -271,7 +271,7 @@ function CircleCTA({ shared }) {
         className="w-full py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm font-bold text-emerald-600 flex items-center justify-center gap-2"
       >
         <Check className="w-4 h-4" />
-        In your circle — see your matches
+        You're friends — see your matches
       </button>
     );
   } else if (status === 'pending_sent') {
@@ -288,14 +288,14 @@ function CircleCTA({ shared }) {
         className="w-full py-3 rounded-xl bg-coral-500 hover:bg-coral-600 text-white text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-colors"
       >
         <Users className="w-4 h-4" />
-        They asked to join your circle — respond
+        They sent you a friend request — respond
       </button>
     );
   } else {
     body = (
       <>
         <p className="text-xs text-gray-400 mb-3">
-          Add {friendName} to your circle to keep this match and compare on every quiz.
+          Add {friendName} as a friend to keep this match and compare on every quiz.
         </p>
         <button
           onClick={handleRequest}
@@ -307,7 +307,7 @@ function CircleCTA({ shared }) {
           ) : (
             <UserPlus className="w-4 h-4" />
           )}
-          Add to your circle
+          Add friend
         </button>
       </>
     );
@@ -322,7 +322,7 @@ function CircleCTA({ shared }) {
     >
       <div className="flex items-center gap-2 mb-1">
         <Users className="w-4 h-4 text-coral-400" />
-        <h2 className="text-sm font-extrabold text-gray-800">Circles</h2>
+        <h2 className="text-sm font-extrabold text-gray-800">Friends</h2>
       </div>
       {body}
       {note && (

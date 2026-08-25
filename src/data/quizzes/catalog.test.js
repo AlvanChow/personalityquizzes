@@ -29,7 +29,7 @@ describe('quiz catalog metadata', () => {
       expect(meta.title).toBeTruthy();
       expect(meta.quizName).toBeTruthy();
       expect(meta.emoji).toBeTruthy();
-      expect(['pop', 'know']).toContain(meta.category);
+      expect(['pop', 'know', 'fun']).toContain(meta.category);
       expect(meta.description).toBeTruthy();
       expect(meta.time).toMatch(/^~\d+ min$/);
       expect(meta.gradient).toMatch(GRADIENT_PATTERN);

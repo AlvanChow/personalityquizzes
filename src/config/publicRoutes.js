@@ -18,9 +18,12 @@ export const PUBLIC_QUIZ_KEYS = new Set([
   'office',
   'onepiece',
   'pokemon',
+  'red_flag',
   'riasec',
+  'spirit_animal',
   'starwars',
   'superhero',
+  'toxic_trait',
   'values',
 ]);
 

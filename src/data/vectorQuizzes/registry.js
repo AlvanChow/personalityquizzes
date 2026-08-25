@@ -21,6 +21,9 @@ export const VECTOR_QUIZ_LOADERS = {
   love_language: () => import('./love_language'),
   values: () => import('./values'),
   house: () => import('./house'),
+  spirit_animal: () => import('./spirit_animal'),
+  toxic_trait: () => import('./toxic_trait'),
+  red_flag: () => import('./red_flag'),
   cake: () => import('./cake'),
 };
 

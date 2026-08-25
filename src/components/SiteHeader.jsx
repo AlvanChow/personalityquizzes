@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { Sparkles, Users, Moon, Sun, LayoutGrid, ChartColumn } from 'lucide-react';
+import { Sparkles, Users, Moon, Sun, ChartColumn } from 'lucide-react';
 import UserMenu from './UserMenu';
 
 // Every item carries an icon because below `md` the labels are hidden and the
@@ -12,9 +12,8 @@ import UserMenu from './UserMenu';
 // offered as prominently as Google's. The labelled row needs ~703px, so `md`
 // (768px) is the first breakpoint that can afford it.
 const NAV = [
-  { label: 'Quizzes', to: '/', match: (p) => p === '/', icon: LayoutGrid },
   { label: 'How it works', to: '/how-it-works', match: (p) => p.startsWith('/how-it-works'), desktopOnly: true },
-  { label: 'Circle', to: '/circle', match: (p) => p.startsWith('/circle'), icon: Users },
+  { label: 'Friends', to: '/circle', match: (p) => p.startsWith('/circle'), icon: Users },
   // Hot Takes lives as a card in the catalog, not a top-level destination.
   { label: 'My Results', to: '/dashboard', match: (p) => p.startsWith('/dashboard'), icon: ChartColumn },
 ];
