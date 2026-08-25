@@ -87,105 +87,164 @@ export default function Landing() {
   ];
   const totalTests = SECTIONS.reduce((n, s) => n + s.tests.length, 0);
 
-  // The root clips horizontally. Both hero auras are absolutely positioned with
-  // negative offsets (-140px / -120px), so on a phone they reach past each edge
-  // and make the document wider than the viewport — the whole app then pans
-  // sideways. Clipping here rather than on <body> keeps the sticky site header
-  // working, since that renders outside this route, and this element is
-  // content-height so the implicit overflow-y never becomes a nested scroller.
+  // Sticker wall — a curated taste of the catalog, rendered in the site's own
+  // glyph system. Routing and analytics come from the SECTIONS entries above,
+  // so big5 keeps its completed→dashboard behaviour and nothing is duplicated.
+  const ALL_TESTS = new Map(SECTIONS.flatMap((sec) => sec.tests).map((t) => [t.key, t]));
+  const STICKERS = [
+    { key: 'mbti', label: 'MBTI', disc: 'bg-sky-100', rotate: -7 },
+    { key: 'big5', label: 'Big Five', disc: 'bg-coral-100', rotate: 4 },
+    { key: 'enneagram', label: 'Enneagram', disc: 'bg-[#F1E8FF]', rotate: 8 },
+    { key: 'house', label: 'Wizarding House', disc: 'bg-cream-200', rotate: 6 },
+    { key: 'cake', label: 'What Cake?', disc: 'bg-rose-50', rotate: -5 },
+    { key: 'ikigai', label: 'Ikigai', disc: 'bg-mint-100', rotate: 3 },
+    { key: 'naruto', label: 'Naruto', disc: 'bg-peach-100', rotate: -4 },
+    { key: 'love_language', label: 'Love Language', disc: 'bg-teal-100', rotate: 2 },
+    { key: 'hot_takes', label: 'Hot Takes', disc: 'bg-cream-100', rotate: -8 },
+  ].map((st) => ({ ...st, test: ALL_TESTS.get(st.key) })).filter((st) => st.test);
+
+  // Real result names from the catalog — the marquee is a shelf of things you
+  // can actually get, not decoration.
+  const MARQUEE = ['ENFP', 'GRYFFINDOR', 'TYPE 4', 'TIRAMISU', 'KAKASHI', 'HIGH OPENNESS', 'SLYTHERIN', 'INTJ', 'SECURE ATTACHMENT'];
+
+  // The three picks under the marquee: one science, one fun, one fight-starter.
+  const TONIGHT = [
+    { key: 'big5', blurb: 'The one scientists actually cite' },
+    { key: 'house', blurb: 'Settle it officially' },
+    { key: 'hot_takes', blurb: '8 debates. Pick your sides.' },
+  ].map((t) => ({ ...t, test: ALL_TESTS.get(t.key) })).filter((t) => t.test);
+
+  // The root clips horizontally: the rotated marquee band is deliberately
+  // wider than the viewport, and clipping here (not on <body>) keeps the
+  // sticky site header working while never creating a nested scroller.
   return (
     <div className="min-h-screen flex flex-col bg-[#FBFAF9] overflow-x-hidden">
 
       <main className="flex-1 flex flex-col items-center px-6 pb-24">
 
-        <div className="relative text-center max-w-3xl mx-auto mt-10 md:mt-14 mb-10">
-          {/* Ambient aura + orbiting quiz glyphs — the quiz-world energy, both themes. */}
-          <div aria-hidden="true" className="hero-aura hero-aura-a" />
-          <div aria-hidden="true" className="hero-aura hero-aura-b" />
-          <div aria-hidden="true" className="hero-orbit hidden lg:block">
-            <span className="orb" style={{ transform: 'translate(0px, -250px)', animationDelay: '-3.6s' }}>
-              <QuizGlyph quizKey="big5" size={30} />
-            </span>
-            <span className="orb" style={{ transform: 'translate(176px, -232px)', animationDelay: '-4.5s' }}>
-              <QuizGlyph quizKey="mbti" size={30} />
-            </span>
-            <span className="orb" style={{ transform: 'translate(332px, -177px)', animationDelay: '-0.0s' }}>
-              <QuizGlyph quizKey="enneagram" size={30} />
-            </span>
-            <span className="orb" style={{ transform: 'translate(436px, -94px)', animationDelay: '-1.8s' }}>
-              <QuizGlyph quizKey="house" size={30} />
-            </span>
-            <span className="orb" style={{ transform: 'translate(436px, 94px)', animationDelay: '-0.9s' }}>
-              <QuizGlyph quizKey="cake" size={30} />
-            </span>
-            <span className="orb" style={{ transform: 'translate(415px, 117px)', animationDelay: '-2.7s' }}>
-              <QuizGlyph quizKey="naruto" size={30} />
-            </span>
-            <span className="orb" style={{ transform: 'translate(-415px, 117px)', animationDelay: '-1.8s' }}>
-              <QuizGlyph quizKey="values" size={30} />
-            </span>
-            <span className="orb" style={{ transform: 'translate(-436px, 94px)', animationDelay: '-3.6s' }}>
-              <QuizGlyph quizKey="pokemon" size={30} />
-            </span>
-            <span className="orb" style={{ transform: 'translate(-436px, -94px)', animationDelay: '-5.4s' }}>
-              <QuizGlyph quizKey="starwars" size={30} />
-            </span>
-            <span className="orb" style={{ transform: 'translate(-332px, -177px)', animationDelay: '-0.9s' }}>
-              <QuizGlyph quizKey="love_language" size={30} />
-            </span>
-            <span className="orb" style={{ transform: 'translate(-176px, -232px)', animationDelay: '-2.7s' }}>
-              <QuizGlyph quizKey="ikigai" size={30} />
-            </span>
-            <span className="orb" style={{ transform: 'translate(470px, 0px)', animationDelay: '-0.0s' }}>
-              <QuizGlyph quizKey="eq" size={30} />
-            </span>
-          </div>
+        {/* ── Hero ── */}
+        <div className="relative text-center max-w-3xl mx-auto mt-10 md:mt-16 mb-4">
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.05 }}
-            className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 leading-[1.05] tracking-tight mb-4"
+            className="font-fredoka font-semibold text-[44px] md:text-6xl text-gray-900 leading-[1.05] tracking-tight"
           >
-            Discover your{' '}
-            <span className="text-coral-500">superpowers.</span>
+            Find out who you{' '}
+            <span className="relative inline-block text-coral-500">
+              are
+              <svg viewBox="0 0 96 14" className="absolute -bottom-1.5 left-0 w-full h-[0.26em]" aria-hidden="true">
+                <path d="M3 10 Q24 3 48 8 Q72 13 93 5" stroke="currentColor" strokeWidth="5" strokeLinecap="round" fill="none" />
+              </svg>
+            </span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.12 }}
-            className="text-base md:text-lg text-gray-600 max-w-xl mx-auto font-medium leading-relaxed mb-7"
+            className="text-base md:text-lg text-gray-600 font-bold mt-5"
           >
-            Decades of research show Big Five traits predict career success, relationship
-            stability, and even longevity about as well as IQ or income. Mapping your own
-            profile takes about five minutes.
+            One 3-minute quiz to start. {totalTests - 1} more to argue with.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4"
+            className="flex flex-col items-center gap-3 mt-7"
           >
             <button
               onClick={() => {
                 track('hero_cta_clicked', { from: 'landing' }, user?.id ?? null);
                 navigate(hasCompleted ? '/dashboard' : '/assessment');
               }}
-              className="group/cta w-full sm:w-auto bg-coral-500 hover:bg-coral-600 text-white font-extrabold text-lg px-9 md:px-11 py-3.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3"
+              className="group/cta w-full sm:w-auto bg-coral-500 hover:bg-coral-600 text-white font-fredoka font-semibold text-lg px-11 py-4 rounded-2xl shadow-[0_5px_0_#C24E1D,0_12px_24px_rgba(240,104,48,0.28)] hover:shadow-[0_5px_0_#B84715,0_14px_28px_rgba(240,104,48,0.34)] active:translate-y-[3px] active:shadow-[0_2px_0_#C24E1D] transition-all duration-150 flex items-center justify-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300 focus-visible:ring-offset-2"
             >
-              {hasCompleted ? 'See My Results' : loading ? 'Take the Big 5' : 'Start with the Big 5'}
+              {hasCompleted ? 'See my results' : loading ? 'Take the Big 5' : 'Take your first quiz'}
               <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1 transition-transform duration-200" />
             </button>
-            <button
-              onClick={() => document.getElementById('quizzes')?.scrollIntoView({ behavior: 'smooth' })}
-              className="w-full sm:w-auto text-gray-700 hover:text-gray-900 font-bold text-base px-6 py-3.5 rounded-lg border border-gray-300 hover:border-gray-400 bg-white transition-all duration-200 flex items-center justify-center gap-2"
-            >
-              See all {totalTests} tests
-              <ChevronDown className="w-4 h-4" />
-            </button>
+            <p className="text-xs font-bold text-gray-500">First 3 tests free · no account needed</p>
           </motion.div>
         </div>
+
+        {/* ── Sticker wall ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.28 }}
+          className="relative w-full max-w-md md:max-w-2xl mx-auto mt-10"
+        >
+          <svg viewBox="0 0 60 60" className="absolute -left-2 top-2 w-9 h-9 md:w-11 md:h-11" aria-hidden="true">
+            <path d="M30 8 L33 25 L50 30 L33 35 L30 52 L27 35 L10 30 L27 25 Z" fill="#A8E6C3" stroke="#3BC07B" strokeWidth="3" strokeLinejoin="round" />
+          </svg>
+          <svg viewBox="0 0 60 60" className="absolute -right-1 -top-4 w-11 h-11 md:w-14 md:h-14" aria-hidden="true">
+            <path d="M30 4 L34 24 L54 30 L34 36 L30 56 L26 36 L6 30 L26 24 Z" fill="#FFCD3C" stroke="#E0A916" strokeWidth="3" strokeLinejoin="round" />
+          </svg>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-9 px-2">
+            {STICKERS.map((st) => (
+              <button
+                key={st.key}
+                onClick={st.test.action ?? (() => trackAndNavigate(st.key, st.test.to))}
+                style={{ transform: `rotate(${st.rotate}deg)` }}
+                className="relative rounded-full bg-[#FFFFFF] p-1.5 shadow-[0_1px_2px_rgba(28,20,12,0.10),0_10px_22px_rgba(28,20,12,0.14)] transition-transform duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
+                aria-label={st.test.title}
+              >
+                <span className={`w-[72px] h-[72px] md:w-20 md:h-20 rounded-full flex items-center justify-center ${st.disc}`}>
+                  <QuizGlyph quizKey={st.key} emoji={st.test.emoji} size={38} />
+                </span>
+                <span className="absolute left-1/2 -bottom-2.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#1F1B16] text-[#FBFAF9] dark:bg-[#ECE7DC] dark:text-[#26221B] text-[10px] font-extrabold tracking-wide px-2.5 py-[3px]">
+                  {st.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ── Marquee of real results ── */}
+        <div
+          aria-hidden="true"
+          className="w-[112%] -rotate-2 overflow-hidden bg-[#1F1B16] dark:bg-[#0F0D0B] shadow-[0_8px_20px_rgba(31,27,22,0.25)] mt-12 mb-2 select-none"
+        >
+          <div className="marquee-track py-3">
+            {[0, 1].map((copy) => (
+              <span key={copy} className="font-fredoka font-medium text-[17px] text-[#FBFAF9] tracking-wider whitespace-nowrap">
+                {MARQUEE.map((r) => `${r}  ✦  `).join('')}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Tonight's three ── */}
+        <section className="w-full max-w-xl mx-auto mt-14 mb-16">
+          <h2 className="font-fredoka font-semibold text-2xl text-gray-900">Tonight's three</h2>
+          <p className="text-sm font-semibold text-gray-500 mt-1">A science one, a fun one, a fight-starter.</p>
+          <div className="flex flex-col gap-3 mt-5">
+            {TONIGHT.map((t) => (
+              <button
+                key={t.key}
+                onClick={t.test.action ?? (() => trackAndNavigate(t.key, t.test.to))}
+                className="flex items-center gap-4 text-left bg-white rounded-2xl px-5 py-4 shadow-[0_1px_2px_rgba(28,20,12,0.06),0_8px_18px_rgba(28,20,12,0.07)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_1px_2px_rgba(28,20,12,0.08),0_14px_26px_rgba(28,20,12,0.11)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300"
+              >
+                <span className="shrink-0">
+                  <QuizGlyph quizKey={t.key} emoji={t.test.emoji} size={34} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[15px] font-black text-gray-900">{t.test.title}</span>
+                  <span className="block text-xs font-bold text-gray-500">{t.blurb}</span>
+                </span>
+                <span className="shrink-0 text-xs font-extrabold text-coral-500">{t.test.time}</span>
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => document.getElementById('quizzes')?.scrollIntoView({ behavior: 'smooth' })}
+            className="mx-auto mt-6 flex items-center gap-2 text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-300 rounded-lg px-3 py-1.5"
+          >
+            Browse all {totalTests} tests
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </section>
 
         {/* ── The full catalog ── */}
         <div id="quizzes" className="w-full max-w-5xl scroll-mt-24">
