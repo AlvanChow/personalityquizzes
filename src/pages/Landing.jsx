@@ -164,7 +164,7 @@ export default function Landing() {
               {hasCompleted ? 'See my results' : loading ? 'Take the Big 5' : 'Take your first quiz'}
               <ArrowRight className="w-5 h-5 group-hover/cta:translate-x-1 transition-transform duration-200" />
             </button>
-            <p className="text-xs font-bold text-gray-500">First 3 tests free · no account needed</p>
+            <p className="text-xs font-bold text-gray-500">Free · no account needed · no email walls</p>
           </motion.div>
         </div>
 
