@@ -30,7 +30,7 @@ step and no `Podfile`.
 cd ios-app
 npm install
 npm run sync      # builds ../dist, then copies it into ios/ and updates plugins
-npm run open      # opens ios/App/App.xcworkspace in Xcode
+npm run open      # opens ios/App/App.xcodeproj in Xcode
 ```
 
 In Xcode: select the **App** target → **Signing & Capabilities** → set your
@@ -42,7 +42,7 @@ team. Pick a simulator and hit ⌘R.
 |---|---|
 | `npm run sync` | Rebuild the web app, copy it in, refresh native plugins. **Run this after any change under `../src`** |
 | `npm run copy` | Same, but skips the plugin refresh — faster when only web code changed |
-| `npm run open` | Open the Xcode workspace |
+| `npm run open` | Open the Xcode project. Not `cap open ios` — that resolves `App.xcworkspace`, which only exists for CocoaPods builds and which `cap sync` deletes on an SPM project like this one |
 | `npm run assets` | Re-render the app icon and splash from `brand/*.svg` |
 | `npm run doctor` | Capacitor's environment diagnostic |
 
@@ -73,11 +73,17 @@ below need it.
 Sign-in happens in a system browser and returns through a custom URL scheme, so
 Supabase has to be told that scheme is legitimate.
 
-**Supabase → Authentication → URL Configuration → Redirect URLs**, add:
+**Supabase → Authentication → URL Configuration → Redirect URLs**, add **both**:
 
 ```
 com.mypersonalityquizzes.app://auth-callback
+com.mypersonalityquizzes.app://auth-callback?**
 ```
+
+The second is not redundant. `AuthContext.signIn()` appends `?next=<path>`
+whenever sign-in starts from somewhere that has to be returned to — a share
+page, most importantly — so the URL that actually comes back usually carries a
+query string, and an exact-match entry alone can reject it.
 
 Leave the existing `https://mypersonalityquizzes.com/**` entries alone — the
 website still uses them.
@@ -98,9 +104,17 @@ equal prominence, everywhere sign-in appears). What is missing is the provider:
 
 1. Apple Developer portal → **Keys** → create a key with **Sign in with Apple**
    enabled. Download the `.p8` — Apple lets you download it exactly once.
-2. Create a **Services ID** (e.g. `com.mypersonalityquizzes.web`) and configure
-   its return URL as your Supabase callback:
-   `https://<project>.supabase.co/auth/v1/callback`
+2. Create a **Services ID** (e.g. `com.mypersonalityquizzes.web`), enable Sign in
+   with Apple on it, and configure it against the App ID from step 1 with:
+   - Domain: `auth.mypersonalityquizzes.com`
+   - Return URL: `https://auth.mypersonalityquizzes.com/auth/v1/callback`
+
+   Note this is **not** the `<project>.supabase.co` form. This project reaches
+   Supabase through a branded auth domain (`DEFAULT_SUPABASE_URL` in
+   `../src/config/supabase.js`), and the return URL has to match the domain the
+   callback is actually served from. Cross-check it against the callback URL
+   Supabase prints on its own Apple provider page and copy that verbatim — a
+   mismatch here fails with `invalid_client`, which says nothing useful.
 3. Supabase → **Authentication → Providers → Apple**: enable it and fill in the
    Services ID, Team ID, Key ID, and the `.p8` contents.
 
@@ -122,21 +136,24 @@ look for it. Without the migration the button is there and fails.
 Without this, a shared `/s/:id` link opens Safari even for someone who has the
 app installed — so an invited friend never lands in the app.
 
+The app half is already in the project: `ios/App/App/App.entitlements` declares
+both `applinks:` domains and is wired to both build configurations via
+`CODE_SIGN_ENTITLEMENTS`. Automatic signing enables the Associated Domains
+capability on the App ID when Xcode sees it, so there is nothing to add by hand.
+What is left is the server half:
+
 1. Set `IOS_APP_ID` in `../wrangler.jsonc` to `<TeamID>.com.mypersonalityquizzes.app`
    and redeploy the worker. It then serves
    `/.well-known/apple-app-site-association`; until it is set, that path 404s
    deliberately rather than publishing a claim iOS would cache for days.
-2. In Xcode → **Signing & Capabilities** → **+ Capability** → **Associated
-   Domains**, add:
-   ```
-   applinks:mypersonalityquizzes.com
-   applinks:www.mypersonalityquizzes.com
-   ```
-3. Verify: `curl https://mypersonalityquizzes.com/.well-known/apple-app-site-association`
+2. Verify: `curl https://mypersonalityquizzes.com/.well-known/apple-app-site-association`
    must return `application/json` with no redirect.
 
 Claimed paths are `/`, `/s/*`, `/quiz/*`, `/circle`, `/exercise/*` — the things
-people actually share. The whole site is deliberately not claimed.
+people actually share. The whole site is deliberately not claimed. The claimed
+hosts must stay equal to `SITE_HOSTS` in `../src/utils/deepLink.js`, or a link
+opens the app and then dead-ends on a route it refuses to navigate to;
+`capacitorConfig.test.js` fails if they diverge.
 
 ### 6. App Store Connect
 
@@ -148,10 +165,15 @@ Create the app record, then prepare:
   `xcrun simctl io booted screenshot shot.png`. A 13" iPad set is required too
   for as long as the target builds for iPad — see `TARGETED_DEVICE_FAMILY`
 - **Privacy policy URL** — `https://mypersonalityquizzes.com/privacy` (exists)
+- **Support URL** — `https://mypersonalityquizzes.com/support` (exists). Apple
+  requires a reachable page here, not a `mailto:`.
 - **App Privacy questionnaire** — declare what is collected. Today that is:
   email address and name (from the OAuth provider), quiz results, and usage
-  analytics, all linked to identity. See `../src/utils/analytics.js` for the
-  exact event set.
+  analytics, all linked to identity, none used for tracking. See
+  `../src/utils/analytics.js` for the exact event set. The same four categories
+  are declared in `ios/App/App/PrivacyInfo.xcprivacy`; Apple aggregates that into
+  a privacy report but the questionnaire is what is authoritative, so the two
+  must say the same thing.
 - **Age rating** — 4+. The quizzes contain no objectionable content.
 - **Export compliance** — already answered in Info.plist
   (`ITSAppUsesNonExemptEncryption = false`), so builds will not stop for the
@@ -216,6 +238,19 @@ blank web view while the bundle boots.
 
 - **Landscape on iPhone**: `Info.plist` → `UISupportedInterfaceOrientations`
   currently lists portrait only. Add the two landscape values back to allow it.
+- **iPad**: on (`TARGETED_DEVICE_FAMILY = "1,2"`), as shipped in 1.0.
+  `UISupportedInterfaceOrientations~ipad` lists all four orientations, which is
+  what keeps validation from failing with ITMS-90474.
 - **Icon and splash**: edit `brand/icon.svg` / `brand/splash.svg`, then
   `npm run assets`. The generator flattens alpha, which App Store Connect
   rejects icons for having.
+
+---
+
+## Submission paperwork
+
+The App Store Connect form answers — App Privacy questionnaire, App Review
+notes, age rating, screenshot list — are written out in
+[`APP_STORE_SUBMISSION.md`](./APP_STORE_SUBMISSION.md). They have to agree with
+`ios/App/App/PrivacyInfo.xcprivacy` and with the privacy policy, so they live
+next to the code rather than being reconstructed at submission time.
