@@ -85,7 +85,7 @@ function TypeBadges({ friendTypes }) {
 }
 
 export default function Circle() {
-  usePageTitle('My Circle — My Personality Quizzes');
+  usePageTitle('My Friends — My Personality Quizzes');
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const [rows, setRows] = useState(null);   // null = loading
@@ -99,7 +99,7 @@ export default function Circle() {
     const { data, error: err } = await supabase.rpc('list_circle');
     if (err) {
       devError('[circle] list failed:', err);
-      setError('Could not load your circle. Please try again.');
+      setError('Could not load your friends. Please try again.');
       setRows([]);
       return;
     }
@@ -163,7 +163,7 @@ export default function Circle() {
         <div className="w-14 h-14 rounded-xl bg-coral-50 border border-coral-200 flex items-center justify-center mb-4">
           <Users className="w-7 h-7 text-coral-400" />
         </div>
-        <h1 className="text-xl font-extrabold text-gray-800 mb-2">Your Circle</h1>
+        <h1 className="text-xl font-extrabold text-gray-800 mb-2">Your Friends</h1>
         <p className="text-sm text-gray-500 mb-6 max-w-xs">
           Sign in to keep your matches — see how you and your friends compare, all in one place.
         </p>
@@ -202,7 +202,7 @@ export default function Circle() {
           <div className="w-10 h-10 rounded-xl bg-coral-50 border border-coral-100 flex items-center justify-center">
             <Users className="w-5 h-5 text-coral-500" />
           </div>
-          <h1 className="text-2xl font-black text-gray-900">My Circle</h1>
+          <h1 className="text-2xl font-black text-gray-900">My Friends</h1>
         </div>
         <p className="text-sm text-gray-500 mb-8">
           The people you&apos;ve matched with — and how your personalities line up.
@@ -216,7 +216,7 @@ export default function Circle() {
         {incoming.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-7">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-              Wants to join your circle
+              Sent you a friend request
             </h2>
             <div className="space-y-3">
               {incoming.map((r) => (
@@ -255,7 +255,7 @@ export default function Circle() {
         {circle.length > 0 ? (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-7">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-              Circle · {circle.length}
+              Friends · {circle.length}
             </h2>
             <div className="space-y-3">
               {circle.map((r) => (
@@ -280,7 +280,7 @@ export default function Circle() {
                     ) : (
                       <button
                         onClick={() => setConfirmRemove(r.connection_id)}
-                        aria-label={`Remove ${r.friend_name} from your circle`}
+                        aria-label={`Remove ${r.friend_name} from your friends`}
                         className="shrink-0 p-1.5 text-gray-200 hover:text-red-400 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -296,9 +296,9 @@ export default function Circle() {
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-xl border border-gray-200 p-8 text-center mb-7">
               <span className="text-4xl block mb-3">🫶</span>
-              <h2 className="text-base font-extrabold text-gray-800 mb-1.5">No one in your circle yet</h2>
+              <h2 className="text-base font-extrabold text-gray-800 mb-1.5">No friends here yet</h2>
               <p className="text-sm text-gray-500 mb-5 max-w-xs mx-auto">
-                Share a quiz result with a friend — when they compare with you, they can ask to join your circle.
+                Share a quiz result with a friend — when they compare with you, they can send you a friend request.
               </p>
               <button
                 onClick={() => navigate('/')}

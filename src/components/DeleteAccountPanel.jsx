@@ -59,7 +59,7 @@ export default function DeleteAccountPanel() {
         <div className="min-w-0">
           <h2 className="text-sm font-extrabold text-red-700">Delete your account</h2>
           <p className="text-xs text-red-600 font-semibold mt-1 leading-relaxed">
-            This permanently removes your profile, every quiz result, your Circle
+            This permanently removes your profile, every quiz result, your friend
             connections, and any share links you created. Links you have already
             sent to friends will stop working. This cannot be undone.
           </p>

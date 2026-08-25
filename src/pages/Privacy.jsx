@@ -94,7 +94,7 @@ export default function Privacy() {
           <p>
             You can delete your account yourself at any time from{' '}
             <Link className="font-bold text-sky-700 hover:underline" to="/profile">your profile</Link>.
-            That permanently removes your account, profile, saved quiz results, Circle connections, and any
+            That permanently removes your account, profile, saved quiz results, friend connections, and any
             share links you created — share links you have already sent will stop working. Product analytics
             and quiz ratings are kept but are unlinked from you, and security records of blocked requests are
             retained without an account to attach them to until they age out.
