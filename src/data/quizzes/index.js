@@ -37,7 +37,8 @@ import { safeLocalStorageRead } from '../../utils/security';
  * }
  */
 
-// Categories: 'pop' = pop-culture matches, 'know' = introspective assessments.
+// Categories: 'pop' = pop-culture matches, 'know' = introspective assessments,
+// 'fun' = quick shareable identity quizzes.
 // Entries WITHOUT a `load` (and not `custom`) are served by the immersive vector
 // experience (src/data/vectorQuizzes/) — the quiz DATA lives there and this
 // catalog only supplies card metadata. See src/data/vectorQuizzes/registry.js.
@@ -160,6 +161,38 @@ export const QUIZ_CATALOG = [
     time: '~4 min',
     gradient: 'from-indigo-400 to-violet-500',
     load: () => import('./lifewheel.js'),
+  },
+
+  // ── Just for Fun (vector experience) ─────────────────────────────────────
+  {
+    key: 'spirit_animal',
+    title: "What's Your Spirit Animal?",
+    quizName: 'Spirit Animal Match',
+    emoji: '🐾',
+    category: 'fun',
+    description: 'Lion, wolf, owl, or dolphin — which creature moves the way you do?',
+    time: '~3 min',
+    gradient: 'from-emerald-400 to-teal-500',
+  },
+  {
+    key: 'toxic_trait',
+    title: "What's Your Toxic Trait?",
+    quizName: 'Toxic Trait Check',
+    emoji: '🔥',
+    category: 'fun',
+    description: 'A loving roast: the flaw your group chat already knows about, named at last.',
+    time: '~3 min',
+    gradient: 'from-orange-400 to-rose-500',
+  },
+  {
+    key: 'red_flag',
+    title: "What's Your Red Flag?",
+    quizName: 'Red Flag Detector',
+    emoji: '🚩',
+    category: 'fun',
+    description: "The confessional: how you actually date, dodge, and disappear — flagged with ceremony.",
+    time: '~3 min',
+    gradient: 'from-rose-400 to-red-500',
   },
 
   // ── Pop Culture ────────────────────────────────────────────────────────────

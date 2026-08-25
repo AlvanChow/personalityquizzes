@@ -38,6 +38,9 @@ export const QUIZ_INFO = {
 
   // ── Just for Fun (self) ─────────────────────────────────────────────────────
   house:             { basedOn: 'the Wizarding World houses', tier: 'fun', format: 'Pick a side' },
+  spirit_animal:     { basedOn: 'animal-archetype folklore', tier: 'fun', format: 'Pick a side' },
+  toxic_trait:       { basedOn: 'a self-aware loving roast', tier: 'fun', format: 'Pick a side' },
+  red_flag:          { basedOn: 'a self-aware dating confessional', tier: 'fun', format: 'Pick a side' },
   cake:              { basedOn: 'a playful work-style match', tier: 'fun', format: 'Pick a side' },
 
   // ── Pop culture character matches — all just for fun ────────────────────────

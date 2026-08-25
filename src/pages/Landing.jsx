@@ -64,6 +64,7 @@ export default function Landing() {
         { key: 'house', emoji: '🪄', title: 'Wizarding House', description: 'Gryffindor, Hufflepuff, Ravenclaw or Slytherin — where do you belong?', time: '~3 min', to: '/quiz/house' },
         { key: 'hot_takes', emoji: '🌭', title: 'Hot Takes: Great Debates', description: 'Is the dress blue? Are tennis balls green? Is a hotdog a sandwich? Pick your side.', time: '8 debates · ~2 min', to: '/hot-takes' },
         { key: 'cake', emoji: '🍰', title: 'What Cake Are You?', description: 'Your work superpower, served as dessert. Find your professional flavor.', time: '~2 min', to: '/quiz/cake' },
+        ...getQuizzesByCategory('fun').map(fromCatalog),
       ],
     },
     {
