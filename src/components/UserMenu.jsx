@@ -57,7 +57,27 @@ export default function UserMenu() {
   }
 
   if (!user) {
-    return <SignInButtons layout="inline" className="relative" />;
+    // One "Sign in" button; the popover offers both providers stacked at equal
+    // prominence, which is what App Store Guideline 4.8 actually requires —
+    // two logo pills in the header read as clutter, not as a choice.
+    return (
+      <div className="relative" ref={menuRef}>
+        <button
+          onClick={() => setOpen(!open)}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-gray-300 shadow-sm hover:border-gray-400 hover:shadow-md transition-all duration-200 text-sm font-semibold text-gray-900 whitespace-nowrap"
+        >
+          <UserCircle className="w-5 h-5" />
+          Sign in
+        </button>
+        {open && (
+          <div role="menu" aria-label="Sign in" className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-md border border-gray-200 p-3 z-50">
+            <SignInButtons layout="stacked" onStart={() => setOpen(false)} />
+          </div>
+        )}
+      </div>
+    );
   }
 
   const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
